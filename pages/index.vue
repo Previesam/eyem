@@ -1,89 +1,187 @@
 <template>
-  <v-row justify="center" align="center">
-    <v-col cols="12" sm="8" md="6">
-      <div class="text-center">
-        <logo />
-        <vuetify-logo />
-      </div>
-      <v-card>
-        <v-card-title class="headline">
-          Welcome to the Vuetify + Nuxt.js template
-        </v-card-title>
-        <v-card-text>
-          <p>Vuetify is a progressive Material Design component framework for Vue.js. It was designed to empower developers to create amazing applications.</p>
-          <p>
-            For more information on Vuetify, check out the <a
-              href="https://vuetifyjs.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              documentation
-            </a>.
-          </p>
-          <p>
-            If you have questions, please join the official <a
-              href="https://chat.vuetifyjs.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="chat"
-            >
-              discord
-            </a>.
-          </p>
-          <p>
-            Find a bug? Report it on the github <a
-              href="https://github.com/vuetifyjs/vuetify/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="contribute"
-            >
-              issue board
-            </a>.
-          </p>
-          <p>Thank you for developing with Vuetify and I look forward to bringing more exciting features in the future.</p>
-          <div class="text-xs-right">
-            <em><small>&mdash; John Leider</small></em>
-          </div>
-          <hr class="my-3">
-          <a
-            href="https://nuxtjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
+  <div>
+    <v-row justify="space-around-center" d-flex class="flex-wrap">
+      <v-col class="col-6 col-md-4 col-lg-4 text-center">
+        <v-card class="dash-item">
+          <v-card-title class="justify-center text-h2 primary--text"
+            >50</v-card-title
           >
-            Nuxt Documentation
-          </a>
-          <br>
-          <a
-            href="https://github.com/nuxt/nuxt.js"
-            target="_blank"
-            rel="noopener noreferrer"
+          <v-divider></v-divider>
+          <v-card-actions class="caption justify-center"
+            >Appointments</v-card-actions
           >
-            Nuxt GitHub
-          </a>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn
-            color="primary"
-            nuxt
-            to="/inspire"
+        </v-card>
+      </v-col>
+      <v-col class="col-6 col-md-4 col-lg-4 text-center">
+        <v-card class="dash-item">
+          <v-card-title class="justify-center text-h2 blue--text"
+            >50</v-card-title
           >
-            Continue
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-col>
-  </v-row>
+          <v-divider></v-divider>
+          <v-card-actions class="caption justify-center">On Que</v-card-actions>
+        </v-card>
+      </v-col>
+      <v-col class="col-6 col-md-4 col-lg-4 text-center">
+        <v-card class="dash-item">
+          <v-card-title class="justify-center text-h2 secondary--text"
+            >50</v-card-title
+          >
+          <v-divider></v-divider>
+          <v-card-actions class="caption justify-center"
+            >Total Seen</v-card-actions
+          >
+        </v-card>
+      </v-col>
+      <v-col class="col-6 col-md-4 col-lg-4 text-center">
+        <v-card class="dash-item">
+          <v-card-title class="justify-center text-h2 warning--text"
+            >50</v-card-title
+          >
+          <v-divider></v-divider>
+          <v-card-actions class="caption justify-center"
+            >All Jobs</v-card-actions
+          >
+        </v-card>
+      </v-col>
+      <v-col class="col-6 col-md-4 col-lg-4 text-center">
+        <v-card class="dash-item">
+          <v-card-title class="justify-center text-h2 indigo--text"
+            >50</v-card-title
+          >
+          <v-divider></v-divider>
+          <v-card-actions class="caption justify-center"
+            >Ongoing Jobs</v-card-actions
+          >
+        </v-card>
+      </v-col>
+      <v-col class="col-6 col-md-4 col-lg-4 text-center">
+        <v-card class="dash-item">
+          <v-card-title class="justify-center text-h2 green--text"
+            >50</v-card-title
+          >
+          <v-divider></v-divider>
+          <v-card-actions class="caption justify-center"
+            >Pending Jobs</v-card-actions
+          >
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row justify="space-around-center" d-flex class="mt-2">
+      <v-col>
+        <v-card class="dash-item">
+          <v-card-subtitle>Appointments</v-card-subtitle>
+          <v-card-content>
+            <v-row justify="space-around-center" class="my-auto mx-auto">
+              <v-col class="text-body-1 col-5 col-md-4 col-sm-3">Name</v-col>
+              <v-col class="text-body-1">Time</v-col>
+              <v-col class="text-body-1">Assigned</v-col>
+              <v-col class="text-body-1 text-center">Actions</v-col>
+            </v-row>
+            <v-divider></v-divider>
+            <v-row
+              justify="space-around-center"
+              class="my-auto mx-auto table-item"
+            >
+              <v-col class="text-body-2 col-5 col-md-4 col-sm-3"
+                >Adeyanju Samuel</v-col
+              >
+              <v-col class="text-body-2">27th Dec. 2021 - 12:30pm </v-col>
+              <v-col class="text-body-2">Ujunwa</v-col>
+              <v-col class="text-body-2 text-center"
+                ><v-icon>mdi-pencil</v-icon></v-col
+              >
+            </v-row>
+            <v-divider></v-divider>
+            <v-row
+              justify="space-around-center"
+              class="my-auto mx-auto table-item"
+            >
+              <v-col class="text-body-2 col-5 col-md-4 col-sm-3"
+                >Adeyanju Samuel</v-col
+              >
+              <v-col class="text-body-2">27th Dec. 2021 - 12:30pm </v-col>
+              <v-col class="text-body-2">Ujunwa</v-col>
+              <v-col class="text-body-2 text-center"
+                ><v-icon>mdi-pencil</v-icon></v-col
+              >
+            </v-row>
+            <v-divider></v-divider>
+          </v-card-content>
+          <v-card-actions class="mt-5"> </v-card-actions>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row justify="space-around-center" d-flex class="mt-2">
+      <v-col>
+        <v-card class="dash-item">
+          <v-card-subtitle>Messages</v-card-subtitle>
+          <v-card-content>
+            <v-row justify="space-around-center" class="my-auto mx-auto">
+              <v-col class="text-body-1 col-5 col-md-4 col-sm-3">Name</v-col>
+              <v-col class="text-body-1">Time</v-col>
+              <v-col class="text-body-1">Assigned</v-col>
+              <v-col class="text-body-1 text-center">Actions</v-col>
+            </v-row>
+            <v-divider></v-divider>
+            <v-row
+              justify="space-around-center"
+              class="my-auto mx-auto table-item"
+            >
+              <v-col class="text-body-2 col-5 col-md-4 col-sm-3"
+                >Adeyanju Samuel</v-col
+              >
+              <v-col class="text-body-2">27th Dec. 2021 - 12:30pm </v-col>
+              <v-col class="text-body-2">Ujunwa</v-col>
+              <v-col class="text-body-2 text-center"
+                ><v-icon>mdi-pencil</v-icon></v-col
+              >
+            </v-row>
+            <v-divider></v-divider>
+            <v-row
+              justify="space-around-center"
+              class="my-auto mx-auto table-item"
+            >
+              <v-col class="text-body-2 col-5 col-md-4 col-sm-3"
+                >Adeyanju Samuel</v-col
+              >
+              <v-col class="text-body-2">27th Dec. 2021 - 12:30pm </v-col>
+              <v-col class="text-body-2">Ujunwa</v-col>
+              <v-col class="text-body-2 text-center"
+                ><v-icon>mdi-pencil</v-icon></v-col
+              >
+            </v-row>
+            <v-divider></v-divider>
+          </v-card-content>
+          <v-card-actions class="mt-5"> </v-card-actions>
+        </v-card>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>
-import Logo from '~/components/Logo.vue'
-import VuetifyLogo from '~/components/VuetifyLogo.vue'
+import Logo from "~/components/Logo.vue";
+import VuetifyLogo from "~/components/VuetifyLogo.vue";
 
 export default {
+  name: "Dashboard",
+  data: () => {
+    return {};
+  },
   components: {
     Logo,
-    VuetifyLogo
-  }
-}
+    VuetifyLogo,
+  },
+};
 </script>
+
+<style scoped>
+.table-item:hover {
+  background-color: rgba(156, 156, 156, 0.294);
+}
+.dash-item {
+  border-radius: 15px;
+}
+</style>
