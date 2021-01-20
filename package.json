@@ -9,8 +9,21 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
+    "bcrypt": "^5.0.0",
+    "body-parser": "^1.19.0",
+    "compression": "^1.7.4",
     "core-js": "^3.6.5",
-    "nuxt": "^2.14.6"
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "helmet": "^4.3.1",
+    "jsonwebtoken": "^8.5.1",
+    "moment": "^2.29.1",
+    "mongoose": "^5.11.12",
+    "morgan": "^1.10.0",
+    "nuxt": "^2.14.6",
+    "rand-token": "^1.0.1",
+    "validator": "^13.5.2",
+    "vuex": "^3.6.0"
   },
   "devDependencies": {
     "@nuxtjs/vuetify": "^1.11.2"

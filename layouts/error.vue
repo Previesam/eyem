@@ -14,7 +14,7 @@
 
 <script>
 export default {
-  layout: 'empty',
+  layout: 'full-screen',
   props: {
     error: {
       type: Object,

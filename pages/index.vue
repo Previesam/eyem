@@ -168,7 +168,9 @@ import VuetifyLogo from "~/components/VuetifyLogo.vue";
 export default {
   name: "Dashboard",
   data: () => {
-    return {};
+    return {
+      page_title: 'Dashboard'
+    };
   },
   components: {
     Logo,
@@ -181,6 +183,7 @@ export default {
 .table-item:hover {
   background-color: rgba(156, 156, 156, 0.294);
 }
+
 .dash-item {
   border-radius: 15px;
 }
