@@ -70,6 +70,7 @@ export default {
     props: {
         userMenu: Boolean,
         fav: Boolean,
+        message: Boolean
     }
 };
 </script>

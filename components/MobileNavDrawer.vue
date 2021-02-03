@@ -24,7 +24,7 @@
 
 export default {
   props: {
-    items: [],
+    items: Array,
     callToggleDrawer: Boolean,
   },
 

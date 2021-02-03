@@ -3,7 +3,11 @@
   <v-app dark>
     <!-- Begin Mobile Navigation Drawer -->
 
-    <MobileNavDrawer v-if="$vuetify.breakpoint.mobile" :items="items" :callToggleDrawer="drawer" />
+    <MobileNavDrawer
+      v-if="$vuetify.breakpoint.mobile"
+      :items="items"
+      :callToggleDrawer="drawer"
+    />
 
     <!-- End Mobile Naviagtion Drawer -->
 
@@ -35,7 +39,7 @@
 
       <!-- Begin Toolbar Title -->
 
-      <v-toolbar-title class="ml-5" v-text="'Message'" />
+      <!-- <v-toolbar-title class="ml-5" v-text="'Message'" /> -->
 
       <!-- End Toolbar Title -->
 
@@ -43,9 +47,9 @@
 
       <!-- Begin User Menu -->
 
-      <LocationsMenu :items="items" />
+      <LocationsMenu :items="branches" />
 
-      <UserMenu :userMenu="userMenu" :fav="fav" />
+      <UserMenu :userMenu="userMenu" :fav="fav" :message="message" />
 
       <!-- End User Menu -->
     </v-app-bar>
@@ -79,7 +83,7 @@ import MobileNavDrawer from "../components/MobileNavDrawer";
 import DesktopNavDrawer from "../components/DesktopNavDrawer";
 import UserMenu from "../components/UserMenu.vue";
 import LocationsMenu from "../components/LocationsMenu.vue";
-import { mapMutations } from 'vuex';
+import { mapMutations } from "vuex";
 
 export default {
   components: {
@@ -89,7 +93,7 @@ export default {
     UserMenu,
     LocationsMenu,
   },
-  name: "Default View",
+  name: "DefaultView",
   data() {
     return {
       fav: false,
@@ -114,17 +118,27 @@ export default {
           title: "Appointments",
           to: "/appointments",
         },
+        {
+          icon: "mdi-account-clock",
+          title: "Clock In/Out",
+          to: "/clock-in-out",
+        },
+        {
+          icon: "mdi-help",
+          title: "IT Help Desk",
+          to: "/it-helpdesk",
+        },
       ],
       miniVariant: false,
       title: "Eyemasters Osapa",
       userMenu: false,
       message: false,
       drawer: false,
+      branches: [],
     };
   },
 
   methods: {
-
     // Implementing Dark Mode and Auto Light or Dark Mode
 
     initDarkMode() {
@@ -141,14 +155,122 @@ export default {
       }
     },
 
+    async getBranches() {
+      let branches = await this.$axios(
+        "https://manager.eyemastersng.com/api/index.json",
+        {
+          method: "GET",
+          headers: {
+            Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
+          },
+        }
+      )
+        .then((res) => {
+          return res.data;
+        })
+        .catch((err) => {
+          consol.log(err);
+        });
+
+      this.branches = branches.filter(
+        (branch) =>
+          branch.Name.includes("Eyemasters") ||
+          branch.Name.includes("1st Contact")
+      );
+    },
+
+    async getClients() {
+      await this.$store.commit("toggleLoading", true);
+
+      await this.$store.commit("clearClients");
+
+      let clients = [];
+
+      let Key = await this.$store.state.branch.Key;
+
+      let links = await this.$axios(
+        `https://manager.eyemastersng.com/api/${Key}/ec37c11e-2b67-49c6-8a58-6eccb7dd75ee/index.json`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
+          },
+        }
+      )
+        .then((res) => {
+          return res.data;
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      for (let i = 0; i < links.length; i++) {
+        let client = await this.$axios(
+          `https://manager.eyemastersng.com/api/${Key}/${links[i]}.json`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
+            },
+          }
+        )
+          .then((res) => {
+            return res.data;
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        
+        let newCustomFeilds = {};
+
+        let entries = Object.entries(client.CustomFields);
+
+        for (const [ prop, val] of entries) {
+          
+          let Name = await this.$axios(
+            `https://manager.eyemastersng.com/api/${Key}/${prop}.json`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
+              },
+            }
+          )
+            .then((res) => {
+              return res.data.Name;
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+
+          newCustomFeilds[Name] = val;
+          
+        }
+
+        client.CustomFields = newCustomFeilds;
+
+        // Send data to store
+
+        await this.$store.commit("updateClients", client);
+
+      }
+
+      await this.$store.commit("toggleLoading", false);
+    },
   },
 
   mounted() {
     this.initDarkMode();
   },
+
+  created() {
+    this.getBranches();
+    this.getClients();
+  },
 };
 </script>
 <style>
+
 /* width */
 ::-webkit-scrollbar {
   width: 8px;
@@ -156,7 +278,8 @@ export default {
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #424242e3;
+  /* background: #424242e3; */
+  background: transparent;
   border-radius: 4px;
 }
 
@@ -170,4 +293,10 @@ export default {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+.search-box {
+  max-width: 35%;
+}
+
+
 </style>

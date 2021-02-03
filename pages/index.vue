@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-row justify="space-around-center" d-flex class="flex-wrap">
+    <v-row d-flex class="flex-wrap justify-space-around-center">
       <v-col class="col-6 col-md-4 col-lg-4 text-center">
         <v-card class="dash-item">
           <v-card-title class="justify-center text-h2 primary--text"
@@ -67,12 +67,12 @@
       </v-col>
     </v-row>
 
-    <v-row justify="space-around-center" d-flex class="mt-2">
+    <v-row d-flex class="justify-space-around-center mt-2">
       <v-col>
         <v-card class="dash-item">
           <v-card-subtitle>Appointments</v-card-subtitle>
-          <v-card-content>
-            <v-row justify="space-around-center" class="my-auto mx-auto">
+          <v-card-text>
+            <v-row class="justify-space-around-center my-auto mx-auto">
               <v-col class="text-body-1 col-5 col-md-4 col-sm-3">Name</v-col>
               <v-col class="text-body-1">Time</v-col>
               <v-col class="text-body-1">Assigned</v-col>
@@ -80,8 +80,7 @@
             </v-row>
             <v-divider></v-divider>
             <v-row
-              justify="space-around-center"
-              class="my-auto mx-auto table-item"
+              class="justify-space-around-center my-auto mx-auto table-item"
             >
               <v-col class="text-body-2 col-5 col-md-4 col-sm-3"
                 >Adeyanju Samuel</v-col
@@ -94,8 +93,7 @@
             </v-row>
             <v-divider></v-divider>
             <v-row
-              justify="space-around-center"
-              class="my-auto mx-auto table-item"
+              class="justify-space-around-center my-auto mx-auto table-item"
             >
               <v-col class="text-body-2 col-5 col-md-4 col-sm-3"
                 >Adeyanju Samuel</v-col
@@ -107,18 +105,18 @@
               >
             </v-row>
             <v-divider></v-divider>
-          </v-card-content>
+          </v-card-text>
           <v-card-actions class="mt-5"> </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
 
-    <v-row justify="space-around-center" d-flex class="mt-2">
+    <v-row d-flex class="justify-space-around-center mt-2">
       <v-col>
         <v-card class="dash-item">
           <v-card-subtitle>Messages</v-card-subtitle>
-          <v-card-content>
-            <v-row justify="space-around-center" class="my-auto mx-auto">
+          <v-card-text>
+            <v-row class="justify-space-around-center my-auto mx-auto">
               <v-col class="text-body-1 col-5 col-md-4 col-sm-3">Name</v-col>
               <v-col class="text-body-1">Time</v-col>
               <v-col class="text-body-1">Assigned</v-col>
@@ -126,8 +124,7 @@
             </v-row>
             <v-divider></v-divider>
             <v-row
-              justify="space-around-center"
-              class="my-auto mx-auto table-item"
+              class="justify-space-around-center my-auto mx-auto table-item"
             >
               <v-col class="text-body-2 col-5 col-md-4 col-sm-3"
                 >Adeyanju Samuel</v-col
@@ -140,8 +137,7 @@
             </v-row>
             <v-divider></v-divider>
             <v-row
-              justify="space-around-center"
-              class="my-auto mx-auto table-item"
+              class="justify-space-around-center my-auto mx-auto table-item"
             >
               <v-col class="text-body-2 col-5 col-md-4 col-sm-3"
                 >Adeyanju Samuel</v-col
@@ -153,7 +149,7 @@
               >
             </v-row>
             <v-divider></v-divider>
-          </v-card-content>
+          </v-card-text>
           <v-card-actions class="mt-5"> </v-card-actions>
         </v-card>
       </v-col>

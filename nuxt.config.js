@@ -42,7 +42,13 @@ export default {
 
   // Modules (https://go.nuxtjs.dev/config-modules)
   modules: [
+    '@nuxtjs/axios',
   ],
+
+  // Axios Options
+  axios: {
+    // proxy: true
+  },
 
   // Server Middleware
 
@@ -91,5 +97,10 @@ export default {
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
+    extend(config, { isDev, isClient }) {
+      config.node = {
+        fs: "empty"
+      }
+    },
   }
 }
