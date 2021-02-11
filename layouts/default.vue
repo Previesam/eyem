@@ -1,10 +1,10 @@
 <template>
   <!-- Begin Application default view -->
-  <v-app dark>
+  <v-app :style="{ background: $vuetify.theme.themes[theme].background }">
     <!-- Begin Mobile Navigation Drawer -->
 
     <MobileNavDrawer
-      v-if="$vuetify.breakpoint.mobile"
+      v-if="$vuetify.breakpoint.smAndDown"
       :items="items"
       :callToggleDrawer="drawer"
     />
@@ -19,13 +19,11 @@
 
     <!-- Begin App Toolbar -->
 
-    <v-app-bar :clipped-left="true" fixed app dense>
-      <v-toolbar-title class="mr-5 hidden-sm-and-down" v-text="title" />
-
+    <v-app-bar fixed max-width="100%" class="my-2 rounded-xl mr-2 ml-4" app>
       <!-- Begin Mobile Navbar Icon -->
 
       <v-app-bar-nav-icon
-        v-if="$vuetify.breakpoint.mobile"
+        v-if="$vuetify.breakpoint.smAndDown"
         @click.stop="drawer = !drawer"
       />
 
@@ -37,9 +35,11 @@
 
       <!-- End Desktop Navbar Icon -->
 
+      <v-spacer />
+
       <!-- Begin Toolbar Title -->
 
-      <!-- <v-toolbar-title class="ml-5" v-text="'Message'" /> -->
+      <v-toolbar-title class="body-1" v-text="$store.state.branch.Name" />
 
       <!-- End Toolbar Title -->
 
@@ -54,11 +54,17 @@
       <!-- End User Menu -->
     </v-app-bar>
 
+    <v-progress-linear
+      :active="$store.state.loading"
+      :indeterminate="$store.state.loading"
+      bottom
+      color="accent"
+    ></v-progress-linear>
     <!-- End App Toolbar -->
 
     <!-- Begin Main Area -->
 
-    <v-main>
+    <v-main class="mt-2 ml-2">
       <v-container fluid>
         <nuxt />
       </v-container>
@@ -68,9 +74,15 @@
 
     <!-- Begin App Footer -->
 
-    <v-footer fixed app>
+    <v-footer fixed app class="my-1 rounded-xl mx-2">
       <span class="ma-auto">&copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
+    <v-progress-linear
+      :active="$store.state.loading"
+      :indeterminate="$store.state.loading"
+      bottom
+      color="accent"
+    ></v-progress-linear>
 
     <!-- End App Footer -->
   </v-app>
@@ -83,7 +95,6 @@ import MobileNavDrawer from "../components/MobileNavDrawer";
 import DesktopNavDrawer from "../components/DesktopNavDrawer";
 import UserMenu from "../components/UserMenu.vue";
 import LocationsMenu from "../components/LocationsMenu.vue";
-import { mapMutations } from "vuex";
 
 export default {
   components: {
@@ -138,7 +149,14 @@ export default {
     };
   },
 
+  computed: {
+    theme() {
+      return this.$vuetify.theme.dark ? "dark" : "light";
+    },
+  },
+
   methods: {
+
     // Implementing Dark Mode and Auto Light or Dark Mode
 
     initDarkMode() {
@@ -215,18 +233,18 @@ export default {
           }
         )
           .then((res) => {
+            res.data.id = links[i];
             return res.data;
           })
           .catch((err) => {
             console.log(err);
           });
-        
+
         let newCustomFeilds = {};
 
         let entries = Object.entries(client.CustomFields);
 
-        for (const [ prop, val] of entries) {
-          
+        for (const [prop, val] of entries) {
           let Name = await this.$axios(
             `https://manager.eyemastersng.com/api/${Key}/${prop}.json`,
             {
@@ -243,8 +261,8 @@ export default {
               console.log(err);
             });
 
-          newCustomFeilds[Name] = val;
-          
+          newCustomFeilds[Name] = { key: prop, value: val };
+
         }
 
         client.CustomFields = newCustomFeilds;
@@ -252,7 +270,6 @@ export default {
         // Send data to store
 
         await this.$store.commit("updateClients", client);
-
       }
 
       await this.$store.commit("toggleLoading", false);
@@ -260,6 +277,7 @@ export default {
   },
 
   mounted() {
+    console.log(this.$vuetify.breakpoint);
     this.initDarkMode();
   },
 
@@ -270,7 +288,6 @@ export default {
 };
 </script>
 <style>
-
 /* width */
 ::-webkit-scrollbar {
   width: 8px;
@@ -295,8 +312,12 @@ export default {
 }
 
 .search-box {
-  max-width: 35%;
+  max-width: 30%;
+  margin-right: 0;
 }
 
-
+.app-loader {
+  width: 96%;
+  top: 59px;
+}
 </style>

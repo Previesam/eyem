@@ -4,10 +4,10 @@
       class="d-flex justify-space-between dash-item"
       color="transparent"
       flat
-      height="85vh"
+      height="81vh"
     >
-      <v-card class="dash-item" outlined align-stretch width="35%">
-        <v-list subheader height="100%" class="pt-5"
+      <v-card class="dash-item" outlined align-stretch width="35%" :style="{ background: $vuetify.theme.dark ? $vuetify.theme.themes.dark.background : $vuetify.theme.themes.light.background }">
+        <v-list height="100%" class="pt-5"
           ><v-list-item>
             <v-text-field
               v-model="searchKeyword"
@@ -108,15 +108,15 @@
               <v-card
                 width="250"
                 min-height="150"
-                class="dash-item float-left ml-3"
+                class="dash-item float-left ml-3 pl-3 pt-3"
                 color="primary"
               >
-                <v-card-text
-                  >Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                <p>
+                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
                   Impedit odio quod culpa magni cum voluptatem deserunt dolor
                   cumque enim quibusdam odit, molestias aliquid sed doloremque
-                  consequuntur similique suscipit maiores aut!</v-card-text
-                >
+                  consequuntur similique suscipit maiores aut!
+                </p>
                 <v-card-action class="float-right caption pr-2"
                   >8:40pm</v-card-action
                 >
@@ -129,13 +129,13 @@
               <v-card
                 width="250"
                 min-height="150"
-                class="dash-item float-right mr-3"
+                class="dash-item float-right mr-3 pl-3 pt-3"
               >
-                <v-card-text
-                  >Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                <p>
+                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
                   Impedit odio quod culpa magni cum voluptatem deserunt dolor
-                  cumque enim quibusdam odit.</v-card-text
-                >
+                  cumque enim quibusdam odit.
+                </p>
                 <v-card-action class="float-right caption pr-2"
                   >8:40pm</v-card-action
                 >
@@ -148,13 +148,13 @@
               <v-card
                 width="250"
                 min-height="150"
-                class="dash-item float-right mr-3"
+                class="dash-item float-right mr-3 pl-3 pt-3"
               >
-                <v-card-text
-                  >Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                <p>
+                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
                   Impedit odio quod culpa magni cum voluptatem deserunt dolor
-                  cumque enim quibusdam odit.</v-card-text
-                >
+                  cumque enim quibusdam odit.
+                </p>
                 <v-card-action class="float-right caption pr-2"
                   >8:40pm</v-card-action
                 >
@@ -167,15 +167,15 @@
               <v-card
                 width="250"
                 min-height="150"
-                class="dash-item float-left ml-3"
+                class="dash-item float-left ml-3 pl-3 pt-3"
                 color="primary"
               >
-                <v-card-text
-                  >Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                <p>
+                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
                   Impedit odio quod culpa magni cum voluptatem deserunt dolor
                   cumque enim quibusdam odit, molestias aliquid sed doloremque
-                  consequuntur similique suscipit maiores aut!</v-card-text
-                >
+                  consequuntur similique suscipit maiores aut!
+                </p>
                 <v-card-action class="float-right caption pr-2"
                   >8:40pm</v-card-action
                 >
@@ -199,15 +199,15 @@
         </v-card>
       </v-card>
       <v-card
-            v-else
-            height="100%"
-            class="ml-3 d-flex justify-center align-center dash-item"
-            cols="12"
-            width="65%"
-          >
-            <v-card-title>Please select a conversation to view.</v-card-title>
-          </v-card>
-          <!-- <v-card height="500px">
+        v-else
+        height="100%"
+        class="ml-3 d-flex justify-center align-center dash-item"
+        cols="12"
+        width="65%"
+      >
+        <v-card-title>Please select a conversation to view.</v-card-title>
+      </v-card>
+      <!-- <v-card height="500px">
             <div v-for="(group, key) in groupedPeople" :key="key">
               {{ key }}
               <p v-for="person in group" :key="person.name">
@@ -215,7 +215,6 @@
               </p>
             </div>
           </v-card> -->
-        </v-card>
     </v-card>
   </div>
 </template>
@@ -377,11 +376,11 @@ export default {
   border-top-left-radius: 15px !important;
 }
 .overflow-scroll {
-  height: 71vh;
+  height: 87%;
   overflow: auto;
 }
 .conversation-view {
-  height: 69.8vh;
+  height: 63.5vh;
   width: 100%;
   overflow-x: hidden;
   overflow-y: auto;

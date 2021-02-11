@@ -461,7 +461,7 @@ export default {
   border-top-left-radius: 15px !important;
 }
 .overflow-scroll {
-  height: 71vh;
+  height: 87%;
   overflow: auto;
 }
 .conversation-list {

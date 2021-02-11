@@ -24,5 +24,9 @@ export const mutations = {
 
     toggleLoading(state, payload) {
         state.loading = payload;
+    },
+
+    switchBranch(state, payload) {
+        state.branch = payload;
     }
 }

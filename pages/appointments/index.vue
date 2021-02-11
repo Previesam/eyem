@@ -1,10 +1,9 @@
 <template>
   <div>
-    <v-card>
+    <v-card class="rounded-xl mt-1">
       <v-card-title>
+        <span class="mr-5 subheading primary--text">Appointments</span>
 
-        <span class="mr-5 subheading">Appointments</span> 
-        
         <!-- Begin Search Box -->
 
         <v-text-field
@@ -30,7 +29,8 @@
           persistent
           max-width="800px"
           scrollable
-          :fullscreen="$vuetify.breakpoint.smAndDown"
+          :fullscreen="$vuetify.breakpoint.width >= 600 ? false : true"
+          overlay-color="blue"
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -39,12 +39,19 @@
               class="text-capitalize"
               v-bind="attrs"
               v-on="on"
-              ><v-icon :left="$vuetify.breakpoint.smAndDown ? false : true" small>mdi-plus</v-icon> <span :hidden="$vuetify.breakpoint.smAndDown">New Appointment</span> </v-btn
-            >
+              ><v-icon
+                :left="$vuetify.breakpoint.smAndDown ? false : true"
+                small
+                >mdi-plus</v-icon
+              >
+              <span :hidden="$vuetify.breakpoint.smAndDown"
+                >New Appointment</span
+              >
+            </v-btn>
           </template>
-          <v-card>
+          <v-card :class="$vuetify.breakpoint.width >= 600 ? 'rounded-xl' : ''">
             <v-card-title>
-              <span class="headline">{{ formTitle }}</span>
+              <span class="headline primary--text">{{ formTitle }}</span>
             </v-card-title>
             <v-card-text>
               <v-container>
@@ -54,10 +61,8 @@
                       v-model="menu2"
                       :close-on-content-click="false"
                       :nudge-right="40"
-                      lazy
                       transition="scale-transition"
                       offset-y
-                      full-width
                       max-width="290px"
                       min-width="290px"
                     >
@@ -102,6 +107,7 @@
                       </template>
                       <v-time-picker
                         v-if="menu3"
+                        no-title
                         v-model="editedItem.time"
                         full-width
                         @click:minute="$refs.timeMenu.save(editedItem.time)"
@@ -109,12 +115,19 @@
                     </v-menu>
                   </v-col>
                   <v-col cols="12" sm="6" md="6">
-                    <v-text-field
+                    <!-- <v-text-field
                       label="Patient Name"
                       v-model="editedItem.client"
                       prepend-icon="mdi-account"
                       hint="enter the patient full name"
-                    ></v-text-field>
+                    ></v-text-field> -->
+
+                    <v-autocomplete
+                      :items="$store.state.clients.map(m => { return m.Name })"
+                      v-model="editedItem.client"
+                      prepend-icon="mdi-account"
+                      label="Patient"
+                    ></v-autocomplete>
                   </v-col>
                   <v-col cols="12" sm="6" md="6">
                     <v-select
@@ -159,18 +172,34 @@
 
         <!-- Begin Delete Dialog -->
 
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card class="py-auto px-auto" max-width="100%" min-height="300px" >
-            <v-card-title><v-icon class="mt-10 mb-4 mx-auto" x-large>mdi-delete</v-icon></v-card-title>
+        <v-dialog
+          v-model="dialogDelete"
+          max-width="500px"
+          overlay-color="red"
+          class="rounded-xl"
+        >
+          <v-card
+            class="py-auto px-auto rounded-xl"
+            max-width="100%"
+            min-height="300px"
+          >
+            <v-card-title
+              ><v-icon class="mt-10 mb-1 mx-auto" x-large color="red"
+                >mdi-delete</v-icon
+              ></v-card-title
+            >
             <v-card-title class="my-3 subheading text-center"
-              >Are you sure you want to delete {{ itemToDelete.client }}'s Appointment?</v-card-title
+              >Are you sure you want to delete
+              {{ `${itemToDelete.client}'s ` }} Appointment?</v-card-title
             >
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="blue darken-1" text @click="closeDelete"
-                >No</v-btn
-              >
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm"
+              <v-btn color="blue darken-1" text @click="closeDelete">No</v-btn>
+              <v-btn
+                elevation="2"
+                color="red darken-1"
+                text
+                @click="deleteItemConfirm"
                 >Yes</v-btn
               >
               <v-spacer></v-spacer>
@@ -179,17 +208,35 @@
         </v-dialog>
 
         <!-- End Delete Dialog -->
-
       </v-card-title>
 
       <!-- Begin Data Table -->
 
-      <v-data-table :headers="headers" :items="appointments" :search="search">
+      <v-data-table
+        :headers="headers"
+        :items="appointments"
+        :search="search"
+        sort-by="date"
+        :sort-desc="true"
+        :items-per-page="8"
+        :footer-props="{
+          'items-per-page-options': [8, 10, 15, 20, -1],
+        }"
+      >
         <template v-slot:[`item.actions`]="{ item }">
-          <v-icon small class="mr-2" @click="editItem(item)">
+          <v-btn
+            color="accent"
+            small
+            text
+            class="rounded-xl text-capitalize body-2 mr-2"
+            >See</v-btn
+          >
+          <v-icon color="primary" small class="mr-2" @click="editItem(item)">
             mdi-pencil
           </v-icon>
-          <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+          <v-icon color="red" small @click="deleteItem(item)">
+            mdi-delete
+          </v-icon>
         </template>
         <template v-slot:no-data>
           <v-btn color="primary" @click="initialize"> Reset </v-btn>
@@ -197,7 +244,6 @@
       </v-data-table>
 
       <!-- End Data Table -->
-      
     </v-card>
   </div>
 </template>
@@ -239,7 +285,7 @@ export default {
         {
           text: "Actions",
           value: "actions",
-          align: "end",
+          align: "center",
           sortable: false,
         },
       ],

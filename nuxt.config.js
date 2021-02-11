@@ -75,6 +75,7 @@ export default {
           primary: colors.blue,
           secondary: colors.teal.darken4,
           accent: colors.teal.accent4,
+          background: '#1b2836',
 
           error: colors.deepOrange.accent2,
           info: colors.grey.darken3,
@@ -85,6 +86,7 @@ export default {
           primary: '#1976D2',
           secondary: colors.teal.lighten3,
           accent: colors.teal.accent4,
+          background: colors.grey.lighten2,
 
           error: '#FF5252',
           info: '#2196F3',

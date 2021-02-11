@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer v-model="drawer" clipped fixed app>
+  <v-navigation-drawer v-model="drawer" clipped fixed app class="mt-2 mb-8 mx-2 rounded-xl">
     <v-list>
       <v-list-item
         v-for="(item, i) in items"

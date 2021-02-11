@@ -32,6 +32,8 @@ export default {
     async getClients(branch) {
       await this.$store.commit("toggleLoading", true);
 
+      await this.$store.commit("switchBranch", branch);
+
       await this.$store.commit("clearClients");
 
       let clients = [];
@@ -65,6 +67,7 @@ export default {
           }
         )
           .then((res) => {
+            res.data.id = links[i];
             return res.data;
           })
           .catch((err) => {
@@ -92,7 +95,7 @@ export default {
               console.log(err);
             });
 
-          newCustomFeilds[Name] = val;
+          newCustomFeilds[Name] = { key: prop, value: val };
         }
 
         client.CustomFields = newCustomFeilds;
@@ -100,6 +103,10 @@ export default {
         // Send data to store
 
         await this.$store.commit("updateClients", client);
+
+        this.$store.commit("clearClients");
+
+        return;
       }
 
       await this.$store.commit("toggleLoading", false);

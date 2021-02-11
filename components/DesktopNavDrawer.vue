@@ -2,17 +2,20 @@
   <v-navigation-drawer
     v-model="drawer"
     :mini-variant="miniVariant"
-    clipped
+    clipped-top
     fixed
+    height="92vh"
     app
+    class="mt-2 mb-8 mx-2 rounded-xl"
   >
-    <v-list>
+    <v-list dense>
       <v-list-item
         v-for="(item, i) in items"
         :key="i"
         :to="item.to"
         router
         exact
+        class="primary--text rounded-xl"
       >
         <v-list-item-action>
           <v-icon>{{ item.icon }}</v-icon>

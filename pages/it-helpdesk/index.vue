@@ -1,8 +1,8 @@
 <template>
   <div>
-    <v-card>
+    <v-card class="rounded-xl mt-1">
       <v-card-title>
-        <span class="mr-5 subheading">Issues</span>
+        <span class="mr-5 subheading primary--text">Issues</span>
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
@@ -23,6 +23,7 @@
           max-width="800px"
           scrollable
           :fullscreen="$vuetify.breakpoint.smAndDown"
+          overlay-color="primary"
         >
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -41,9 +42,9 @@
               ></v-btn
             >
           </template>
-          <v-card>
+          <v-card class="rounded-xl">
             <v-card-title>
-              <span class="headline">{{ formTitle }}</span>
+              <span class="headline primary--text">{{ formTitle }}</span>
             </v-card-title>
             <v-card-text>
               <v-container>
@@ -77,36 +78,6 @@
                       ></v-date-picker>
                     </v-menu>
                   </v-col>
-                  <!-- <v-col cols="12" sm="6" md="3">
-                    <v-menu
-                      ref="timeMenu"
-                      v-model="menu3"
-                      :close-on-content-click="false"
-                      :nudge-right="40"
-                      :return-value.sync="editedItem.time"
-                      transition="scale-transition"
-                      offset-y
-                      max-width="290px"
-                      min-width="290px"
-                    >
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-text-field
-                          v-model="editedItem.time"
-                          label="Time"
-                          prepend-icon="mdi-clock-time-four-outline"
-                          readonly
-                          v-bind="attrs"
-                          v-on="on"
-                        ></v-text-field>
-                      </template>
-                      <v-time-picker
-                        v-if="menu3"
-                        v-model="editedItem.time"
-                        full-width
-                        @click:minute="$refs.timeMenu.save(editedItem.time)"
-                      ></v-time-picker>
-                    </v-menu>
-                  </v-col> -->
                   <v-col cols="12" sm="6" md="4">
                     <v-select
                       label="Branch"
@@ -115,7 +86,6 @@
                       :items="['Lekki', 'Ajah', 'Osapa']"
                     >
                     </v-select>
-                    <!-- <v-text-field label="Doctor*" required></v-text-field> -->
                   </v-col>
                   <v-col cols="12" sm="12" md="4">
                     <v-text-field
@@ -126,19 +96,6 @@
                     ></v-text-field>
                   </v-col>
                   <v-col cols="12">
-                    <!-- <v-autocomplete
-                      :items="[
-                        'Consultation',
-                        ' Follow Up',
-                        ' Opthalmologist Consultation',
-                        ' Tonometry',
-                        ' Surgery',
-                      ]"
-                      v-model="editedItem.reason"
-                      prepend-icon="mdi-details"
-                      label="Appointment Reason"
-                      multiple
-                    ></v-autocomplete> -->
                     <v-textarea
                       label="Details"
                       v-model="editedItem.detail"
@@ -189,20 +146,28 @@
 
         <!-- Begin Delete Dialog -->
 
-        <v-dialog v-model="dialogDelete" max-width="500px">
-          <v-card class="py-auto px-auto" max-width="100%" min-height="300px">
+        <v-dialog v-model="dialogDelete" max-width="500px" overlay-color="red" class="rounded-xl">
+          <v-card
+            class="py-auto px-auto rounded-xl"
+            max-width="100%"
+            min-height="300px"
+          >
             <v-card-title
-              ><v-icon class="mt-10 mb-4 mx-auto" x-large
+              ><v-icon class="mt-10 mb-1 mx-auto" x-large color="red"
                 >mdi-delete</v-icon
               ></v-card-title
             >
-            <v-card-title class="my-3 subheading justify-center"
+            <v-card-title class="my-3 subheading text-center justify-center"
               >Are you sure you want to delete Issue?</v-card-title
             >
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" text @click="closeDelete">No</v-btn>
-              <v-btn color="blue darken-1" text @click="deleteItemConfirm"
+              <v-btn
+                elevation="2"
+                color="red darken-1"
+                text
+                @click="deleteItemConfirm"
                 >Yes</v-btn
               >
               <v-spacer></v-spacer>
@@ -215,12 +180,29 @@
 
       <!-- Begin Data Table -->
 
-      <v-data-table :headers="headers" :items="issues" :search="search">
+      <v-data-table
+        :items-per-page="8"
+        :footer-props="{
+          'items-per-page-options': [8, 10, 15, 20, -1],
+        }"
+        :headers="headers"
+        :items="issues"
+        :search="search"
+      >
         <template v-slot:[`item.actions`]="{ item }">
-          <v-icon small class="mr-2" @click="editItem(item)">
+          <v-btn
+            color="accent"
+            small
+            text
+            class="rounded-xl text-capitalize body-2 mr-2 px-1"
+            >View</v-btn
+          >
+          <v-icon color="primary" small class="mr-2" @click="editItem(item)">
             mdi-pencil
           </v-icon>
-          <v-icon small @click="deleteItem(item)"> mdi-delete </v-icon>
+          <v-icon color="red" small @click="deleteItem(item)">
+            mdi-delete
+          </v-icon>
         </template>
         <template v-slot:no-data>
           <v-btn color="primary" @click="initialize"> Reset </v-btn>
@@ -268,7 +250,7 @@ export default {
         {
           text: "Actions",
           value: "actions",
-          align: "end",
+          align: "center",
           sortable: false,
         },
       ],
@@ -460,8 +442,8 @@ export default {
       if (this.editedIndex > -1) {
         Object.assign(this.issues[this.editedIndex], this.editedItem);
       } else {
-        this.editedItem.assigned = 'Samuel';
-        this.editedItem.status = 'Pending';
+        this.editedItem.assigned = "Samuel";
+        this.editedItem.status = "Pending";
         this.issues.push(this.editedItem);
       }
       this.close();
