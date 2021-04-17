@@ -62,6 +62,8 @@
       <!-- Begin Desktop Navbar Icon -->
 
       <v-app-bar-nav-icon v-else @click.stop="miniVariant = !miniVariant" />
+      
+    <v-icon @click.stop="$router.push(`/`)" color="primary" nuxt-link="/">mdi-home</v-icon>
 
       <BreadCrumb />
 

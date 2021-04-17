@@ -23,14 +23,9 @@
     </li>
   </ol> -->
   <div class="d-flex">
-    <v-breadcrumbs
-      class="pl-0 text-capitalize primary--text"
-      :items="[{ href: '/', text: 'Home', link: true }]"
-      small
-    ></v-breadcrumbs>
     <v-icon v-if="$route.path !== '/'" small>mdi-chevron-right</v-icon>
     <v-breadcrumbs
-      class="pl-2 pr-5 text-capitalize primary--text breadcrumb"
+      class="pl-1 pr-5 text-capitalize primary--text breadcrumb"
       :items="crumbs"
       small
     ></v-breadcrumbs>
@@ -49,7 +44,7 @@ export default {
       const breadcrumbs = pathArray.reduce((breadcrumbArray, path, idx) => {
         if (path) {
           breadcrumbArray.push({
-            href: breadcrumbArray[idx - 1]
+            to: breadcrumbArray[idx - 1]
               ? breadcrumbArray[idx - 1].href + "/" + path
               : "/" + path,
             link: true,
@@ -70,5 +65,6 @@ export default {
   overflow-x: hidden;
   display: flex;
   flex-wrap: nowrap;
+  word-wrap: break;
 }
 </style>
