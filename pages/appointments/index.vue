@@ -1,8 +1,8 @@
 <template>
   <div>
-    <v-card class="rounded-xl mt-1">
+    <v-card width="100%" class="rounded mt-1">
       <v-card-title>
-        <span class="mr-5 subheading primary--text">Appointments</span>
+        <!-- <span class="mr-5 subheading primary--text">Appointments</span> -->
 
         <!-- Begin Search Box -->
 
@@ -49,7 +49,7 @@
               >
             </v-btn>
           </template>
-          <v-card :class="$vuetify.breakpoint.width >= 600 ? 'rounded-xl' : ''">
+          <v-card :class="$vuetify.breakpoint.width >= 600 ? 'rounded' : ''">
             <v-card-title>
               <span class="headline primary--text">{{ formTitle }}</span>
             </v-card-title>
@@ -123,7 +123,7 @@
                     ></v-text-field> -->
 
                     <v-autocomplete
-                      :items="$store.state.clients.map(m => { return m.Name })"
+                      :items="clients"
                       v-model="editedItem.client"
                       prepend-icon="mdi-account"
                       label="Patient"
@@ -146,7 +146,7 @@
                         ' Follow Up',
                         ' Opthalmologist Consultation',
                         ' Tonometry',
-                        ' Surgery',
+                        ' Surgery'
                       ]"
                       v-model="editedItem.reason"
                       prepend-icon="mdi-details"
@@ -156,7 +156,6 @@
                   </v-col>
                 </v-row>
               </v-container>
-              <small>*indicates required field</small>
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -176,10 +175,10 @@
           v-model="dialogDelete"
           max-width="500px"
           overlay-color="red"
-          class="rounded-xl"
+          class="rounded"
         >
           <v-card
-            class="py-auto px-auto rounded-xl"
+            class="py-auto px-auto rounded"
             max-width="100%"
             min-height="300px"
           >
@@ -190,7 +189,8 @@
             >
             <v-card-title class="my-3 subheading text-center"
               >Are you sure you want to delete
-              {{ `${itemToDelete.client}'s ` }} Appointment?</v-card-title
+              {{ getItemToDelete() }}
+              Appointment?</v-card-title
             >
             <v-card-actions>
               <v-spacer></v-spacer>
@@ -213,6 +213,7 @@
       <!-- Begin Data Table -->
 
       <v-data-table
+        style="overflow: auto"
         :headers="headers"
         :items="appointments"
         :search="search"
@@ -220,15 +221,19 @@
         :sort-desc="true"
         :items-per-page="8"
         :footer-props="{
-          'items-per-page-options': [8, 10, 15, 20, -1],
+          'items-per-page-options': [8, 10, 15, 20, -1]
         }"
       >
+        <template v-slot:[`item.client`]="{ item }">
+          <span v-if="item.client.includes('-')">{{ itemClient(item) }}</span>
+          <span v-else>{{ item.client }}</span>
+        </template>
         <template v-slot:[`item.actions`]="{ item }">
           <v-btn
             color="accent"
             small
             text
-            class="rounded-xl text-capitalize body-2 mr-2"
+            class="rounded text-capitalize body-2 mr-2"
             >See</v-btn
           >
           <v-icon color="primary" small class="mr-2" @click="editItem(item)">
@@ -264,30 +269,30 @@ export default {
       headers: [
         {
           text: "Patient Name",
-          value: "client",
+          value: "client"
         },
         {
           text: "Apoint. Date",
-          value: "date",
+          value: "date"
         },
         {
           text: "Time",
-          value: "time",
+          value: "time"
         },
         {
           text: "Doctor",
-          value: "doctor",
+          value: "doctor"
         },
         {
           text: "Reason",
-          value: "reason",
+          value: "reason"
         },
         {
           text: "Actions",
           value: "actions",
           align: "center",
-          sortable: false,
-        },
+          sortable: false
+        }
       ],
       appointments: [],
       editedIndex: -1,
@@ -297,7 +302,7 @@ export default {
         date: null,
         time: "",
         doctor: "",
-        reason: [],
+        reason: []
       },
       defaultItem: {
         id: 0,
@@ -305,9 +310,9 @@ export default {
         date: null,
         time: "",
         doctor: "",
-        reason: [],
+        reason: []
       },
-      itemToDelete: {},
+      itemToDelete: {}
     };
   },
 
@@ -315,6 +320,33 @@ export default {
     formTitle() {
       return this.editedIndex === -1 ? "New Appointment" : "Edit Appointment";
     },
+    clients() {
+      let clients = this.$store.state.clients
+        .filter(item => item.Name)
+        .map(m => {
+          if (!m.Code) return m.Name;
+          return `${m.Code} - ${m.Name}`;
+        });
+      return clients;
+    },
+    reason() {
+      return this.editedItem.reason.length;
+    },
+    id() {
+      return this.editedItem.id;
+    },
+    client() {
+      return this.editedItem.client;
+    },
+    date() {
+      return this.editedItem.date;
+    },
+    time() {
+      return this.editedItem.time;
+    },
+    doctor() {
+      return this.editedItem.doctor;
+    }
   },
 
   watch: {
@@ -324,14 +356,66 @@ export default {
     dialogDelete(val) {
       val || this.closeDelete();
     },
+    reason() {
+      this.saveToLocalStorage();
+    },
+    id() {
+      this.saveToLocalStorage();
+    },
+    client() {
+      this.saveToLocalStorage();
+    },
+    date() {
+      this.saveToLocalStorage();
+    },
+    time() {
+      this.saveToLocalStorage();
+    },
+    doctor() {
+      this.saveToLocalStorage();
+    }
   },
 
-  created() {
+  mounted() {
+    if (!localStorage.getItem("editedItem")) {
+      let initialItem = this.defaultItem;
+      localStorage.setItem("editedItem", JSON.stringify(initialItem));
+    }
     this.initialize();
+    this.updateStorage(true);
   },
 
   methods: {
-    initialize() {
+    saveToLocalStorage() {
+      let editedItem = this.editedItem;
+      localStorage.setItem("editedItem", JSON.stringify(editedItem));
+      this.updateStorage(false);
+    },
+    updateStorage(showDialog) {
+      let editedItem = JSON.parse(localStorage.getItem("editedItem"));
+      this.editedItem = editedItem;
+      if (
+        showDialog &&
+        (editedItem.reason.length > 0 ||
+          editedItem.client ||
+          editedItem.date ||
+          editedItem.time ||
+          editedItem.doctor)
+      ) {
+        this.dialog = true;
+      }
+    },
+    itemClient(item) {
+      return item?.client?.split("-")[1] || "";
+    },
+    getItemToDelete() {
+      if (this.itemToDelete?.client?.includes("-")) {
+        return this.itemToDelete?.client?.split("-")[1] + "'s";
+      }
+      return this.itemToDelete.client + "'s";
+    },
+
+    async initialize() {
       this.appointments = [
         {
           id: 1,
@@ -339,7 +423,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 2,
@@ -347,7 +431,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 3,
@@ -355,7 +439,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 4,
@@ -363,7 +447,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 5,
@@ -371,7 +455,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 6,
@@ -379,7 +463,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 7,
@@ -387,7 +471,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 8,
@@ -395,7 +479,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 9,
@@ -403,7 +487,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 10,
@@ -411,7 +495,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 11,
@@ -419,7 +503,7 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
+          reason: ["Consultation"]
         },
         {
           id: 12,
@@ -427,20 +511,19 @@ export default {
           date: "2021-01-28",
           time: "12:30pm",
           doctor: "Dr. Nomso",
-          reason: ["Consultation"],
-        },
+          reason: ["Consultation"]
+        }
       ];
     },
 
     editItem(item) {
       this.editedIndex = this.appointments.indexOf(item);
-      this.editedItem = Object.assign({}, item);
+      this.editedItem = item;
       this.dialog = true;
     },
 
     deleteItem(item) {
       this.editedIndex = this.appointments.indexOf(item);
-      this.editedItem = Object.assign({}, item);
       this.itemToDelete = item;
       this.dialogDelete = true;
     },
@@ -453,7 +536,7 @@ export default {
     close() {
       this.dialog = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedItem = this.defaultItem;
         this.editedIndex = -1;
       });
     },
@@ -461,22 +544,22 @@ export default {
     closeDelete() {
       this.dialogDelete = false;
       this.$nextTick(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
+        this.editedItem = this.defaultItem;
         this.editedIndex = -1;
       });
     },
 
     save() {
+      let editedItem = this.editedItem;
       if (this.editedIndex > -1) {
-        Object.assign(this.appointments[this.editedIndex], this.editedItem);
+        Object.assign(this.appointments[this.editedIndex], editedItem);
       } else {
-        this.appointments.push(this.editedItem);
+        this.appointments.unshift(editedItem);
       }
       this.close();
-    },
-  },
+    }
+  }
 };
 </script>
 
-<style>
-</style>
+<style></style>

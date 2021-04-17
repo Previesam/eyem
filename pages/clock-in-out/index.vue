@@ -1,12 +1,12 @@
 <template>
   <div>
-    <v-card class="rounded-xl mt-1">
+    <v-card class="rounded mt-1">
       <v-card-title>
-        <span class="mr-5 subheading primary--text">Clock In/Out</span>
+        <!-- <span class="mr-5 subheading primary--text">Clock In/Out</span> -->
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
-          label="Search"
+          label="Search Clock In/Out"
           single-line
           outlined
           color="primary"
@@ -41,7 +41,7 @@
               <span :hidden="$vuetify.breakpoint.width < 500">Clock In</span>
             </v-btn>
           </template>
-          <v-card :class="$vuetify.breakpoint.smAndDown ? '' : 'rounded-xl'">
+          <v-card :class="$vuetify.breakpoint.smAndDown ? '' : 'rounded'">
             <v-card-title>
               <span class="headline primary--text">{{ formTitle }}</span>
             </v-card-title>
@@ -51,7 +51,7 @@
                   <v-col v-if="image" class="my-0 mx-auto" lg="6" md="6" sm="8">
                     <v-img :src="imageUrl"></v-img>
                   </v-col>
-                  <v-col v-else class="my-0 mx-auto" lg="6" md="6" sm="8">
+                  <v-col v-else class="my-0 mx-auto align-items-center" lg="6" md="6" sm="8">
                     <v-file-input
                       accept="image/*"
                       label="Snap/Choose Photo"
@@ -92,10 +92,10 @@
           v-model="dialogDelete"
           max-width="500px"
           overlay-color="red"
-          class="rounded-xl"
+          class="rounded"
         >
           <v-card
-            class="py-auto px-auto rounded-xl"
+            class="py-auto px-auto rounded"
             max-width="100%"
             min-height="300px"
           >
@@ -138,7 +138,7 @@
             color="accent"
             small
             text
-            class="text-capitalize body-2 mr-2 rounded-xl"
+            class="text-capitalize body-2 mr-2 rounded"
           >
             Clock Out
           </v-btn>

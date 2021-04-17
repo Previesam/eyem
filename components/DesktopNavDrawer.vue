@@ -1,12 +1,11 @@
 <template>
   <v-navigation-drawer
     v-model="drawer"
-    :mini-variant="miniVariant"
-    clipped-top
-    fixed
+    :mini-variant="$vuetify.breakpoint.width < 800 ? true : miniVariant"
     height="92vh"
+    width="200"
     app
-    class="mt-2 mb-8 mx-2 rounded-xl"
+    class="mt-2 mb-8 mx-2 rounded"
   >
     <v-list dense>
       <v-list-item
@@ -15,10 +14,10 @@
         :to="item.to"
         router
         exact
-        class="primary--text rounded-xl"
+        class="primary--text rounded pr-5"
       >
-        <v-list-item-action>
-          <v-icon>{{ item.icon }}</v-icon>
+        <v-list-item-action class="mr-5">
+          <v-icon small>{{ item.icon }}</v-icon>
         </v-list-item-action>
 
         <v-list-item-content>
@@ -32,17 +31,28 @@
 <script>
 export default {
   props: {
-    items: [],
-    miniVariant: Boolean,
+    items: Array,
+    callToggleMiniVariant: Boolean
   },
 
   data() {
     return {
       drawer: true,
+      miniVariant: false
+    };
+  },
+
+  watch: {
+    callToggleMiniVariant: function(newVal, oldVal) {
+      this.toggleMiniVariant();
+    }
+  },
+  methods: {
+    toggleMiniVariant() {
+      this.miniVariant = !this.miniVariant;
     }
   }
 };
 </script>
 
-<style>
-</style>
+<style></style>

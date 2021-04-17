@@ -1,8 +1,8 @@
 <template>
   <div>
-    <v-card class="rounded-xl mt-1">
+    <v-card class="rounded mt-1">
       <v-card-title>
-        <span class="mr-5 subheading primary--text">Issues</span>
+        <!-- <span class="mr-5 subheading primary--text">Issues</span> -->
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
@@ -42,7 +42,7 @@
               ></v-btn
             >
           </template>
-          <v-card class="rounded-xl">
+          <v-card class="rounded">
             <v-card-title>
               <span class="headline primary--text">{{ formTitle }}</span>
             </v-card-title>
@@ -146,9 +146,9 @@
 
         <!-- Begin Delete Dialog -->
 
-        <v-dialog v-model="dialogDelete" max-width="500px" overlay-color="red" class="rounded-xl">
+        <v-dialog v-model="dialogDelete" max-width="500px" overlay-color="red" class="rounded">
           <v-card
-            class="py-auto px-auto rounded-xl"
+            class="py-auto px-auto rounded"
             max-width="100%"
             min-height="300px"
           >
@@ -194,7 +194,7 @@
             color="accent"
             small
             text
-            class="rounded-xl text-capitalize body-2 mr-2 px-1"
+            class="rounded text-capitalize body-2 mr-2 px-1"
             >View</v-btn
           >
           <v-icon color="primary" small class="mr-2" @click="editItem(item)">

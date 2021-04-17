@@ -10,11 +10,11 @@ module.exports = (app) => {
 
     // Route to authenticate user
 
-    app.post('/user/authenticate', user.authenticate);
+    app.post('/auth/login', user.authenticate);
 
     // Route to refresh user
 
-    app.post('/user/refresh/:token', user.refresh);
+    app.post('/auth/refresh', user.refresh);
 
     // Route to get all users
 
@@ -22,18 +22,18 @@ module.exports = (app) => {
 
     // Route to get one user
 
-    app.get('/user/:Id', user.findOne);
+    app.get('/auth/user', verifyToken, user.findOne);
 
     // Route to assign role to user
 
-    app.post('/user/assignrole', user.assignRole);
+    app.post('/user/assign-role/', user.assignRole);
 
     // Route to update user
 
-    app.put('/user/:Id', user.update);
+    app.put('/user/:id', user.update);
 
     // Route to delete user
 
-    app.delete('/user/:Id', user.delete);
+    app.delete('/user/:id', user.delete);
 
 }

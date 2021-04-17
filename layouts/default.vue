@@ -1,10 +1,29 @@
 <template>
   <!-- Begin Application default view -->
   <v-app :style="{ background: $vuetify.theme.themes[theme].background }">
+    <v-snackbar
+      :transition="
+        snackbar ? 'slide-x-transition' : 'slide-x-reverse-transition'
+      "
+      outlined
+      top
+      right
+      v-model="snackbar"
+      :timeout="timeout"
+      :color="type"
+    >
+      {{ toastMessage }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn small icon text v-bind="attrs" @click="snackbar = false">
+          <v-icon small>mdi-close</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
     <!-- Begin Mobile Navigation Drawer -->
 
     <MobileNavDrawer
-      v-if="$vuetify.breakpoint.smAndDown"
+      v-if="$vuetify.breakpoint.mobile"
       :items="items"
       :callToggleDrawer="drawer"
     />
@@ -13,17 +32,28 @@
 
     <!-- Begin Desktop Navigation Drawer -->
 
-    <DesktopNavDrawer v-else :items="items" :miniVariant="miniVariant" />
+    <DesktopNavDrawer
+      v-else
+      :items="items"
+      :callToggleMiniVariant="miniVariant"
+    />
 
     <!-- End Desktop Navigation Drawer -->
 
     <!-- Begin App Toolbar -->
 
-    <v-app-bar fixed max-width="100%" class="my-2 rounded-xl mr-2 ml-4" app>
+    <v-app-bar
+      fixed
+      max-width="100%"
+      class="rounded"
+      :class="$vuetify.breakpoint.mobile ? 'mx-0 my-0' : 'ml-4 mr-2 my-2'"
+      :height="$vuetify.breakpoint.mobile ? '50px' : '40px'"
+      app
+    >
       <!-- Begin Mobile Navbar Icon -->
 
       <v-app-bar-nav-icon
-        v-if="$vuetify.breakpoint.smAndDown"
+        v-if="$vuetify.breakpoint.mobile"
         @click.stop="drawer = !drawer"
       />
 
@@ -33,13 +63,13 @@
 
       <v-app-bar-nav-icon v-else @click.stop="miniVariant = !miniVariant" />
 
-      <!-- End Desktop Navbar Icon -->
+      <BreadCrumb />
 
-      <v-spacer />
+      <!-- End Desktop Navbar Icon -->
 
       <!-- Begin Toolbar Title -->
 
-      <v-toolbar-title class="body-1" v-text="$store.state.branch.Name" />
+      <!-- <v-toolbar-title class="body-1" v-text="$store.state.branch.Name" /> -->
 
       <!-- End Toolbar Title -->
 
@@ -49,7 +79,11 @@
 
       <LocationsMenu :items="branches" />
 
-      <UserMenu :userMenu="userMenu" :fav="fav" :message="message" />
+      <v-btn icon text>
+        <v-icon small>mdi-bell</v-icon>
+      </v-btn>
+
+      <UserMenu :userMenu="userMenu" />
 
       <!-- End User Menu -->
     </v-app-bar>
@@ -64,7 +98,7 @@
 
     <!-- Begin Main Area -->
 
-    <v-main class="mt-2 ml-2">
+    <v-main class="mt-2" :class="$vuetify.breakpoint.mobile ? '' : 'ml-2'">
       <v-container fluid>
         <nuxt />
       </v-container>
@@ -74,7 +108,7 @@
 
     <!-- Begin App Footer -->
 
-    <v-footer fixed app class="my-1 rounded-xl mx-2">
+    <v-footer fixed app class="my-1 rounded mx-2">
       <span class="ma-auto">&copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
     <v-progress-linear
@@ -95,6 +129,7 @@ import MobileNavDrawer from "../components/MobileNavDrawer";
 import DesktopNavDrawer from "../components/DesktopNavDrawer";
 import UserMenu from "../components/UserMenu.vue";
 import LocationsMenu from "../components/LocationsMenu.vue";
+import BreadCrumb from "../components/BreadCrumb.vue";
 
 export default {
   components: {
@@ -103,6 +138,7 @@ export default {
     DesktopNavDrawer,
     UserMenu,
     LocationsMenu,
+    BreadCrumb
   },
   name: "DefaultView",
   data() {
@@ -112,40 +148,38 @@ export default {
         {
           icon: "mdi-view-dashboard",
           title: "Dashboard",
-          to: "/",
+          to: "/"
         },
         {
           icon: "mdi-android-messages",
           title: "Messages",
-          to: "/messages",
+          to: "/messages"
         },
         {
           icon: "mdi-inbox-multiple",
           title: "Jobs",
-          to: "/jobs",
+          to: "/jobs"
         },
         {
           icon: "mdi-account-multiple-plus",
           title: "Appointments",
-          to: "/appointments",
+          to: "/appointments"
         },
         {
           icon: "mdi-account-clock",
           title: "Clock In/Out",
-          to: "/clock-in-out",
+          to: "/clock-in-out"
         },
         {
           icon: "mdi-help",
           title: "IT Help Desk",
-          to: "/it-helpdesk",
-        },
+          to: "/it-helpdesk"
+        }
       ],
       miniVariant: false,
-      title: "Eyemasters Osapa",
       userMenu: false,
-      message: false,
       drawer: false,
-      branches: [],
+      branches: []
     };
   },
 
@@ -153,16 +187,34 @@ export default {
     theme() {
       return this.$vuetify.theme.dark ? "dark" : "light";
     },
+    timeout() {
+      return this.$store.state.toast.timeout;
+    },
+    snackbar: {
+      get() {
+        return this.$store.state.toast.snackbar;
+      },
+      set() {
+        this.$store.commit("toast/closeSnackbar");
+      }
+    },
+    type() {
+      return this.$store.state.toast.type;
+    },
+    toastMessage() {
+      return this.$store.state.toast.message;
+    }
   },
 
   methods: {
-
     // Implementing Dark Mode and Auto Light or Dark Mode
 
     initDarkMode() {
       const darkMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-      darkMediaQuery.addEventListener("change", (e) => {
+      console.log(darkMediaQuery);
+
+      darkMediaQuery.addEventListener("change", e => {
         this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
       });
 
@@ -174,150 +226,45 @@ export default {
     },
 
     async getBranches() {
-      let branches = await this.$axios(
-        "https://manager.eyemastersng.com/api/index.json",
-        {
-          method: "GET",
-          headers: {
-            Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
-          },
-        }
-      )
-        .then((res) => {
+      let branches = await this.$axios("/branches", {
+        method: "GET"
+      })
+        .then(res => {
           return res.data;
         })
-        .catch((err) => {
-          consol.log(err);
-        });
-
-      this.branches = branches.filter(
-        (branch) =>
-          branch.Name.includes("Eyemasters") ||
-          branch.Name.includes("1st Contact")
-      );
-    },
-
-    async getClients() {
-      await this.$store.commit("toggleLoading", true);
-
-      await this.$store.commit("clearClients");
-
-      let clients = [];
-
-      let Key = await this.$store.state.branch.Key;
-
-      let links = await this.$axios(
-        `https://manager.eyemastersng.com/api/${Key}/ec37c11e-2b67-49c6-8a58-6eccb7dd75ee/index.json`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
-          },
-        }
-      )
-        .then((res) => {
-          return res.data;
-        })
-        .catch((err) => {
+        .catch(err => {
           console.log(err);
         });
 
-      for (let i = 0; i < links.length; i++) {
-        let client = await this.$axios(
-          `https://manager.eyemastersng.com/api/${Key}/${links[i]}.json`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
-            },
-          }
-        )
-          .then((res) => {
-            res.data.id = links[i];
-            return res.data;
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-
-        let newCustomFeilds = {};
-
-        let entries = Object.entries(client.CustomFields);
-
-        for (const [prop, val] of entries) {
-          let Name = await this.$axios(
-            `https://manager.eyemastersng.com/api/${Key}/${prop}.json`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
-              },
-            }
-          )
-            .then((res) => {
-              return res.data.Name;
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-
-          newCustomFeilds[Name] = { key: prop, value: val };
-
-        }
-
-        client.CustomFields = newCustomFeilds;
-
-        // Send data to store
-
-        await this.$store.commit("updateClients", client);
-      }
-
-      await this.$store.commit("toggleLoading", false);
-    },
+      this.branches = branches;
+    }
   },
 
-  mounted() {
-    console.log(this.$vuetify.breakpoint);
-    this.initDarkMode();
-  },
+  async mounted() {
+    await this.initDarkMode();
 
-  created() {
-    this.getBranches();
-    this.getClients();
-  },
+    await this.$store.commit("toggleLoading", true);
+
+    await this.getBranches();
+
+    await this.$store.commit("updateClients");
+
+    await this.$store.commit("toggleLoading", false);
+  }
 };
 </script>
 <style>
-/* width */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-/* Track */
-::-webkit-scrollbar-track {
-  /* background: #424242e3; */
-  background: transparent;
-  border-radius: 4px;
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
 .search-box {
-  max-width: 30%;
+  max-width: 50%;
   margin-right: 0;
 }
 
 .app-loader {
   width: 96%;
   top: 59px;
+}
+
+.v-dialog > .v-card > .v-card__text {
+  padding: 0 5px 5px;
 }
 </style>

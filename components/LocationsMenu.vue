@@ -4,16 +4,27 @@
       <template v-slot:activator="{ on: menu, attrs }">
         <v-tooltip bottom>
           <template v-slot:activator="{ on: tooltip }">
-            <v-icon v-bind="attrs" v-on="{ ...tooltip, ...menu }">
-              mdi-map
-            </v-icon>
+            <v-btn
+              small
+              class="text-capitalize"
+              text
+              outlined
+              v-bind="attrs"
+              v-on="{ ...tooltip, ...menu }"
+            >
+              <v-icon small :left="$vuetify.breakpoint.width > 450">
+                mdi-chevron-down </v-icon
+              ><span :hidden="$vuetify.breakpoint.width < 450">{{
+                $store.state.branch.Name
+              }}</span>
+            </v-btn>
           </template>
-          <span>Change Location</span>
+          <span>Switch Branch</span>
         </v-tooltip>
       </template>
       <v-list>
         <v-list-item v-for="(item, index) in items" :key="index" link>
-          <v-list-item-title @click="getClients(item)">{{
+          <v-list-item-title @click="switchBranch(item)">{{
             item.Name
           }}</v-list-item-title>
         </v-list-item>
@@ -25,95 +36,39 @@
 <script>
 export default {
   props: {
-    items: Array,
+    items: Array
   },
 
   methods: {
-    async getClients(branch) {
-      await this.$store.commit("toggleLoading", true);
-
+    async switchBranch(branch) {
       await this.$store.commit("switchBranch", branch);
-
-      await this.$store.commit("clearClients");
-
-      let clients = [];
-
-      let Key = await branch.Key;
-
-      let links = await this.$axios(
-        `https://manager.eyemastersng.com/api/${Key}/ec37c11e-2b67-49c6-8a58-6eccb7dd75ee/index.json`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
-          },
-        }
-      )
-        .then((res) => {
-          return res.data;
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-
-      for (let i = 0; i < links.length; i++) {
-        let client = await this.$axios(
-          `https://manager.eyemastersng.com/api/${Key}/${links[i]}.json`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
-            },
-          }
-        )
-          .then((res) => {
-            res.data.id = links[i];
-            return res.data;
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-
-        let newCustomFeilds = {};
-
-        let entries = Object.entries(client.CustomFields);
-
-        for (const [prop, val] of entries) {
-          let Name = await this.$axios(
-            `https://manager.eyemastersng.com/api/${Key}/${prop}.json`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE=",
-              },
-            }
-          )
-            .then((res) => {
-              return res.data.Name;
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-
-          newCustomFeilds[Name] = { key: prop, value: val };
-        }
-
-        client.CustomFields = newCustomFeilds;
-
-        // Send data to store
-
-        await this.$store.commit("updateClients", client);
-
-        this.$store.commit("clearClients");
-
-        return;
-      }
-
-      await this.$store.commit("toggleLoading", false);
-    },
-  },
+    }
+  }
 };
 </script>
 
 <style>
+/* width */
+v-menu::-webkit-scrollbar {
+  width: 0.2rem;
+}
+
+/* Track */
+v-menu::-webkit-scrollbar-track {
+  /* background: #424242e3; */
+  background: transparent;
+  border-radius: 2px;
+}
+
+/* Handle */
+v-menu::-webkit-scrollbar-thumb {
+  background: #888;
+  width: 2px;
+  border-radius: 2px;
+}
+
+/* Handle on hover */
+v-menu::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 </style>

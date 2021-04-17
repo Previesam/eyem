@@ -4,12 +4,12 @@
       <v-col class="col-6 col-md-4 col-lg-4 text-center">
         <v-hover v-slot="{ hover }">
           <v-card :elevation="hover ? 12 : 2" class="dash-item">
-            <v-card-title class="justify-center text-h2 primary--text"
-              >50</v-card-title
-            >
+            <v-card-title class="justify-center text-h3 primary--text">{{
+              clients.length.toLocaleString('en')
+            }}</v-card-title>
             <v-divider></v-divider>
             <v-card-actions class="caption justify-center"
-              >Appointments</v-card-actions
+              >Total Clients</v-card-actions
             >
           </v-card>
         </v-hover>
@@ -17,12 +17,12 @@
       <v-col class="col-6 col-md-4 col-lg-4 text-center">
         <v-hover v-slot="{ hover }">
           <v-card :elevation="hover ? 12 : 2" class="dash-item">
-            <v-card-title class="justify-center text-h2 blue--text"
-              >50</v-card-title
-            >
+            <v-card-title class="justify-center text-h3 blue--text">{{
+              walkInClients.length
+            }}</v-card-title>
             <v-divider></v-divider>
             <v-card-actions class="caption justify-center"
-              >On Que</v-card-actions
+              >Walk-In Clients</v-card-actions
             >
           </v-card>
         </v-hover>
@@ -30,53 +30,53 @@
       <v-col class="col-6 col-md-4 col-lg-4 text-center">
         <v-hover v-slot="{ hover }">
           <v-card :elevation="hover ? 12 : 2" class="dash-item">
-          <v-card-title class="justify-center text-h2 secondary--text"
-            >50</v-card-title
-          >
-          <v-divider></v-divider>
-          <v-card-actions class="caption justify-center"
-            >Total Seen</v-card-actions
-          >
-        </v-card>
+            <v-card-title class="justify-center text-h3 secondary--text"
+              >50</v-card-title
+            >
+            <v-divider></v-divider>
+            <v-card-actions class="caption justify-center"
+              >Total Seen</v-card-actions
+            >
+          </v-card>
         </v-hover>
       </v-col>
       <v-col class="col-6 col-md-4 col-lg-4 text-center">
         <v-hover v-slot="{ hover }">
           <v-card :elevation="hover ? 12 : 2" class="dash-item">
-          <v-card-title class="justify-center text-h2 warning--text"
-            >50</v-card-title
-          >
-          <v-divider></v-divider>
-          <v-card-actions class="caption justify-center"
-            >All Jobs</v-card-actions
-          >
-        </v-card>
+            <v-card-title class="justify-center text-h3 warning--text"
+              >50</v-card-title
+            >
+            <v-divider></v-divider>
+            <v-card-actions class="caption justify-center"
+              >All Jobs</v-card-actions
+            >
+          </v-card>
         </v-hover>
       </v-col>
       <v-col class="col-6 col-md-4 col-lg-4 text-center">
         <v-hover v-slot="{ hover }">
           <v-card :elevation="hover ? 12 : 2" class="dash-item">
-          <v-card-title class="justify-center text-h2 indigo--text"
-            >50</v-card-title
-          >
-          <v-divider></v-divider>
-          <v-card-actions class="caption justify-center"
-            >Ongoing Jobs</v-card-actions
-          >
-        </v-card>
+            <v-card-title class="justify-center text-h3 indigo--text"
+              >50</v-card-title
+            >
+            <v-divider></v-divider>
+            <v-card-actions class="caption justify-center"
+              >Ongoing Jobs</v-card-actions
+            >
+          </v-card>
         </v-hover>
       </v-col>
       <v-col class="col-6 col-md-4 col-lg-4 text-center">
         <v-hover v-slot="{ hover }">
           <v-card :elevation="hover ? 12 : 2" class="dash-item">
-          <v-card-title class="justify-center text-h2 green--text"
-            >50</v-card-title
-          >
-          <v-divider></v-divider>
-          <v-card-actions class="caption justify-center"
-            >Pending Jobs</v-card-actions
-          >
-        </v-card>
+            <v-card-title class="justify-center text-h3 green--text"
+              >50</v-card-title
+            >
+            <v-divider></v-divider>
+            <v-card-actions class="caption justify-center"
+              >Pending Jobs</v-card-actions
+            >
+          </v-card>
         </v-hover>
       </v-col>
     </v-row>
@@ -179,13 +179,28 @@ export default {
   name: "Dashboard",
   data: () => {
     return {
-      page_title: "Dashboard",
+      page_title: "Dashboard"
     };
   },
   components: {
     Logo,
-    VuetifyLogo,
+    VuetifyLogo
   },
+
+  computed: {
+    clients() {
+      return this.$store.state.clients.filter(
+        d =>
+          d.Branch == this.$store.state.branch.Name &&
+          !d.Code?.includes("walk")
+      );
+    },
+    walkInClients() {
+      return this.$store.state.clients.filter(
+        d => d.Branch == this.$store.state.branch.Name && d.Code?.includes("walk")  
+      );
+    }
+  }
 };
 </script>
 

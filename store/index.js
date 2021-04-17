@@ -1,10 +1,12 @@
+const axios = require("axios");
+
 export const state = () => ({
     drawer: false,
     clients: [],
     loading: false,
     branch: {
         "Key": "RXllbWFzdGVycyBMaW1pdGVkIC0gVXRha28sIEFidWph",
-        "Name": "Eyemasters Limited - Utako, Abuja"
+        "Name": "Utako, Abuja"
     },
 })
 
@@ -14,8 +16,27 @@ export const mutations = {
         state.drawer = false;
     },
 
-    updateClients(state, payload) {
-        state.clients.push(payload);
+    async updateClients(state) {
+
+      state.loading = true;
+
+      state.clients = [];
+
+      let clients = await axios(`/api/clients`, {
+        method: "GET"
+      })
+        .then(res => {
+          return res.data;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
+      // Send data to store
+
+      state.clients = clients
+
+      state.loading = false;
     },
 
     clearClients(state) {

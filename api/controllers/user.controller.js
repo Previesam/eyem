@@ -1,471 +1,416 @@
 // Import the User model
 
-const User = require('../models/user.model.js');
-const Roles = require('../models/role.model.js');
+const User = require("../models/user.model.js");
+const Roles = require("../models/role.model.js");
 
 // All Imports
 
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const moment = require('moment');
-const Config = require('../config/settings.config.js');
-const RefreshToken = require('../models/refresh-token.model');
-const randtoken = require('rand-token');
-const RoleType = require('../config/roles.js');
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const moment = require("moment");
+const Config = require("../config/settings.config.js");
+const RefreshToken = require("../models/refresh-token.model");
+const randtoken = require("rand-token");
+const RoleType = require("../config/roles.js");
 const SALT_WORK_FACTOR = 10;
 
 // Method for creating new user
 
 exports.create = (req, res) => {
+  const errors = [];
 
-    // Validating entered data
+  // Validating entered data
 
-    if (!req.body.firstname) {
-        return res.status(400).send({
-            message: "First name cannot be empty"
+  if (!req.body.fullname) {
+    error.push({
+      message: "First name cannot be empty"
+    });
+  }
+
+  if (req.body.fullname.length < 3) {
+    errors.push({
+      message: "First name must have at least 3 characters"
+    });
+  }
+
+  if (!req.body.email) {
+    errors.push({
+      message: "Email cannot be empty"
+    });
+  }
+
+  if (req.body.email.length < 3) {
+    errors.push({
+      message: "Email must have at least 3 characters"
+    });
+  }
+
+  if (!req.body.password) {
+    errors.push({
+      message: "Password cannot be empty"
+    });
+  }
+
+  if (req.body.password.length < 6) {
+    errors.push({
+      message: "Password must be atleast 6 characters long"
+    });
+  }
+
+  // if (req.body.password !== req.body.confirmPassword) {
+  //   errors.push({
+  //     message: "Password and password confirmation does not match"
+  //   });
+  // }
+
+  //   if (!req.body.phone) {
+  //     return res.status(400).send({
+  //       message: "Phone number is required"
+  //     });
+  //   }
+
+  //   if (req.body.phone.length < 11) {
+  //     return res.status(400).send({
+  //       message: "Phone number needs to be at least 11 characters long"
+  //     });
+  //   }
+
+  if (errors.length > 0) return res.status(400).send({ errors });
+
+  // Check if user already exist
+
+  User.find({ email: req.body.email })
+    .then(async data => {
+      if (data.length > 0) {
+        errors.push({
+          message: "User with email " + req.body.email + " already exist"
         });
-    }
+        return res.status(400).json(errors);
+      } else {
+        // Create new user object
 
-    if (req.body.firstname.length < 3) {
-        return res.status(400).send({
-            message: "First name must have at least 3 characters"
-        });
-    }
+        const user = new User(req.body);
 
-    if (!req.body.lastname) {
-        return res.status(400).send({
-            message: "Last name cannot be empty"
-        });
-    }
+        // Add to Role User
+        const _role = RoleType.User;
 
-    if (req.body.lastname.length < 3) {
-        return res.status(400).send({
-            message: "Last name must have at least 3 characters"
-        });
-    }
+        // User Role Assignment
 
-    if (!req.body.email) {
-        return res.status(400).send({
-            message: "Email cannot be empty"
-        });
-    }
+        user.roles.push(_role);
 
-    if (req.body.email.length < 3) {
-        return res.status(400).send({
-            message: "Email must have at least 3 characters"
-        });
-    }
+        // Password Encryption
 
-    if (!req.body.password) {
-        return res.status(400).send({
-            message: "Password cannot be empty"
-        });
-    }
+        user.hash = bcrypt.hashSync(req.body.password, 10);
 
-    if (req.body.password < 6) {
-        return res.status(400).send({
-            message: "Password must be atleast 6 characters long"
-        });
-    }
+        // Save the new user
 
-    if (req.body.password !== req.body.confirmPassword) {
-        return res.status(400).send({
-            message: "Password and password confirmation does not match"
-        });
-    }
-
-    if (!req.body.phone) {
-        return res.status(400).send({
-            message: "Phone number is required"
-        });
-    }
-
-    if (req.body.phone.length < 11) {
-        return res.status(400).send({
-            message: "Phone number needs to be at least 11 characters long"
-        });
-    }
-
-    // if (!req.body.dateOfBirth) {
-    //     return res.status(400).send({
-    //         message: "Date of birth is required"
-    //     });
-    // }
-
-    // if (req.body.dateOfBirth !== Date) {
-    //     return res.status(400).send({
-    //         message: "Date of birth must be a valid date"
-    //     });
-    // }
-
-    // Check if user already exist
-
-    User.find({ email: req.body.email })
-        .then(async data => {
-            if (data.length > 0) {
-                return res.status(400).send({
-                    message: "User with email " + req.body.email + " already exist"
-                });
-            } else {
-
-                // Create new user object
-
-                const user = new User(req.body);
-
-
-                // bcrypt.genSalt(SALT_WORK_FACTOR, salt => {
-                //     bcrypt.hash(req.body.password, salt, hashedPassword => {
-                //         user.hash = hashedPassword;
-                //     });
-                // });
-
-                // Add to Role User
-                const _role = await Roles.findOne({
-                    roleName: RoleType.User
-                });
-
-                if (!_role) {
-                    return res.status(400).send('Default role not available for user');
-                }
-
-                // User Role Assignment
-
-                user.roles.push(_role.roleName);
-
-                // Password Encryption
-
-                user.hash = bcrypt.hashSync(req.body.password, 10);
-
-                // Save the new user
-
-                user.save()
-                    .then(data => {
-                        return res.send({
-                            message: "User created successfully...",
-                            data: data
-                        });
-                    })
-                    .catch(err => {
-                        return res.status(500).send({
-                            message: err.message || "An unknown error occurred while creating user account."
-                        });
-                    });
-            }
-        })
-        .catch(err => {
-            return res.status(500).send({
-                message: err.message || "An unknown error occurred while trying to check if user exist"
+        user
+          .save()
+          .then(data => {
+            return res.status(201).send({
+              message: "User created successfully..."
             });
-        });
-
-}
+          })
+          .catch(err => {
+            errors.push({
+              message:
+                err.message ||
+                "An unknown error occurred while creating user account."
+            });
+            return res.status(500).send({ errors });
+          });
+      }
+    })
+    .catch(err => {
+      errors.push({
+        message:
+          err.message ||
+          "An unknown error occurred while trying to check if user exist"
+      });
+      return res.status(500).send({ errors });
+    });
+};
 
 // Method for finding all users
 
 exports.findAll = (req, res) => {
-
-    User.find({})
-        .then(data => {
-            return res.send(data);
-        })
-        .catch(err => {
-            return res.status(500).send({
-                message: err.message || "An error occurred while retrieving users"
-            });
-        });
-
-}
+  User.find({})
+    .then(data => {
+      return res.send(data);
+    })
+    .catch(err => {
+      return res.status(500).send({
+        message: err.message || "An error occurred while retrieving users"
+      });
+    });
+};
 
 // Method for finding one user
 
-exports.findOne = (req, res) => {
-
-    User.findById(req.params.Id)
-        .then(data => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Cannot find user with Id " + req.params.Id
-                });
-            }
-            return res.send(data);
-        })
-        .catch(err => {
-            if (err.kind === 'ObjectId') {
-                return res.status(404).send({
-                    message: "Cannot find user with the Id " + req.params.Id
-                });
-            }
-            return res.status(500).send({
-                message: err.message || "Unknown error occurred while retrieving user"
-            });
+exports.findOne = async (req, res) => {
+  await User.findById(req.userId)
+    .then(data => {
+      if (!data) {
+        return res.status(404).send({
+          message: "Cannot find user with Id " + req.userId
         });
-}
+      }
+      const { hash, ...nohash } = data._doc;
+      return res.send({ user: nohash });
+    })
+    .catch(err => {
+      if (err.kind === "ObjectId") {
+        return res.status(404).send({
+          message: "Cannot find user with the Id " + req.userId
+        });
+      } else {
+        return res.status(500).send({
+          message: err.message || "Unknown error occurred while retrieving user"
+        });
+      }
+    });
+};
 
 // Assign role
 
 exports.assignRole = async (req, res) => {
+  if (!req.body.userid || !req.body.roleid) {
+    return res
+      .status(400)
+      .send({ message: "User/role details can not be empty!" });
+  }
 
-    if (req.body.userId == "" || req.body.roleId == "") {
-        return res.status(400).send('User/role details can not be empty!');
-    }
+  // validate
+  const user = await User.findById(req.body.userid);
+  if (!user) {
+    return res.status(404).send("User not found");
+  }
 
-    // validate
-    const user = await User.findById(req.body.userId);
-    if (!user) {
-        return res.status(404).send('User not found');
-    }
+  //find role by id
+  const role = await Roles.findById(req.body.roleid);
+  if (!role) {
+    return res.status(404).send("Role not found");
+  }
 
-    //find role by id
-    const role = await Roles.findById(req.body.roleId);
-    if (!role) {
-        return res.status(404).send('Role not found');
-    }
+  if (user.roles.includes(role.roleName)) {
+    return res.status(400).send("User exist in role already!");
+  }
 
-    if (user.roles.includes(role.roleName)) {
-        return res.status(400).send('User exist in role already!');
-    }
-
-    user.roles.push(role.roleName);
-    // save user
-    user.save().then(data => {
-
-        return res.status(404).send("User added to role");
-
-    }).catch(err => {
-        if (err.kind === 'ObjectId') {
-            return res.status(404).send("User not added to role");
-        }
-        return res.status(500).send("Error adding user to role");
+  user.roles.push(role.roleName);
+  // save user
+  user
+    .save()
+    .then(data => {
+      return res.status(404).send("User added to role");
+    })
+    .catch(err => {
+      if (err.kind === "ObjectId") {
+        return res.status(404).send("User not added to role");
+      }
+      return res.status(500).send("Error adding user to role");
     });
-
 };
 
 // Authenticating User
 
 exports.authenticate = async (req, res, next) => {
+  User.findOne({ email: req.body.email })
+    .then(async data => {
+      if (data) {
+        if (data && bcrypt.compareSync(req.body.password, data.hash)) {
+          // Removing Hash from user information
 
-    User.findOne({ email: req.body.email })
-        .then(async data => {
-            if (data) {
-                if (data && bcrypt.compareSync(req.body.password, data.hash)) {
+          const { hash, ...userWithoutHash } = data.toObject();
 
-                    // Removing Hash from user information
+          // Creating the Token
 
-                    const { hash, ...userWithoutHash } = data.toObject();
+          const access_token = jwt.sign({ sub: data.id }, Config.secret, {
+            issuer: "http://localhost:3000",
+            expiresIn: "1m" // Expires in 30 minutes
+          });
 
-                    // Creating the Token
+          // Creating the refresh token
 
-                    const token = jwt.sign(
-                        { sub: data.id },
-                        Config.secret,
-                        {
-                            issuer: 'http://localhost:3011',
-                            expiresIn: '1m' // Expires in 1 minutes
-                        }
-                    );
+          const refresh_token = randtoken.uid(16);
 
-                    // Creating the refresh token
+          // Validation before adding new refresh token to db
 
-                    const refreshToken = randtoken.uid(16);
+          const _refresh = await RefreshToken.findOne({
+            user: data.id
+          });
 
-                    // Validation before adding new refresh token to db
+          const newRefresh = {
+            issuedUtc: moment().utc(),
+            expiresUtc: moment()
+              .add(30, "days")
+              .utc(), // Expires in 30 days
+            token: refresh_token,
+            user: data.id
+          };
 
-                    const _refresh = await RefreshToken.findOne({
-                        user: data.id
-                    });
-
-                    if (_refresh) {
-
-                        newRefresh = {
-                            issuedUtc: moment().utc(),
-                            expiresUtc: moment().add(4, 'days').utc(),
-                            token: refreshToken,
-                            user: data.id
-                        }
-
-                        await RefreshToken.findByIdAndUpdate(_refresh.id, newRefresh);
-
-                        res.send({
-                            id: data.id,
-                            name: data.firstname + ' ' + data.surname,
-                            email: data.email,
-                            access_token: token,
-                            expiresIn: moment().add(1, 'minutes').utc(),
-                            refresh_token: newRefresh.token
-                        });
-
-                    } else {
-
-                        // Create New Token Object
-                        const newToken = new RefreshToken({
-                            issuedUtc: moment().utc(),
-                            expiresUtc: moment().add(4, 'days').utc(),
-                            token: refreshToken,
-                            user: data.id
-                        });
-
-                        //Save the new token
-
-                        newToken.save();
-
-                        // Respond to request
-
-                        res.send({
-                            id: data.id,
-                            name: data.firstname + ' ' + data.surname,
-                            email: data.email,
-                            access_token: token,
-                            expiresIn: moment().add(1, 'minutes').utc(),
-                            refresh_token: newToken.token
-                        });
-                    }
-
+          if (_refresh) {
+            await RefreshToken.findByIdAndUpdate(_refresh.id, newRefresh)
+              .then(data => {
+                if (data) {
+                  res.send({
+                    access_token,
+                    refresh_token
+                  });
                 } else {
-                    return res.status(404).send('Login Failed!');
+                  res.status(500).send({
+                    message:
+                      "Unknown error occurred while updating refresh token"
+                  });
                 }
-            } else {
-                return res.status(404).send('No user found with the specified email');
-            }
-        })
-        .catch(err => {
-            return res.status(500).send(err.message || "Some error occurred while trying to log you in");
-        });
-}
+              })
+              .catch(err => {
+                console.log(err);
+              });
+          } else {
+            const refreshToken = new RefreshToken(newRefresh);
+            refreshToken
+              .save()
+              .then(data => {
+                if (data) {
+                  res.send({
+                    access_token,
+                    refresh_token
+                  });
+                }
+                res.status(500).send({
+                  message: "Unknown error occurred while saving refresh token"
+                });
+              })
+              .catch(err => {
+                console.log(err);
+              });
+          }
+        } else {
+          return res.status(400).send({ message: "Email or password is incorrect" });
+        }
+      } else {
+        return res
+          .status(400)
+          .send({ message: "Invalid Email address" });
+      }
+    })
+    .catch(err => {
+      return res
+        .status(500)
+        .send(err.message || "Some error occurred while trying to log you in");
+    });
+};
 
 // Refreshing User Token
 
 exports.refresh = async (req, res) => {
+  // Find Refresh Token from Database
 
-    // Find Refresh Token from Database
-
+  try {
     let _refresh = await RefreshToken.findOne({
-        user: req.userId
+      token: req.body.refresh_token
     });
+    if (_refresh && (moment.unix(_refresh.expiresUtc) > moment.now())) {
+      const access_token = jwt.sign({ sub: _refresh.user }, Config.secret, {
+        issuer: "http://localhost:3000",
+        expiresIn: "30m" // Expires in 1 minutes
+      });
 
-    if (_refresh.token === req.params.token) {
-
-        const refreshToken = randtoken.uid(16);
-
-        // Update the refresh token in database
-
-        RefreshToken.findByIdAndUpdate(_refresh.id, {
-            issuedUtc: moment().utc(),
-            expiresUtc: moment().add(4, 'days').utc(),
-            token: refreshToken,
-            user: req.userId
-        })
-            .then(async data => {
-
-                let user = await User.findById(req.userId);
-
-                // Generate new token
-                const newToken = jwt.sign(
-                    { sub: user.id },
-                    Config.secret,
-                    {
-                        issuer: 'http://localhost:3011',
-                        expiresIn: '1m' // Expires in 1 minutes
-                    }
-                );
-
-                res.send({
-                    id: user.id,
-                    name: user.firstname + ' ' + user.surname,
-                    email: user.email,
-                    access_token: newToken,
-                    expiresIn: moment().add(1, 'minutes').utc(),
-                    refresh_token: refreshToken
-                });
-            })
-            .catch(err => {
-                if (err.kind === 'ObjectId') {
-                    return res.status(400).send({
-                        message: "Invalid refresh request please login afresh"
-                    });
-                }
-                return res.status(500).send({
-                    message: err.message || "Unknown error occurred while refreshing token"
-                });
-            });
-
+      res.send({ access_token });
     } else {
-        return res.status(400).send({
-            message: "Invalid Refresh token provided, please login again"
-        });
+      return res.status(400).send({
+        message: "Refresh token has expired please try login gain"
+      });
     }
-}
+  } catch (error) {
+    if (err.kind === "ObjectId") {
+      return res.status(400).send({
+        message: "Refresh token submitted does not exist, please login again"
+      });
+    }
+    return res.status(500).send({
+      message: err.message || "Unknown error occurred while refreshing token"
+    });
+  }
+};
 
 // Method for updating user
 
 exports.update = async (req, res) => {
+  // Validate Request
+  if (req.body.email == "") {
+    return res.status(400).send({
+      message: "User email cannot be empty"
+    });
+  }
 
-    // Validate Request
-    if (req.body.email == "") {
-        return res.status(400).send({
-            message: "User email cannot be empty"
-        });
-    }
+  //get user
+  const user = await User.findById(req.params.Id);
 
-    //get user
-    const user = await User.findById(req.params.Id);
+  // validate
+  if (!user) {
+    return res.status(404).send("User not found");
+  }
 
-    // validate
-    if (!user) {
-        return res.status(404).send('User not found');
-    }
+  if (
+    user.email !== req.body.email &&
+    User.findOne({
+      email: req.body.email
+    })
+  ) {
+    return res
+      .status(500)
+      .send('Username "' + req.body.email + '" already exist!');
+  }
 
-    if (user.email !== req.body.email && User.findOne({
-        email: req.body.email
-    })) {
-        return res.status(500).send('Username "' + req.body.email + '" already exist!');
-    }
+  // hash password if it was entered
+  if (req.body.password) {
+    req.body.hash = bcrypt.hashSync(req.body.password, 10);
+  }
 
-    // hash password if it was entered
-    if (req.body.password) {
-        req.body.hash = bcrypt.hashSync(req.body.password, 10);
-    }
+  // copy userinfo properties to user
+  Object.assign(user, req.body);
 
-    // copy userinfo properties to user
-    Object.assign(user, req.body);
-
-    user.save().then(data => {
-        if (!data) {
-            return res.status(404).send("User not found with id " + req.params.Id);
-        }
-        res.send(data);
-
-    }).catch(err => {
-        if (err.kind === 'ObjectId') {
-            return res.status(404).send("User not found with id " + req.params.Id);
-        }
-        return res.status(500).send("Error updating User with id " + req.params.Id);
+  user
+    .save()
+    .then(data => {
+      if (!data) {
+        return res.status(404).send("User not found with id " + req.params.Id);
+      }
+      res.send(data);
+    })
+    .catch(err => {
+      if (err.kind === "ObjectId") {
+        return res.status(404).send("User not found with id " + req.params.Id);
+      }
+      return res
+        .status(500)
+        .send("Error updating User with id " + req.params.Id);
     });
 };
 
 // Method for deleting user
 
 exports.delete = (req, res) => {
-
-    User.findByIdAndDelete(req.params.Id)
-        .then(data => {
-            if (!data) {
-                return res.status(404).send({
-                    message: "Cannot find user with Id " + req.params.Id
-                });
-            }
-            return res.send({
-                message: "User deleted successfully..."
-            });
-        })
-        .catch(err => {
-            if (err.kind === 'ObjectId') {
-                return res.status(404).send({
-                    message: "Cannot find user with Id " + req.params.Id
-                });
-            }
-            return res.status(500).send({
-                message: "Unknown error occurred while trying to delete user"
-            });
+  User.findByIdAndDelete(req.params.Id)
+    .then(data => {
+      if (!data) {
+        return res.status(404).send({
+          message: "Cannot find user with Id " + req.params.Id
         });
-
-}
+      }
+      return res.send({
+        message: "User deleted successfully..."
+      });
+    })
+    .catch(err => {
+      if (err.kind === "ObjectId") {
+        return res.status(404).send({
+          message: "Cannot find user with Id " + req.params.Id
+        });
+      }
+      return res.status(500).send({
+        message: "Unknown error occurred while trying to delete user"
+      });
+    });
+};

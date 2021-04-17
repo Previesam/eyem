@@ -41,4 +41,8 @@ export default {
 h1 {
   font-size: 20px;
 }
+body {
+  width: 1000px;
+  height: 800px;
+}
 </style>

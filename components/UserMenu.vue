@@ -3,62 +3,77 @@
     <div class="text-center">
       <v-menu
         v-model="userMenu"
-        :close-on-content-click="false"
+        :close-on-content-click="true"
         :nudge-width="200"
         offset-y
       >
         <template v-slot:activator="{ on, attrs }">
-          <v-avatar color="primary" size="40" v-bind="attrs" v-on="on"
-            >AS</v-avatar
+          <v-avatar
+            v-if="$auth.loggedIn"
+            color="primary"
+            size="30"
+            v-bind="attrs"
+            v-on="on"
+            >{{
+              $auth.user.fullname.split(" ")[0][0] +
+                $auth.user.fullname.split(" ")[1][0]
+            }}</v-avatar
           >
         </template>
         <v-card>
           <v-list>
-            <v-list-item>
+            <v-list-item v-if="$auth.loggedIn">
               <v-list-item-avatar>
-                <v-avatar color="primary" size="40">AS</v-avatar>
+                <v-avatar color="primary" size="40">{{
+                  $auth.user.fullname.split(" ")[0][0] +
+                    $auth.user.fullname.split(" ")[1][0]
+                }}</v-avatar>
               </v-list-item-avatar>
 
               <v-list-item-content>
-                <v-list-item-title>John Leider</v-list-item-title>
-                <v-list-item-subtitle>Founder of Vuetify</v-list-item-subtitle>
+                <v-list-item-title>{{ $auth.user.fullname }}</v-list-item-title>
+                <v-list-item-subtitle>{{ "I.T Support" }}</v-list-item-subtitle>
               </v-list-item-content>
 
-              <v-list-item-action>
-                <v-btn :class="fav ? 'red--text' : ''" icon @click="fav = !fav">
-                  <v-icon>mdi-heart</v-icon>
-                </v-btn>
+              <v-list-item-action
+                ><v-tooltip buttom>
+                  <template v-slot:activator="{ on: tooltip }">
+                    <v-btn
+                      v-on="{ ...tooltip }"
+                      :class="$vuetify.theme.dark ? 'red--text' : ''"
+                      icon
+                      @click="$vuetify.theme.dark = !$vuetify.theme.dark"
+                    >
+                      <v-icon>mdi-theme-light-dark</v-icon>
+                    </v-btn> </template
+                  ><span>{{ $vuetify.theme.dark ? "Light" : "Dark" }}</span>
+                </v-tooltip>
               </v-list-item-action>
             </v-list-item>
           </v-list>
 
           <v-divider></v-divider>
 
-          <v-list>
-            <v-list-item>
-              <v-list-item-action>
-                <v-switch v-model="message" color="purple"></v-switch>
-              </v-list-item-action>
-              <v-list-item-title>Enable messages</v-list-item-title>
+          <v-list dense>
+            <v-list-item link>
+              <v-list-item-icon
+                ><v-icon medium>mdi-account</v-icon></v-list-item-icon
+              >
+              <v-list-item-title>User Profile</v-list-item-title>
             </v-list-item>
-
-            <v-list-item>
-              <v-list-item-action>
-                <v-switch
-                  v-model="$vuetify.theme.dark"
-                  color="purple"
-                ></v-switch>
-              </v-list-item-action>
-              <v-list-item-title>Dark Theme</v-list-item-title>
+            <v-list-item link>
+              <v-list-item-icon
+                ><v-icon medium>mdi-cog</v-icon></v-list-item-icon
+              >
+              <v-list-item-title>Settings</v-list-item-title>
+            </v-list-item>
+            <v-list-item link @click="logout()">
+              <v-list-item-icon
+                ><v-icon medium>mdi-logout</v-icon></v-list-item-icon
+              >
+              <v-list-item-title>Logout</v-list-item-title>
             </v-list-item>
           </v-list>
-
-          <v-card-actions>
-            <v-spacer></v-spacer>
-
-            <v-btn text @click="userMenu = false"> Cancel </v-btn>
-            <v-btn color="primary" text @click="userMenu = false"> Save </v-btn>
-          </v-card-actions>
         </v-card>
       </v-menu>
     </div>
@@ -67,13 +82,23 @@
 
 <script>
 export default {
-    props: {
-        userMenu: Boolean,
-        fav: Boolean,
-        message: Boolean
+  props: {
+    userMenu: Boolean
+  },
+  methods: {
+    async logout() {
+      await this.$auth.logout();
+      this.$router.push("/login");
+      this.sendToast();
+    },
+    sendToast() {
+      this.$store.dispatch("toast/snackbar", {
+        type: "success",
+        message: "You have logged out successfully"
+      });
     }
+  }
 };
 </script>
 
-<style>
-</style>
+<style></style>
