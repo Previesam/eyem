@@ -20,7 +20,7 @@
         <v-list-item-content>
           <v-list-item-title v-text="item.title" />
         </v-list-item-content>
-        <v-space></v-space>
+        <v-spacer></v-spacer>
         <v-list-item-action v-if="$vuetify.breakpoint.width < 600">
           <v-icon small>mdi-chevron-right</v-icon>
         </v-list-item-action>

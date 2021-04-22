@@ -6,7 +6,7 @@ module.exports = (app) => {
 
     // Route to create new job
 
-    app.post('/job/create', job.create);
+    app.post('/job/create', verifyToken, job.create);
 
     // Route to get all jobs
 
@@ -14,15 +14,15 @@ module.exports = (app) => {
 
     // Route to get one job
 
-    app.get('/job/:Id', job.findOne);
+    app.get('/job/:id', verifyToken, job.findOne);
 
 
     // Route to update job
 
-    app.put('/job/update/:Id', job.update);
+    app.put('/job/update/:id', verifyToken, job.update);
 
     // Route to delete job
 
-    app.delete('/job/delete/:Id', job.delete);
+    app.delete('/job/delete/:id', verifyToken, job.delete);
 
 }

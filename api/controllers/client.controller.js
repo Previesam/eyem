@@ -50,7 +50,7 @@ exports.findOne = (req, res) => {
           .send({ message: "Could not find client with the id provided" });
       }
       res
-        .status(400)
+        .status(500)
         .send({
           message: err.message || "Unknown error occurred while fetching client"
         });

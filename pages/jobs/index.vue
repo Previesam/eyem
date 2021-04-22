@@ -4,13 +4,14 @@
       <v-card-title>
         <!-- <span class="mr-5 subheading primary--text">Appointments</span> -->
 
+        <v-btn icon @click="showSelect()"><v-icon>mdi-menu-open</v-icon></v-btn>
+
         <!-- Begin Search Box -->
 
         <v-text-field
           v-model="search"
           append-icon="mdi-magnify"
           label="Search Jobs"
-          single-line
           outlined
           color="primary"
           hide-details
@@ -51,7 +52,7 @@
             <v-card-title>
               <span class="headline primary--text">{{ formTitle }}</span>
               <v-spacer></v-spacer>
-              <span><v-icon @click="dialog = false">mdi-close</v-icon></span>
+              <span><v-icon @click="close()">mdi-close</v-icon></span>
             </v-card-title>
             <v-card-text>
               <v-container fluid>
@@ -129,8 +130,8 @@
                         v-model="editedItem.client"
                         prepend-icon="mdi-account"
                         label="Patient"
-                        return-object
-                        item-text="name"
+                        item-value="id"
+                        :item-text="item => `${item.Code} - ${item.Name}`"
                       ></v-autocomplete>
                     </v-col>
                     <v-col cols="12" sm="6" md="6">
@@ -243,7 +244,7 @@
                 color="blue darken-1"
                 :disabled="!valid"
                 text
-                @click="save()"
+                @click.stop="save()"
               >
                 Save
               </v-btn>
@@ -273,7 +274,7 @@
             >
             <v-card-title class="my-3 subheading text-center"
               >Are you sure you want to delete
-              {{ itemToDelete }}
+              {{ `${deleteItemClientName}'s` }}
               Job?</v-card-title
             >
             <v-card-actions>
@@ -292,7 +293,123 @@
         </v-dialog>
 
         <!-- End Delete Dialog -->
-        <JobPreview :dialog="dialogViewJob" :job="jobToView" />
+
+        <!-- Begin preview dialog -->
+
+        <v-dialog
+          v-model="dialogViewJob"
+          persistent
+          scrollable
+          :fullscreen="$vuetify.breakpoint.width <= 600 ? true : false"
+          overlay-color="blue"
+          width="500px"
+        >
+          <v-card>
+            <v-divider></v-divider>
+            <v-card-text class="pa-2">
+              <div class="mb-2 subtitle-1 d-flex">
+                <div>
+                  <div class="caption">25/02/2021</div>
+                  <div class="subtitle-2 font-weight-bold">
+                    Job # {{ jobToView.id }}
+                  </div>
+                </div>
+                <div class="ml-auto my-auto">
+                  <v-icon @click.stop="dialogViewJob = !dialogViewJob"
+                    >mdi-close</v-icon
+                  >
+                </div>
+              </div>
+              <v-divider></v-divider>
+              <div class="my-4 d-flex">
+                <div>
+                  <v-icon left>mdi-account</v-icon
+                  ><span class="subtitle-2 font-weight-bold">{{
+                    jobToView.client.Name
+                  }}</span>
+                </div>
+                <div class="ml-auto">
+                  <v-chip small color="primary">{{ jobToView.status }}</v-chip>
+                </div>
+              </div>
+              <div class="my-2 d-flex">
+                <div>Date In:</div>
+                <div class="ml-auto">{{ formatDate(jobToView.dateIn) }}</div>
+              </div>
+              <div class="my-2 d-flex">
+                <div>Date Out:</div>
+                <div class="ml-auto">{{ formatDate(jobToView.dateOut) }}</div>
+              </div>
+              <div class="my-2 d-flex">
+                <div>Right Eye:</div>
+                <div class="ml-auto">
+                  <v-chip small>{{ jobToView.prescription.re }}</v-chip>
+                </div>
+              </div>
+              <div class="my-2 d-flex">
+                <div>Left Eye:</div>
+                <div class="ml-auto">
+                  <v-chip small>{{ jobToView.prescription.le }}</v-chip>
+                </div>
+              </div>
+              <div class="my-2 d-flex">
+                <div>Add:</div>
+                <div class="ml-auto">
+                  <v-chip small>{{ jobToView.prescription.add }}</v-chip>
+                </div>
+              </div>
+              <div class="my-2 d-flex">
+                <div>Frame:</div>
+                <div class="ml-auto">{{ jobToView.frame }}</div>
+              </div>
+              <div class="my-2 d-flex">
+                <div>Lens:</div>
+                <div class="ml-auto">{{ jobToView.lens }}</div>
+              </div>
+              <div class="my-2 d-flex">
+                <div>Doctor:</div>
+                <div class="ml-auto">{{ jobToView.doctor }}</div>
+              </div>
+              <div class="my-2 d-flex">
+                <div>Optician:</div>
+                <div class="ml-auto">{{ jobToView.optician }}</div>
+              </div>
+              <div class="my-4 d-flex">
+                <v-btn
+                  color="accent"
+                  small
+                  outlined
+                  rounded
+                  class="text-capitalize mx-auto"
+                  >Pay Balance</v-btn
+                >
+              </div>
+              <v-divider></v-divider>
+              <div class="my-2 d-flex flex-wrap">
+                <div class="d-flex my-2 mx-auto">
+                  <div>Total:</div>
+                  <div class="mx-2">
+                    <v-chip small>{{ jobToView.total }}</v-chip>
+                  </div>
+                </div>
+                <div class="d-flex my-2 mx-auto">
+                  <div>Deposit:</div>
+                  <div class="mx-2">
+                    <v-chip small>{{ jobToView.deposit }}</v-chip>
+                  </div>
+                </div>
+                <div class="d-flex my-2 mx-auto">
+                  <div>Balance:</div>
+                  <div class="mx-2">
+                    <v-chip small>{{ jobToView.balance }}</v-chip>
+                  </div>
+                </div>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+
+        <!-- End Preview Dialog -->
       </v-card-title>
 
       <!-- Begin Data Table -->
@@ -300,21 +417,20 @@
       <v-data-table
         style="overflow: auto"
         :loading="loading"
+        loading-text="Loading"
         :headers="headers"
         :items="jobs"
         :search="search"
         sort-by="date"
         :sort-desc="true"
         :items-per-page="8"
+        :show-select="allowSelect"
         :footer-props="{
           'items-per-page-options': [8, 10, 15, 20, -1]
         }"
       >
         <template v-slot:[`item.client`]="{ item }">
-          <span v-if="item.client.name.includes('-')">{{
-            itemClient(item)
-          }}</span>
-          <span v-else>{{ item.client.name }}</span>
+          <span>{{ item.client.Name }}</span>
         </template>
         <template v-slot:[`item.prescription`]="{ item }">
           <v-chip class="caption" x-small v-if="item.prescription.re"
@@ -381,7 +497,15 @@
           </v-icon>
         </template>
         <template v-slot:no-data>
-          <v-btn color="primary" @click="initialize"> Reset </v-btn>
+          <v-btn
+            outlined
+            text
+            color="primary"
+            class="text-capitalize"
+            @click="initialize"
+          >
+            Refresh
+          </v-btn>
         </template>
       </v-data-table>
 
@@ -391,17 +515,15 @@
 </template>
 
 <script>
-import JobPreview from "../../components/JobPreview.vue";
 export default {
   name: "Jobs",
   components: {
-    JobPreview
-    // ValidationProvider,
-    // ValidationObserver
+    // JobPreview
   },
   data: vm => {
     return {
       valid: false,
+      allowSelect: false,
       loading: false,
       rules: [
         value => !!value || "Required.",
@@ -418,7 +540,28 @@ export default {
       menu3: false,
       dialog: false,
       dialogViewJob: false,
-      jobToView: {},
+      jobToView: {
+        id: "",
+        client: {
+          Name: "",
+          id: ""
+        },
+        dateIn: new Date().toISOString().substr(0, 10),
+        dateOut: new Date().toISOString().substr(0, 10),
+        prescription: {
+          re: "",
+          le: "",
+          add: ""
+        },
+        status: "open",
+        frame: "",
+        lens: "",
+        total: "",
+        deposit: "",
+        balance: "",
+        optician: "",
+        doctor: ""
+      },
       dialogDelete: false,
       headers: [
         {
@@ -452,9 +595,8 @@ export default {
       jobs: [],
       editedIndex: -1,
       editedItem: {
-        id: 0,
         client: {
-          name: "",
+          Name: "",
           id: ""
         },
         dateIn: new Date().toISOString().substr(0, 10),
@@ -476,9 +618,8 @@ export default {
       dateInFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
       dateOutFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
       defaultItem: {
-        id: 0,
         client: {
-          name: "",
+          Name: "",
           id: ""
         },
         dateIn: new Date().toISOString().substr(0, 10),
@@ -503,6 +644,9 @@ export default {
   },
 
   computed: {
+    deleteItemClientName() {
+      return this.itemToDelete?.client?.Name;
+    },
     formTitle() {
       return this.editedIndex === -1 ? "New Job" : "Edit Job";
     },
@@ -510,8 +654,7 @@ export default {
       let clients = this.$store.state.clients
         .filter(item => item.Name)
         .map(m => {
-          if (!m.Code) return { name: m.Name, id: m.id };
-          return { name: `${m.Code} - ${m.Name}`, id: m.id };
+          return m;
         });
       return clients;
     },
@@ -554,7 +697,7 @@ export default {
     optician() {
       return this.editedItem.optician;
     },
-    clientId() {
+    client() {
       return this.editedItem.client?.id;
     }
   },
@@ -608,7 +751,7 @@ export default {
     optician() {
       this.saveToLocalStorage();
     },
-    clientId() {
+    client() {
       this.saveToLocalStorage();
     }
   },
@@ -624,6 +767,9 @@ export default {
   },
 
   methods: {
+    showSelect() {
+      this.allowSelect = !this.allowSelect;
+    },
     view(job) {
       this.jobToView = job;
       this.dialogViewJob = true;
@@ -645,7 +791,7 @@ export default {
 
       const [year, month, day] = date.split("-");
 
-      return `${day}/${month}/${year}`;
+      return `${day[0] + day[1]}/${month}/${year}`;
     },
 
     getStatusColor(status) {
@@ -681,8 +827,7 @@ export default {
       if (
         showDialog &&
         (editedItem.id ||
-          editedItem.client?.name ||
-          editedItem.client?.id ||
+          editedItem.client.id ||
           editedItem.prescription.re ||
           editedItem.prescription.le ||
           editedItem.prescription.add ||
@@ -697,197 +842,54 @@ export default {
         this.dialog = true;
       }
     },
-    itemClient(item) {
-      return item?.client?.name?.split("-")[1] || "";
-    },
-    getItemToDelete(item) {
-      if (item.client?.name.includes("-")) {
-        return item.client?.name.split("-")[1] + "'s";
-      }
-      return item.client.name + "'s";
-    },
 
     async initialize() {
-      this.jobs = [
-        {
-          id: 1,
-          client: { name: "Olorunsiwa Ojo", id: "12234334" },
-          dateIn: "2021-01-28",
-          dateOut: "2021-01-30",
-          prescription: {
-            re: "+2.50/-0.50",
-            le: "+2.00/-0.25",
-            add: "+2.50"
-          },
-          status: "open",
-          frame: "",
-          lens: "",
-          total: "",
-          deposit: "",
-          balance: "",
-          optician: "",
-          doctor: ""
-        },
-        {
-          id: 2,
-          client: { name: "Adeyanju Ojo", id: "122324334" },
-          dateIn: "2021-01-25",
-          dateOut: "2021-01-29",
-          prescription: {
-            re: "+2.50",
-            le: "+2.00",
-            add: ""
-          },
-          status: "in-progress",
-          frame: "",
-          lens: "",
-          total: "",
-          deposit: "",
-          balance: "",
-          optician: "",
-          doctor: ""
-        },
-        {
-          id: 3,
-          client: { name: "Princess Paulinus", id: "176623837" },
-          dateIn: "2021-01-01",
-          dateOut: "2021-01-05",
-          prescription: {
-            re: "-0.50",
-            le: "-0.25",
-            add: "+1.00"
-          },
-          status: "completed",
-          frame: "",
-          lens: "",
-          total: "",
-          deposit: "",
-          balance: "",
-          optician: "",
-          doctor: ""
-        },
-        {
-          id: 4,
-          client: { name: "Kingsley Paulinus", id: "178781872" },
-          dateIn: "2021-01-01",
-          dateOut: "2021-01-05",
-          prescription: {
-            re: "-1.50",
-            le: "-1.25",
-            add: "+1.00"
-          },
-          status: "delayed",
-          frame: "",
-          lens: "",
-          total: "",
-          deposit: "",
-          balance: "",
-          optician: "",
-          doctor: ""
-        },
-        {
-          id: 5,
-          client: { name: "Olorunsiwa Ojo", id: "102089323" },
-          dateIn: "2021-01-28",
-          dateOut: "2021-01-30",
-          prescription: {
-            re: "+2.50/-0.50",
-            le: "+2.00/-0.25",
-            add: "+2.50"
-          },
-          status: "open",
-          frame: "",
-          lens: "",
-          total: "",
-          deposit: "",
-          balance: "",
-          optician: "",
-          doctor: ""
-        },
-        {
-          id: 6,
-          client: { name: "Adeyanju Ojo", id: "17812872" },
-          dateIn: "2021-01-25",
-          dateOut: "2021-01-29",
-          prescription: {
-            re: "+2.50",
-            le: "+2.00",
-            add: ""
-          },
-          status: "in-progress",
-          frame: "",
-          lens: "",
-          total: "",
-          deposit: "",
-          balance: "",
-          optician: "",
-          doctor: ""
-        },
-        {
-          id: 7,
-          client: { name: "Princess Paulinus", id: "187291323" },
-          dateIn: "2021-01-01",
-          dateOut: "2021-01-05",
-          prescription: {
-            re: "-0.50",
-            le: "-0.25",
-            add: "+1.00"
-          },
-          status: "completed",
-          frame: "",
-          lens: "",
-          total: "",
-          deposit: "",
-          balance: "",
-          optician: "",
-          doctor: ""
-        },
-        {
-          id: 8,
-          client: { name: "Kingsley Paulinus", id: "78781892112" },
-          dateIn: "2021-01-01",
-          dateOut: "2021-01-05",
-          prescription: {
-            re: "-1.50",
-            le: "-1.25",
-            add: "+1.00"
-          },
-          status: "delayed",
-          frame: "",
-          lens: "",
-          total: "",
-          deposit: "",
-          balance: "",
-          optician: "",
-          doctor: ""
+      try {
+        let response = await this.$axios("/jobs", {
+          method: "GET"
+        });
+        if (response) {
+          this.jobs = response.data;
         }
-      ];
+      } catch (err) {
+        console.log(err.response);
+      }
     },
 
     editItem(item) {
       this.editedIndex = this.jobs.indexOf(item);
       this.editedItem = item;
+      console.log(item);
       this.dialog = true;
     },
 
     deleteItem(item) {
       this.editedIndex = this.jobs.indexOf(item);
-      this.itemToDelete = this.getItemToDelete(item);
+      this.itemToDelete = item;
       this.dialogDelete = true;
     },
 
-    deleteItemConfirm() {
-      this.jobs.splice(this.editedIndex, 1);
-      this.$store.dispatch("toast/snackbar", {
-        type: "success",
-        message: `${this.itemToDelete}'s job was deleted successfully`,
-        timeout: 2000
-      });
-      this.closeDelete();
+    async deleteItemConfirm() {
+      await this.$axios(`/job/delete/${this.itemToDelete.id}`, {
+        method: "DELETE",
+      })
+        .then(res => {
+          this.jobs.splice(this.editedIndex, 1);
+          this.$store.dispatch("toast/snackbar", {
+            type: "success",
+            message: `${this.itemToDelete.client.Name}'s job was deleted successfully`,
+            timeout: 2000
+          });
+          this.closeDelete();
+        })
+        .catch(err => {
+          console.log(err.response);
+        });
     },
 
     close() {
       this.dialog = false;
+      this.$refs.jobForm.reset();
       this.$nextTick(() => {
         this.editedItem = this.defaultItem;
         this.editedIndex = -1;
@@ -905,24 +907,59 @@ export default {
     async save() {
       this.loading = true;
       let editedItem = this.editedItem;
-      if (this.editedIndex > -1) {
-        await Object.assign(this.jobs[this.editedIndex], editedItem);
-        this.loading = false;
-        this.$store.dispatch("toast/snackbar", {
-          type: "success",
-          message: `${editedItem.client.name}'s job was updated successfully`,
-          timeout: 2000
-        });
-      } else {
-        await this.jobs.unshift(editedItem);
-        this.loading = false;
-        this.$store.dispatch("toast/snackbar", {
-          type: "success",
-          message: `${editedItem.client.name}'s job was saved successfully`,
-          timeout: 2000
-        });
+      if (editedItem.client.Name) {
+        editedItem.client = editedItem.client.id;
       }
-      this.close();
+      if (this.editedIndex > -1) {
+        try {
+          let { id, ...rest } = editedItem;
+          await this.$axios(`/job/update/${editedItem.id}`, {
+            method: "PUT",
+            data: rest
+          }).then(async res => {
+            await Object.assign(this.jobs[this.editedIndex], res.data);
+            this.loading = false;
+            this.close();
+            this.$store.dispatch("toast/snackbar", {
+              type: "success",
+              message: `${res.data.client.Name}'s job was updated successfully`,
+              timeout: 3000
+            });
+          });
+        } catch (err) {
+          console.log(err.response);
+          this.loading = false;
+          this.$store.dispatch("toast/snackbar", {
+            type: "error",
+            message: err.response.data.message,
+            timeout: 3000
+          });
+        }
+      } else {
+        try {
+          await this.$axios("/job/create", {
+            method: "POST",
+            data: editedItem
+          }).then(res => {
+            this.jobs.push(res.data);
+            this.loading = false;
+            this.close();
+            this.$store.dispatch("toast/snackbar", {
+              type: "success",
+              message: `${res.data.client.Name}'s job was saved successfully`,
+              timeout: 3000
+            });
+          });
+        } catch (err) {
+          this.loading = false;
+          console.log(err.response);
+          this.$store.dispatch("toast/snackbar", {
+            type: "error",
+            message: err.response.data.message,
+            timeout: 3000
+          });
+        }
+      }
     },
 
     clear() {
@@ -933,4 +970,8 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.v-input__control {
+  min-height: 20px !important;
+}
+</style>

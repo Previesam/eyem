@@ -1,6 +1,5 @@
-POST http://localhost:3000/api/auth/refresh
+POST http://localhost:3000/api/job/create
 content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDczNjI1NjM0OGFiMWZlZjg4YzU4MGUiLCJpYXQiOjE2MTg4NTcwNDcsImV4cCI6MTYxODg1ODg0NywiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDozMDAwIn0.UcBwsRazSoSIiELi7TYxeaK_ePIc3SSAzN2RJ96512A
 
-{
- "refresh_token": "UUGSCxvRZLUKpasl"
-}
+{"ref": "", "client":"60613dfbfcc47e2e8dacf509","dateIn":"2021-04-19","dateOut":"2021-04-19","prescription":{"re":"+2.00/","le":"+2.00/","add":"+1.00"},"status":"open","frame":"Gucci","lens":"Bifocal","total":"20000","deposit":"10000","balance":"10000","optician":"Samuel","doctor":"Samuel"}
