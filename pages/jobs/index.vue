@@ -125,14 +125,17 @@
                       </v-menu>
                     </v-col>
                     <v-col cols="12" sm="6" md="6">
-                      <v-autocomplete
+                      <v-combobox
                         :items="clients"
                         v-model="editedItem.client"
                         prepend-icon="mdi-account"
                         label="Patient"
-                        item-value="id"
-                        :item-text="item => `${item.Code} - ${item.Name}`"
-                      ></v-autocomplete>
+                        hide-no-data
+                        no-filter
+                        :loading="clientIsLoading"
+                        :item-text="selectItem"
+                        :search-input.sync="clientSearch"
+                      ></v-combobox>
                     </v-col>
                     <v-col cols="12" sm="6" md="6">
                       <v-text-field
@@ -639,7 +642,9 @@ export default {
         doctor: ""
       },
       itemToDelete: {},
-      clientLoading: false
+      clientIsLoading: false,
+      clientSearch: "",
+      clients: []
     };
   },
 
@@ -649,14 +654,6 @@ export default {
     },
     formTitle() {
       return this.editedIndex === -1 ? "New Job" : "Edit Job";
-    },
-    clients() {
-      let clients = this.$store.state.clients
-        .filter(item => item.Name)
-        .map(m => {
-          return m;
-        });
-      return clients;
     },
     re() {
       return this.editedItem.prescription.re;
@@ -703,6 +700,12 @@ export default {
   },
 
   watch: {
+    clientSearch(val) {
+      if (!val) {
+        return;
+      }
+      this.filterClients(val);
+    },
     dialog(val) {
       val || this.close();
     },
@@ -759,14 +762,54 @@ export default {
   async mounted() {
     this.loading = true;
     await this.initialize();
+    this.filterClients("");
     this.loading = false;
     if (!localStorage.getItem("editedJob")) {
       localStorage.setItem("editedJob", JSON.stringify(this.defaultItem));
     }
-    await this.updateStorage(true);
+    this.updateStorage(true);
   },
 
   methods: {
+    convertItem(item) {
+      return ({ Name: item.Name, id: item.id })
+    },
+    selectItem(item) {
+      var text = item.Code && item.Name ? `${item.Code} - ${item.Name}` : "Please select a patient"
+      return text;
+    },
+
+    filterClients(query) {
+      // cancel pending call
+      clearTimeout(this._timerId);
+
+      this.clients = [];
+
+      this.clientIsLoading = true;
+
+      this._timerId = setTimeout(() => {
+        let clients = this.$store.state.clients
+          .filter(item => item.Name)
+          .map(m => m);
+
+        if (query.length < 1) {
+          this.clientIsLoading = false;
+          this.clients = clients;
+          return;
+        }
+
+        this.clients = clients.filter(c => {
+          return (
+            encodeURIComponent(c.Code)
+              .toString()
+              .toLowerCase()
+              .includes(encodeURIComponent(query).toLowerCase()) ||
+            c.Name.toLowerCase().includes(query.toLowerCase())
+          );
+        });
+        this.clientIsLoading = false;
+      }, 500);
+    },
     showSelect() {
       this.allowSelect = !this.allowSelect;
     },
@@ -871,7 +914,7 @@ export default {
 
     async deleteItemConfirm() {
       await this.$axios(`/job/delete/${this.itemToDelete.id}`, {
-        method: "DELETE",
+        method: "DELETE"
       })
         .then(res => {
           this.jobs.splice(this.editedIndex, 1);

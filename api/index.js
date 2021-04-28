@@ -199,7 +199,7 @@ var updateClients = async () => {
   timer = setTimeout(updateClients, 2 * 60000);
 };
 
-// updateClients();
+updateClients();
 
 // define a simple route
 app.get("/", (req, res) => {

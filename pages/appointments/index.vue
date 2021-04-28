@@ -125,6 +125,7 @@
                     <v-autocomplete
                       :items="clients"
                       v-model="editedItem.client"
+                      :search-input.sync="clientSearch"
                       prepend-icon="mdi-account"
                       label="Patient"
                     ></v-autocomplete>
@@ -266,6 +267,7 @@ export default {
       menu3: false,
       dialog: false,
       dialogDelete: false,
+      clientSearch: null,
       headers: [
         {
           text: "Patient Name",
@@ -350,6 +352,9 @@ export default {
   },
 
   watch: {
+    clientSearch(val) {
+      console.log(val)
+    },
     dialog(val) {
       val || this.close();
     },
