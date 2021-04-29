@@ -117,8 +117,8 @@
                   cumque enim quibusdam odit, molestias aliquid sed doloremque
                   consequuntur similique suscipit maiores aut!
                 </p>
-                <v-card-action class="float-right caption pr-2"
-                  >8:40pm</v-card-action
+                <v-card-actions class="float-right caption pr-2"
+                  >8:40pm</v-card-actions
                 >
               </v-card>
             </v-col>
@@ -136,8 +136,8 @@
                   Impedit odio quod culpa magni cum voluptatem deserunt dolor
                   cumque enim quibusdam odit.
                 </p>
-                <v-card-action class="float-right caption pr-2"
-                  >8:40pm</v-card-action
+                <v-card-actions class="float-right caption pr-2"
+                  >8:40pm</v-card-actions
                 >
               </v-card>
             </v-col>
@@ -155,8 +155,8 @@
                   Impedit odio quod culpa magni cum voluptatem deserunt dolor
                   cumque enim quibusdam odit.
                 </p>
-                <v-card-action class="float-right caption pr-2"
-                  >8:40pm</v-card-action
+                <v-card-actions class="float-right caption pr-2"
+                  >8:40pm</v-card-actions
                 >
               </v-card>
             </v-col>
@@ -176,8 +176,8 @@
                   cumque enim quibusdam odit, molestias aliquid sed doloremque
                   consequuntur similique suscipit maiores aut!
                 </p>
-                <v-card-action class="float-right caption pr-2"
-                  >8:40pm</v-card-action
+                <v-card-actions class="float-right caption pr-2"
+                  >8:40pm</v-card-actions
                 >
               </v-card>
             </v-col>

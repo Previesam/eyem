@@ -23,7 +23,7 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
   await Job.find({})
-    .populate("client", "Name")
+    .populate({ path: "client", select: ["Name","Code"]})
     .exec((err, data) => {
       if (err) {
         console.log(err);
@@ -40,7 +40,7 @@ exports.findAll = async (req, res) => {
 exports.findOne = (req, res) => {
   Job.findById(req.params.id)
     .then(data => {
-      data.execPopulate("client", "Name").then(data => {
+      data.execPopulate({ path: "client", select: ["Name","Code"]}).then(data => {
         res.send(data);
       });
     })
@@ -60,7 +60,7 @@ exports.findOne = (req, res) => {
 exports.update = async (req, res) => {
   await Job.findByIdAndUpdate(req.params.id, req.body, { new: true })
     .then(data => {
-      data.execPopulate("client", "Name").then(data => {
+      data.execPopulate({ path: "client", select: ["Name","Code"]}).then(data => {
         res.send(data);
       });
     })

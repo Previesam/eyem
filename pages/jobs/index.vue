@@ -73,7 +73,7 @@
                         <template v-slot:activator="{ on, attrs }">
                           <v-text-field
                             v-model="dateInFormatted"
-                            label="Date"
+                            label="Date In"
                             hint="MM/DD/YYYY"
                             persistent-hint
                             prepend-icon="mdi-calendar"
@@ -106,7 +106,7 @@
                         <template v-slot:activator="{ on, attrs }">
                           <v-text-field
                             v-model="dateOutFormatted"
-                            label="Date"
+                            label="Date Out"
                             hint="MM/DD/YYYY"
                             persistent-hint
                             prepend-icon="mdi-calendar"
@@ -130,7 +130,6 @@
                         v-model="editedItem.client"
                         prepend-icon="mdi-account"
                         label="Patient"
-                        hide-no-data
                         no-filter
                         :loading="clientIsLoading"
                         :item-text="selectItem"
@@ -546,8 +545,9 @@ export default {
       jobToView: {
         id: "",
         client: {
-          Name: "",
-          id: ""
+          id: "",
+          Code: "",
+          Name: ""
         },
         dateIn: new Date().toISOString().substr(0, 10),
         dateOut: new Date().toISOString().substr(0, 10),
@@ -599,8 +599,9 @@ export default {
       editedIndex: -1,
       editedItem: {
         client: {
-          Name: "",
-          id: ""
+          id: "",
+          Code: "",
+          Name: ""
         },
         dateIn: new Date().toISOString().substr(0, 10),
         dateOut: new Date().toISOString().substr(0, 10),
@@ -622,8 +623,9 @@ export default {
       dateOutFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
       defaultItem: {
         client: {
-          Name: "",
-          id: ""
+          id: "",
+          Code: "",
+          Name: ""
         },
         dateIn: new Date().toISOString().substr(0, 10),
         dateOut: new Date().toISOString().substr(0, 10),
@@ -722,7 +724,6 @@ export default {
       this.saveToLocalStorage();
     },
     dateIn() {
-      console.log(this.$refs.jobForm);
       this.dateInFormatted = this.formatDate(this.editedItem.dateIn);
       this.saveToLocalStorage();
     },
@@ -762,7 +763,9 @@ export default {
   async mounted() {
     this.loading = true;
     await this.initialize();
-    this.filterClients("");
+    this.clients = this.$store.state.clients
+      .filter(item => item.Name)
+      .map(m => m);
     this.loading = false;
     if (!localStorage.getItem("editedJob")) {
       localStorage.setItem("editedJob", JSON.stringify(this.defaultItem));
@@ -772,10 +775,10 @@ export default {
 
   methods: {
     convertItem(item) {
-      return ({ Name: item.Name, id: item.id })
+      return { Name: item.Name, id: item.id, Code: item.Code };
     },
     selectItem(item) {
-      var text = item.Code && item.Name ? `${item.Code} - ${item.Name}` : "Please select a patient"
+      var text = item.Code && item.Name ? `${item.Code} - ${item.Name}` : "";
       return text;
     },
 
@@ -791,12 +794,6 @@ export default {
         let clients = this.$store.state.clients
           .filter(item => item.Name)
           .map(m => m);
-
-        if (query.length < 1) {
-          this.clientIsLoading = false;
-          this.clients = clients;
-          return;
-        }
 
         this.clients = clients.filter(c => {
           return (
@@ -871,6 +868,8 @@ export default {
         showDialog &&
         (editedItem.id ||
           editedItem.client.id ||
+          editedItem.client.Name ||
+          editedItem.client.Code ||
           editedItem.prescription.re ||
           editedItem.prescription.le ||
           editedItem.prescription.add ||
@@ -902,7 +901,6 @@ export default {
     editItem(item) {
       this.editedIndex = this.jobs.indexOf(item);
       this.editedItem = item;
-      console.log(item);
       this.dialog = true;
     },
 
@@ -932,7 +930,10 @@ export default {
 
     close() {
       this.dialog = false;
+      debugger;
       this.$refs.jobForm.reset();
+      localStorage.removeItem("editedJob");
+      this.clientSearch = null;
       this.$nextTick(() => {
         this.editedItem = this.defaultItem;
         this.editedIndex = -1;
