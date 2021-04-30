@@ -331,7 +331,42 @@
                   }}</span>
                 </div>
                 <div class="ml-auto">
-                  <v-chip small color="primary">{{ jobToView.status }}</v-chip>
+                  <v-menu
+                    transition="slide-y-transition"
+                    bottom
+                    close-on-content-click
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-chip
+                        small
+                        :color="getStatusColor(jobToView.status)"
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-avatar left>
+                          <v-icon small
+                            >mdi-checkbox-marked-circle</v-icon
+                          > </v-avatar
+                        ><span>{{
+                          defaultStatuses.filter(
+                            m => m.value === jobToView.status
+                          )[0].title
+                        }}</span>
+                      </v-chip>
+                    </template>
+                    <v-list dense>
+                      <v-list-item
+                        v-for="(status, i) in defaultStatuses"
+                        :key="i"
+                        link
+                      >
+                        <v-list-item-title
+                          @click="changeStatus(jobToView, status.value)"
+                          >{{ status.title }}</v-list-item-title
+                        >
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
                 </div>
               </div>
               <div class="my-2 d-flex">
@@ -848,12 +883,37 @@ export default {
       }
     },
 
-    changeStatus(item, newValue) {
-      if (item.status === newValue) return;
+    async changeStatus(item, newValue) {
+      this.loading = true;
+      if (item.status === newValue) return (this.loading = false);
       let index = this.jobs.indexOf(item);
       item.status = newValue;
-      Object.assign(this.jobs[index], item);
-      localStorage.removeItem("editedJob");
+      try {
+        let { id, ...rest } = item;
+        await this.$axios(`/job/update/${item.id}`, {
+          method: "PUT",
+          data: rest
+        }).then(async res => {
+          await Object.assign(this.jobs[index], res.data);
+          this.dialogViewJob = false;
+          this.loading = false;
+          this.$store.dispatch("toast/snackbar", {
+            type: "success",
+            message: `${res.data.client.Name}'s job was updated successfully`,
+            timeout: 3000
+          });
+          localStorage.removeItem("editedJob");
+        });
+      } catch (err) {
+        console.log(err.response);
+        this.dialogViewJob = false;
+        this.loading = false;
+        this.$store.dispatch("toast/snackbar", {
+          type: "error",
+          message: err.response.data.message,
+          timeout: 3000
+        });
+      }
     },
 
     saveToLocalStorage() {
