@@ -17,7 +17,12 @@ const JobSchema = mongoose.Schema(
     prescription: { type: Object, required: true },
     total: { type: String },
     deposit: { type: String },
-    balance: { type: String }
+    balance: { type: String },
+    branch: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "Branch"
+    }
   },
   { toJSON: { virtuals: true }, timestamps: true }
 );

@@ -10,11 +10,11 @@ module.exports = (app) => {
 
     // Route to get all branches
 
-    app.get('/branches', branch.findAll);
+    app.get('/branches', verifyToken, branch.findAll);
 
     // Route to get one branch
 
-    app.get('/branch/:id', branch.findOne);
+    app.get('/branch/:id', verifyToken, branch.findOne);
 
 
     // Route to update branch

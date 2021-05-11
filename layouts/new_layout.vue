@@ -1,11 +1,5 @@
 <template>
-  <v-container class="app-container" fluid>
-    <v-main class="mt-2 ml-2">
-      <v-container fluid>
-        <nuxt />
-      </v-container>
-    </v-main>
-  </v-container>
+  <nuxt />
 </template>
 
 <script>
@@ -192,6 +186,12 @@ export default {
 };
 </script>
 <style>
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+}
 /* width */
 ::-webkit-scrollbar {
   width: 8px;

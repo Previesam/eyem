@@ -6,7 +6,8 @@ export const state = () => ({
     loading: false,
     branch: {
         "Key": "RXllbWFzdGVycyBMaW1pdGVkIC0gVXRha28sIEFidWph",
-        "Name": "Utako, Abuja"
+        "Name": "Utako, Abuja",
+        "id": "6057badcdad22aa9a788766a"
     },
 })
 

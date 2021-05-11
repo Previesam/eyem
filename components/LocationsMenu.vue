@@ -23,8 +23,8 @@
         </v-tooltip>
       </template>
       <v-list>
-        <v-list-item v-for="(item, index) in items" :key="index" link>
-          <v-list-item-title @click="switchBranch(item)">{{
+        <v-list-item v-for="(item, index) in items" :key="index" link @click.prevent="switchBranch(item)">
+          <v-list-item-title>{{
             item.Name
           }}</v-list-item-title>
         </v-list-item>

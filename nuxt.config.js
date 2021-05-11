@@ -36,7 +36,7 @@ export default {
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
   plugins: [
     // add created plugin:
-    "~/plugins/v-mask.js"
+    "~/plugins/v-mask.js",
     // { src: "~/plugins/ionic.js", mode: "client" }
   ],
 

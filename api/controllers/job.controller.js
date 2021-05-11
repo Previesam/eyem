@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
 var Job = require("../models/job.model");
+const populateQuery = [
+  { path: "client", select: ["Name", "Code"] },
+  { path: "branch", select: ["Name", "Key"] }
+];
 
 // Handler for creating new job
 
@@ -8,9 +12,11 @@ exports.create = async (req, res) => {
   await new Job(newJob)
     .save()
     .then(async data => {
-      data.execPopulate("client", "Name").then(data => {
-        res.send(data);
-      });
+      data
+        .execPopulate(populateQuery)
+        .then(data => {
+          res.send(data);
+        });
     })
     .catch(err => {
       res.status(500).send({
@@ -23,7 +29,7 @@ exports.create = async (req, res) => {
 
 exports.findAll = async (req, res) => {
   await Job.find({})
-    .populate({ path: "client", select: ["Name","Code"]})
+    .populate(populateQuery)
     .exec((err, data) => {
       if (err) {
         console.log(err);
@@ -40,9 +46,11 @@ exports.findAll = async (req, res) => {
 exports.findOne = (req, res) => {
   Job.findById(req.params.id)
     .then(data => {
-      data.execPopulate({ path: "client", select: ["Name","Code"]}).then(data => {
-        res.send(data);
-      });
+      data
+        .execPopulate(populateQuery)
+        .then(data => {
+          res.send(data);
+        });
     })
     .catch(err => {
       if (err.kind === "ObjectId") {
@@ -60,9 +68,12 @@ exports.findOne = (req, res) => {
 exports.update = async (req, res) => {
   await Job.findByIdAndUpdate(req.params.id, req.body, { new: true })
     .then(data => {
-      data.execPopulate({ path: "client", select: ["Name","Code"]}).then(data => {
-        res.send(data);
-      });
+      data
+        .execPopulate(populateQuery)
+        .then(data => {
+          console.log(data);
+          res.send(data);
+        });
     })
     .catch(err => {
       if (err.kind === "ObjectId") {
