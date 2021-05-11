@@ -46,7 +46,7 @@
       fixed
       max-width="100%"
       class="rounded"
-      :class="$vuetify.breakpoint.mobile ? 'mx-0 my-0' : 'ml-4 mr-2 my-2'"
+      :class="$vuetify.breakpoint.mobile ? 'mx-0 my-0' : 'ml-4 mr-2 my-1'"
       :height="$vuetify.breakpoint.mobile ? '50px' : '40px'"
       app
     >
@@ -102,8 +102,8 @@
 
     <!-- Begin Main Area -->
 
-    <v-main class="mt-2" :class="$vuetify.breakpoint.mobile ? '' : 'ml-2'">
-      <v-container fluid>
+    <v-main class="mt-0" :class="$vuetify.breakpoint.mobile ? '' : 'ml-2'">
+      <v-container style="overflow-x: hidden" :class="$vuetify.breakpoint.mobile ? 'mx-0 px-2' : 'mx-0 px-3'" fluid>
         <nuxt />
       </v-container>
     </v-main>

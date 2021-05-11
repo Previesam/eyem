@@ -4,7 +4,9 @@ const morgan = require("morgan");
 const compression = require("compression");
 const helmet = require("helmet");
 const Client = require("./models/client.model");
+const Branch = require("./models/branch.model");
 const axios = require("axios");
+const nodeHtmlToImage = require("node-html-to-image");
 
 // create express app
 const app = express();
@@ -59,8 +61,49 @@ let diffArray = (arr1, arr2) => {
 };
 
 let timer;
+let branchTimer;
+
+var updateBranches = async () => {
+  await axios("https://manager.eyemastersng.com/api/index.json", {
+    method: "GET",
+    headers: {
+      Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE="
+    }
+  })
+    .then(async res => {
+      let branches = res.data;
+
+      let resolvedBranches = await branches.filter(
+        branch =>
+          branch.Name.includes("Eyemasters") ||
+          branch.Name.includes("1st Contact")
+      );
+
+      for (branch of resolvedBranches) {
+        branch.Name = branch.Name.split(" - ")[1];
+        Branch.findOne({ Key: branch.Key }, (err, data) => {
+          if (err) {
+            return console.log(err.message);
+          }
+          if (!data) {
+            let newBranch = new Branch(branch);
+            newBranch
+              .save()
+              .then(data => console.log(data))
+              .catch(err => {
+              });
+            return console.log("data");
+          }
+        });
+      }
+    })
+    .catch(err => {
+      return console.log(err);
+    });
+};
 
 var updateClients = async () => {
+  await updateBranches();
   if (timer) {
     clearTimeout(timer);
   }
@@ -96,15 +139,13 @@ var updateClients = async () => {
           }
         )
           .then(async res => {
-            
             if (!res.data) return;
 
             let links = res.data;
 
             await Client.find({ Branch: branch.Name })
               .then(async data => {
-
-                if(!data) return;
+                if (!data) return;
 
                 let clients = data.map(m => m.Key);
 
@@ -199,11 +240,18 @@ var updateClients = async () => {
   timer = setTimeout(updateClients, 2 * 60000);
 };
 
-updateClients();
+// updateClients();
+
+
 
 // define a simple route
 app.get("/", (req, res) => {
   res.json({ message: "Api is working" });
+});
+
+app.get("/html-image", (req, res) => {
+  let html  = req.body.html;
+  res.send(html);
 });
 
 // Require routes
@@ -212,7 +260,7 @@ require("./routes/user.route.js")(app);
 require("./routes/job.route.js")(app);
 require("./routes/client.route.js")(app);
 require("./routes/branch.route.js")(app);
-// require('./routes/product.route.js')(app);
+require('./routes/email.route.js')(app);
 // require('./routes/event.route.js')(app);
 // require('./routes/service.route.js')(app);
 // require('./routes/role.route.js')(app);

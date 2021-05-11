@@ -4,7 +4,9 @@
       <v-card-title>
         <!-- <span class="mr-5 subheading primary--text">Appointments</span> -->
 
-        <v-btn icon @click="showSelect()"><v-icon>mdi-menu-open</v-icon></v-btn>
+        <v-btn icon @click="showSelect()" class="mr-3"
+          ><v-icon>mdi-menu</v-icon></v-btn
+        >
 
         <!-- Begin Search Box -->
 
@@ -306,12 +308,12 @@
           overlay-color="blue"
           width="500px"
         >
-          <v-card>
+          <v-card :loading="loading">
             <v-divider></v-divider>
             <v-card-text class="pa-2">
               <div class="mb-2 subtitle-1 d-flex">
                 <div>
-                  <div class="caption">25/02/2021</div>
+                  <div class="caption">{{ formatDate(jobToView.dateIn) }}</div>
                   <div class="subtitle-2 font-weight-bold">
                     Job # {{ jobToView.id }}
                   </div>
@@ -331,7 +333,42 @@
                   }}</span>
                 </div>
                 <div class="ml-auto">
-                  <v-chip small color="primary">{{ jobToView.status }}</v-chip>
+                  <v-menu
+                    transition="slide-y-transition"
+                    bottom
+                    close-on-content-click
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-chip
+                        small
+                        :color="getStatusColor(jobToView.status)"
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        <v-avatar left>
+                          <v-icon small
+                            >mdi-checkbox-marked-circle</v-icon
+                          > </v-avatar
+                        ><span>{{
+                          defaultStatuses.filter(
+                            m => m.value === jobToView.status
+                          )[0].title
+                        }}</span>
+                      </v-chip>
+                    </template>
+                    <v-list dense>
+                      <v-list-item
+                        v-for="(status, i) in defaultStatuses"
+                        :key="i"
+                        link
+                        @click="changeStatus(jobToView, status.value)"
+                      >
+                        <v-list-item-title>{{
+                          status.title
+                        }}</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
                 </div>
               </div>
               <div class="my-2 d-flex">
@@ -468,10 +505,13 @@
               </v-chip>
             </template>
             <v-list dense>
-              <v-list-item v-for="(status, i) in defaultStatuses" :key="i" link>
-                <v-list-item-title @click="changeStatus(item, status.value)">{{
-                  status.title
-                }}</v-list-item-title>
+              <v-list-item
+                @click="changeStatus(item, status.value)"
+                v-for="(status, i) in defaultStatuses"
+                :key="i"
+                link
+              >
+                <v-list-item-title>{{ status.title }}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -563,7 +603,8 @@ export default {
         deposit: "",
         balance: "",
         optician: "",
-        doctor: ""
+        doctor: "",
+        branch: ""
       },
       dialogDelete: false,
       headers: [
@@ -617,7 +658,8 @@ export default {
         deposit: "",
         balance: "",
         optician: "",
-        doctor: ""
+        doctor: "",
+        branch: ""
       },
       dateInFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
       dateOutFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
@@ -641,7 +683,8 @@ export default {
         deposit: "",
         balance: "",
         optician: "",
-        doctor: ""
+        doctor: "",
+        branch: ""
       },
       itemToDelete: {},
       clientIsLoading: false,
@@ -763,6 +806,19 @@ export default {
   async mounted() {
     this.loading = true;
     await this.initialize();
+    if (this.$route.query.id) {
+      let job = this.jobs.filter(item => item.id === this.$route.query.id);
+      if (job.length > 0) {
+        this.view(job[0]);
+      } else {
+        this.$router.push("jobs");
+        this.$store.dispatch("toast/snackbar", {
+          type: "error",
+          message: `Invalid URL parameter`,
+          timeout: 3000
+        });
+      }
+    }
     this.clients = this.$store.state.clients
       .filter(item => item.Name)
       .map(m => m);
@@ -801,7 +857,9 @@ export default {
               .toString()
               .toLowerCase()
               .includes(encodeURIComponent(query).toLowerCase()) ||
-            c.Name.toLowerCase().includes(query.toLowerCase())
+            encodeURIComponen(c.Name)
+              .toString().toLowerCase()
+              .includes(encodeURIComponent(query).toLowerCase())
           );
         });
         this.clientIsLoading = false;
@@ -848,12 +906,35 @@ export default {
       }
     },
 
-    changeStatus(item, newValue) {
-      if (item.status === newValue) return;
+    async changeStatus(item, newValue) {
+      this.loading = true;
+      if (item.status === newValue) return (this.loading = false);
       let index = this.jobs.indexOf(item);
       item.status = newValue;
-      Object.assign(this.jobs[index], item);
-      localStorage.removeItem("editedJob");
+      try {
+        let { id, ...rest } = item;
+        await this.$axios(`/job/update/${item.id}`, {
+          method: "PUT",
+          data: rest
+        }).then(async res => {
+          await Object.assign(this.jobs[index], res.data);
+          this.loading = false;
+          this.$store.dispatch("toast/snackbar", {
+            type: "success",
+            message: `${res.data.client.Name}'s job was updated successfully`,
+            timeout: 3000
+          });
+          localStorage.removeItem("editedJob");
+        });
+      } catch (err) {
+        console.log(err.response);
+        this.loading = false;
+        this.$store.dispatch("toast/snackbar", {
+          type: "error",
+          message: err.response.data.message,
+          timeout: 3000
+        });
+      }
     },
 
     saveToLocalStorage() {
@@ -980,6 +1061,8 @@ export default {
           });
         }
       } else {
+        editedItem.branch = this.$store.state.branch.id;
+        console.log(editedItem);
         try {
           await this.$axios("/job/create", {
             method: "POST",

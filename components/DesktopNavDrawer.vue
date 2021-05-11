@@ -5,7 +5,7 @@
     height="92vh"
     width="200"
     app
-    class="mt-2 mb-8 mx-2 rounded"
+    class="mt-1 mb-7 mx-2 rounded"
   >
     <v-list dense>
       <v-list-item

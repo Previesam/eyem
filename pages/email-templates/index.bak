@@ -1,0 +1,79 @@
+<template>
+  <div id="email-editor-container">
+    <div>
+      <h1>Vue Email Editor (Demo)</h1>
+      <button v-on:click="saveDesign">Save Design</button>
+      <button v-on:click="exportHtml">Export HTML</button>
+    </div>
+    <EmailEditor
+      :appearance="appearance"
+      :min-height="minHeight"
+      :project-id="projectId"
+      :locale="locale"
+      :tools="tools"
+      :options="options"
+      ref="emailEditor"
+      v-on:load="editorLoaded"
+    />
+  </div>
+</template>
+
+<script>
+import { EmailEditor } from "vue-email-editor";
+
+export default {
+  layout: "new_layout",
+  name: "app",
+  components: {
+    EmailEditor
+  },
+  data() {
+    return {
+      minHeight: "100%",
+      locale: "en",
+      projectId: 0, // replace with your project id
+      tools: {
+        // disable image tool
+        // image: {
+        //     enabled: false
+        // }
+      },
+      options: {},
+      appearance: {
+        theme: "dark",
+        panels: {
+          tools: {
+            dock: "right"
+          }
+        }
+      }
+    };
+  },
+  methods: {
+    editorLoaded() {
+      // Pass the template JSON here
+      this.$refs.emailEditor.editor.loadDesign(
+        JSON.parse(localStorage.getItem("design")) || {}
+      );
+    },
+    saveDesign() {
+      this.$refs.emailEditor.editor.saveDesign(design => {
+        localStorage.setItem("design", JSON.stringify(design));
+        console.log("saveDesign", design);
+      });
+    },
+    exportHtml() {
+      this.$refs.emailEditor.editor.exportHtml(data => {
+        console.log("exportHtml", data);
+      });
+    }
+  }
+};
+</script>
+
+<style>
+#email-editor-container,
+#editor-1 {
+  height: 90vh;
+}
+</style>
