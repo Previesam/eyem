@@ -261,7 +261,7 @@ require("./routes/job.route.js")(app);
 require("./routes/client.route.js")(app);
 require("./routes/branch.route.js")(app);
 require('./routes/email.route.js')(app);
-// require('./routes/event.route.js')(app);
+require('./routes/role.route.js')(app);
 // require('./routes/service.route.js')(app);
 // require('./routes/role.route.js')(app);
 

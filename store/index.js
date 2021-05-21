@@ -1,54 +1,58 @@
 const axios = require("axios");
 
 export const state = () => ({
-    drawer: false,
-    clients: [],
-    loading: false,
-    branch: {
-        "Key": "RXllbWFzdGVycyBMaW1pdGVkIC0gVXRha28sIEFidWph",
-        "Name": "Utako, Abuja",
-        "id": "6057badcdad22aa9a788766a"
-    },
-})
+  drawer: false,
+  clients: [],
+  loading: false,
+  branch: {
+    Key: "RXllbWFzdGVycyBMaW1pdGVkIC0gVXRha28sIEFidWph",
+    Name: "Utako, Abuja",
+    id: "6057badcdad22aa9a788766a"
+  },
+  currentItem: null
+});
 
 export const mutations = {
-    toggleDrawer(state) {
-        state.drawer = !state.drawer;
-        state.drawer = false;
-    },
+  setCurrentItem(state, item) {
+    state.currentItem = item
+  },
 
-    async updateClients(state) {
+  toggleDrawer(state) {
+    state.drawer = !state.drawer;
+    state.drawer = false;
+  },
 
-      state.loading = true;
+  async updateClients(state) {
+    state.loading = true;
 
-      state.clients = [];
+    state.clients = [];
 
-      let clients = await axios(`/api/clients`, {
-        method: "GET"
+    let clients = await axios(`/api/clients`, {
+      method: "GET"
+    })
+      .then(res => {
+        return res.data;
       })
-        .then(res => {
-          return res.data;
-        })
-        .catch(err => {
-          console.log(err);
-        });
+      .catch(err => {
+        console.log(err);
+      });
 
-      // Send data to store
+    // Send data to store
 
-      state.clients = clients
+    state.clients = clients;
 
-      state.loading = false;
-    },
+    state.loading = false;
+  },
 
-    clearClients(state) {
-        state.clients = [];
-    },
+  clearClients(state) {
+    state.clients = [];
+  },
 
-    toggleLoading(state, payload) {
-        state.loading = payload;
-    },
+  toggleLoading(state, payload) {
+    state.loading = payload;
+  },
 
-    switchBranch(state, payload) {
-        state.branch = payload;
-    }
-}
+  switchBranch(state, payload) {
+    state.branch = payload;
+  }
+};

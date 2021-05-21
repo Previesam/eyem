@@ -40,6 +40,12 @@
 
     <!-- End Desktop Navigation Drawer -->
 
+    <!-- Settings Drawer -->
+
+    <SettingsDrawer :callToggleDrawer="settingsDrawer" />
+    
+    <!-- End Settings Drawer -->
+
     <!-- Begin App Toolbar -->
 
     <v-app-bar
@@ -87,7 +93,10 @@
         <v-icon small>mdi-bell</v-icon>
       </v-btn>
 
-      <UserMenu :userMenu="userMenu" />
+      <UserMenu
+        @toggleSettingsDrawer="toggleSettingsDrawer"
+        :userMenu="userMenu"
+      />
 
       <!-- End User Menu -->
     </v-app-bar>
@@ -103,7 +112,11 @@
     <!-- Begin Main Area -->
 
     <v-main class="mt-0" :class="$vuetify.breakpoint.mobile ? '' : 'ml-2'">
-      <v-container style="overflow-x: hidden" :class="$vuetify.breakpoint.mobile ? 'mx-0 px-2' : 'mx-0 px-3'" fluid>
+      <v-container
+        style="overflow-x: hidden"
+        :class="$vuetify.breakpoint.mobile ? 'mx-0 px-2' : 'mx-0 px-3'"
+        fluid
+      >
         <nuxt />
       </v-container>
     </v-main>
@@ -131,9 +144,10 @@
 <script>
 import MobileNavDrawer from "../components/MobileNavDrawer";
 import DesktopNavDrawer from "../components/DesktopNavDrawer";
-import UserMenu from "../components/UserMenu.vue";
-import LocationsMenu from "../components/LocationsMenu.vue";
-import BreadCrumb from "../components/BreadCrumb.vue";
+import UserMenu from "../components/UserMenu";
+import LocationsMenu from "../components/LocationsMenu";
+import BreadCrumb from "../components/BreadCrumb";
+import SettingsDrawer from "../components/SettingsDrawer";
 
 export default {
   components: {
@@ -142,7 +156,8 @@ export default {
     DesktopNavDrawer,
     UserMenu,
     LocationsMenu,
-    BreadCrumb
+    BreadCrumb,
+    SettingsDrawer
   },
   name: "DefaultView",
   data() {
@@ -183,6 +198,7 @@ export default {
       miniVariant: false,
       userMenu: false,
       drawer: false,
+      settingsDrawer: false,
       branches: []
     };
   },
@@ -211,6 +227,10 @@ export default {
   },
 
   methods: {
+    toggleSettingsDrawer() {
+      this.settingsDrawer = !this.settingsDrawer;
+    },
+
     // Implementing Dark Mode and Auto Light or Dark Mode
 
     initDarkMode() {

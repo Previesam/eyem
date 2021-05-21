@@ -3,6 +3,13 @@
 const User = require("../models/user.model.js");
 const Roles = require("../models/role.model.js");
 
+const populateQuery = [
+  { path: "role", select: ["name", "permissions"] },
+  { path: "defaultBranch", select: ["Name", "Key"] }
+];
+
+
+
 // All Imports
 
 const jwt = require("jsonwebtoken");
@@ -11,25 +18,25 @@ const moment = require("moment");
 const Config = require("../config/settings.config.js");
 const RefreshToken = require("../models/refresh-token.model");
 const randtoken = require("rand-token");
-const RoleType = require("../config/roles.js");
+const { secret } = require("../config/settings.config.js");
 const SALT_WORK_FACTOR = 10;
 
 // Method for creating new user
 
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
   const errors = [];
 
   // Validating entered data
 
   if (!req.body.fullname) {
     error.push({
-      message: "First name cannot be empty"
+      message: "Full name cannot be empty"
     });
   }
 
   if (req.body.fullname.length < 3) {
     errors.push({
-      message: "First name must have at least 3 characters"
+      message: "Full name must have at least 3 characters"
     });
   }
 
@@ -39,23 +46,29 @@ exports.create = (req, res) => {
     });
   }
 
+  if (!req.body.role) {
+    errors.push({
+      message: "Role cannot be empty"
+    });
+  }
+
   if (req.body.email.length < 3) {
     errors.push({
       message: "Email must have at least 3 characters"
     });
   }
 
-  if (!req.body.password) {
-    errors.push({
-      message: "Password cannot be empty"
-    });
-  }
+  // if (!req.body.password) {
+  //   errors.push({
+  //     message: "Password cannot be empty"
+  //   });
+  // }
 
-  if (req.body.password.length < 6) {
-    errors.push({
-      message: "Password must be atleast 6 characters long"
-    });
-  }
+  // if (req.body.password.length < 6) {
+  //   errors.push({
+  //     message: "Password must be atleast 6 characters long"
+  //   });
+  // }
 
   // if (req.body.password !== req.body.confirmPassword) {
   //   errors.push({
@@ -79,7 +92,7 @@ exports.create = (req, res) => {
 
   // Check if user already exist
 
-  User.find({ email: req.body.email })
+  await User.find({ email: req.body.email })
     .then(async data => {
       if (data.length > 0) {
         errors.push({
@@ -91,25 +104,21 @@ exports.create = (req, res) => {
 
         const user = new User(req.body);
 
-        // Add to Role User
-        const _role = RoleType.User;
+        user.regInfo.code = randtoken.uid(16);
 
-        // User Role Assignment
-
-        user.roles.push(_role);
+        user.regInfo.expiresIn = moment.now();
 
         // Password Encryption
 
-        user.hash = bcrypt.hashSync(req.body.password, 10);
+        // user.hash = bcrypt.hashSync(req.body.password, 10);
 
         // Save the new user
 
         user
           .save()
           .then(data => {
-            return res.status(201).send({
-              message: "User created successfully..."
-            });
+            let [regInfo, ...rest] = data.toObject();
+            return res.status(201).send(regInfo);
           })
           .catch(err => {
             errors.push({
@@ -131,10 +140,48 @@ exports.create = (req, res) => {
     });
 };
 
+// Method for finalizing signup
+
+exports.finalize = async (req, res) => {
+  await User.findById(req.params.id)
+    .then(data => {
+      let expiresIn = data.regInfo.expiresIn;
+      let code = data.regInfo.code;
+      if (moment.now(expiresIn) >= moment.now() && code === req.body.code) {
+        res.send({ message: "success" });
+      } else {
+        res.status(400).send({ message: "Invalid code or user" });
+      }
+    })
+    .catch(err => {
+      if (err.kind === "ObjectId") {
+        res.status(400).send({ message: "No user found with the provided id" });
+      }
+      res
+        .status(500)
+        .send({ message: "Unknown error occurred, please try again" });
+    });
+};
+
+// Method for setting user password
+
+exports.setPassword = (req, res) => {
+  if (req.body.password === !req.body.confirmPassword)
+    res
+      .status(400)
+      .send({ message: "Password and confirm password must match" });
+  if (req.body.oldPassword) {
+    if (bcrypt.compareSync(req.body.password, secret)) {
+    }
+  }
+};
+
 // Method for finding all users
 
-exports.findAll = (req, res) => {
-  User.find({})
+exports.findAll = async (req, res) => {
+  // fullname = "Samuel Adeyanju";
+  // console.log(welcomeEmail.replace("[fullname]", fullname));
+  await User.find({})
     .then(data => {
       return res.send(data);
     })
@@ -286,12 +333,12 @@ exports.authenticate = async (req, res, next) => {
               });
           }
         } else {
-          return res.status(400).send({ message: "Email or password is incorrect" });
+          return res
+            .status(400)
+            .send({ message: "Email or password is incorrect" });
         }
       } else {
-        return res
-          .status(400)
-          .send({ message: "Invalid Email address" });
+        return res.status(400).send({ message: "Invalid Email address" });
       }
     })
     .catch(err => {
@@ -310,7 +357,7 @@ exports.refresh = async (req, res) => {
     let _refresh = await RefreshToken.findOne({
       token: req.body.refresh_token
     });
-    if (_refresh && (moment.unix(_refresh.expiresUtc) > moment.now())) {
+    if (_refresh && moment.unix(_refresh.expiresUtc) > moment.now()) {
       const access_token = jwt.sign({ sub: _refresh.user }, Config.secret, {
         issuer: "http://localhost:3000",
         expiresIn: "30m" // Expires in 1 minutes

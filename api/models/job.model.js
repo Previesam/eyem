@@ -22,7 +22,9 @@ const JobSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "Branch"
-    }
+    },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
+    lastModifiedBy: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" }
   },
   { toJSON: { virtuals: true }, timestamps: true }
 );

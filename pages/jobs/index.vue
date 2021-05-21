@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card width="100%" class="rounded mt-1">
+    <v-card min-height="84vh" width="100%" class="rounded mt-1">
       <v-card-title>
         <!-- <span class="mr-5 subheading primary--text">Appointments</span> -->
 
@@ -575,6 +575,7 @@ export default {
         { title: "Open", value: "open" },
         { title: "In-Progess", value: "in-progress" },
         { title: "Delayed", value: "delayed" },
+        { title: "Quality Check", value: "quality-check" },
         { title: "Completed", value: "completed" }
       ],
       search: "",
@@ -846,20 +847,17 @@ export default {
 
       this.clientIsLoading = true;
 
+      let fmtQuery = encodeURIComponent(query);
+
       this._timerId = setTimeout(() => {
         let clients = this.$store.state.clients
           .filter(item => item.Name)
           .map(m => m);
 
         this.clients = clients.filter(c => {
-          return (
-            encodeURIComponent(c.Code)
-              .toString()
-              .toLowerCase()
-              .includes(encodeURIComponent(query).toLowerCase()) ||
-            encodeURIComponen(c.Name)
-              .toString().toLowerCase()
-              .includes(encodeURIComponent(query).toLowerCase())
+          let objString = `${c.Code} - ${c.Name}`;
+          return encodeURIComponent(objString.toLowerCase()).includes(
+            encodeURIComponent(query.toLowerCase())
           );
         });
         this.clientIsLoading = false;
@@ -913,6 +911,7 @@ export default {
       item.status = newValue;
       try {
         let { id, ...rest } = item;
+        rest.lastModifiedBy = this.$auth.user._id;
         await this.$axios(`/job/update/${item.id}`, {
           method: "PUT",
           data: rest
@@ -947,8 +946,8 @@ export default {
       this.editedItem = editedItem;
       if (
         showDialog &&
-        (editedItem.id ||
-          editedItem.client.id ||
+        (editedItem?.id ||
+          editedItem?.client?.id ||
           editedItem.client.Name ||
           editedItem.client.Code ||
           editedItem.prescription.re ||
@@ -1011,7 +1010,6 @@ export default {
 
     close() {
       this.dialog = false;
-      debugger;
       this.$refs.jobForm.reset();
       localStorage.removeItem("editedJob");
       this.clientSearch = null;
@@ -1038,6 +1036,7 @@ export default {
       if (this.editedIndex > -1) {
         try {
           let { id, ...rest } = editedItem;
+          rest.lastModifiedBy = this.$auth.user._id;
           await this.$axios(`/job/update/${editedItem.id}`, {
             method: "PUT",
             data: rest
@@ -1062,6 +1061,8 @@ export default {
         }
       } else {
         editedItem.branch = this.$store.state.branch.id;
+        editedItem.createdBy = this.$auth.user._id;
+        editedItem.lastModifiedBy = editedItem.createdBy;
         console.log(editedItem);
         try {
           await this.$axios("/job/create", {
