@@ -30,10 +30,10 @@ module.exports = (app) => {
 
     // Route to update user
 
-    app.put('/user/:id', user.update);
+    app.put('/user/update/:id', user.update);
 
     // Route to delete user
 
-    app.delete('/user/:id', user.delete);
+    app.delete('/user/delete/:id', user.delete);
 
 }

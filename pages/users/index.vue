@@ -1,12 +1,12 @@
 <template>
   <v-card width="100%" min-height="84vh" class="rounded mt-1 mx-auto">
     <v-data-iterator
-      :items="emailTemplates"
+      :items="users"
       :items-per-page.sync="itemsPerPage"
       :page.sync="page"
       :search="search"
-      no-data-text="No templates defined yet"
-      :class="emailTemplates.length < 1 ? 'text-center' : ''"
+      no-data-text="No users defined yet"
+      :class="users.length < 1 ? 'text-center' : ''"
       :loading="loading"
       :sort-by="sortBy.toLowerCase()"
       :sort-desc="sortDesc"
@@ -70,49 +70,15 @@
                   small
                   >mdi-plus</v-icon
                 >
-                <span :hidden="$vuetify.breakpoint.smAndDown"
-                  >New Template</span
-                >
+                <span :hidden="$vuetify.breakpoint.smAndDown">New User</span>
               </v-btn>
             </template>
             <v-card :class="$vuetify.breakpoint.width >= 600 ? 'rounded' : ''">
-              <div id="email-editor-container">
-                <v-card-title>
-                  <h1 class="text-h6">Template Builder</h1>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    small
-                    class="rounded text-capitalize body-2"
-                    outlined
-                    color="primary"
-                    tile
-                    v-on:click="saveDesign"
-                    >Save Design</v-btn
-                  >
-                  <v-btn
-                    small
-                    class="rounded ml-3 text-capitalize body-2"
-                    outlined
-                    color="accent"
-                    tile
-                    v-on:click="exportHtml"
-                    >Export HTML</v-btn
-                  >
-                  <v-btn icon @click="close()"
-                    ><v-icon>mdi-close</v-icon></v-btn
-                  >
-                </v-card-title>
-                <EmailEditor
-                  :appearance="appearance"
-                  :min-height="minHeight"
-                  :project-id="projectId"
-                  :locale="locale"
-                  :tools="tools"
-                  :options="options"
-                  ref="emailEditor"
-                  v-on:load="editorLoaded"
-                />
-              </div>
+              <v-card-title>
+                <h1 class="text-h6">{{ formTitle }}</h1>
+                <v-spacer></v-spacer>
+                <v-btn icon @click="close()"><v-icon>mdi-close</v-icon></v-btn>
+              </v-card-title>
             </v-card>
           </v-dialog>
 
@@ -329,32 +295,48 @@
               >
                 <div>
                   <v-card-title class="text-body-1" style="font-weight: bold">
-                    {{ item.title }}
+                    {{ item.fullname }}
                   </v-card-title>
-                  <v-card-subtitle>
-                    {{ item.details }}
+                  <v-card-subtitle class="pb-0">
+                    {{ item.role }} > {{ item.designation }}
                   </v-card-subtitle>
+                  <v-card-actions>
+                    <v-btn
+                      color="accent"
+                      ref="editBtn"
+                      text
+                      class="text-capitalize"
+                      small
+                      @click="editDeleteBtn($event)"
+                      >Edit</v-btn
+                    >
+                    <v-btn
+                      color="red darken-2"
+                      ref="deleteBtn"
+                      text
+                      class="ml-1 text-capitalize"
+                      small
+                      @click="editDeleteBtn($event)"
+                      >Delete</v-btn
+                    >
+                  </v-card-actions>
                 </div>
-                <v-card-actions>
-                  <v-btn
-                    color="accent"
-                    ref="editBtn"
-                    text
-                    class="text-capitalize"
-                    small
-                    @click="editDeleteBtn($event)"
-                    >Edit</v-btn
-                  >
-                  <v-btn
-                    color="red darken-2"
-                    ref="deleteBtn"
-                    text
-                    class="ml-2 text-capitalize"
-                    small
-                    @click="editDeleteBtn($event)"
-                    >Delete</v-btn
-                  >
-                </v-card-actions>
+                <v-avatar
+                  :size="$vuetify.breakpoint.width > 600 ? '70' : '50'"
+                  class="mx-1 my-auto white--text mr-2"
+                  color="primary"
+                  :style="
+                    $vuetify.breakpoint.width < 600
+                      ? 'font-size: 20px'
+                      : 'font-size: 30px'
+                  "
+                  dark
+                  ><v-img v-if="item.imgUrl" :src="item.imgUrl"></v-img
+                  ><span v-else>{{
+                    item.fullname.split(` `)[0][0] +
+                      item.fullname.split(` `)[1][0]
+                  }}</span></v-avatar
+                >
               </div>
             </v-card>
           </v-col>
@@ -423,33 +405,10 @@
 </template>
 
 <script>
-import { EmailEditor } from "vue-email-editor";
-
 export default {
-  name: "Jobs",
-  components: {
-    EmailEditor
-  },
+  name: "Users",
   data: function(vm) {
     return {
-      minHeight: "95%",
-      locale: "en",
-      projectId: 0, // replace with your project id
-      tools: {
-        // disable image tool
-        // image: {
-        //     enabled: false
-        // }
-      },
-      options: {},
-      appearance: {
-        theme: this.$vuetify.theme.dark ? "dark" : "light",
-        panels: {
-          tools: {
-            dock: "right"
-          }
-        }
-      },
       page: 1,
       valid: false,
       allowSelect: false,
@@ -547,19 +506,19 @@ export default {
       itemToDelete: {},
       clientIsLoading: false,
       clientSearch: "",
-      clients: [],
       keys: ["Title", "Details"],
       itemsPerPageArray: [2, 4, 12],
       sortDesc: false,
       filter: {},
       itemsPerPage: 2,
-      sortBy: "title"
+      sortBy: "title",
+      users: []
     };
   },
 
   computed: {
     numberOfPages() {
-      return Math.ceil(this.emailTemplates.length / this.itemsPerPage);
+      return Math.ceil(this.users.length / this.itemsPerPage);
     },
     filteredKeys() {
       return this.keys.filter(key => key !== "Name");
@@ -568,7 +527,7 @@ export default {
       return this.itemToDelete?.client?.Name;
     },
     formTitle() {
-      return this.editedIndex === -1 ? "New Job" : "Edit Job";
+      return this.editedIndex === -1 ? "New User" : "Edit User";
     },
     re() {
       return this.editedItem.prescription.re;
@@ -615,12 +574,6 @@ export default {
   },
 
   watch: {
-    clientSearch(val) {
-      if (!val) {
-        return;
-      }
-      this.filterClients(val);
-    },
     dialog(val) {
       val || this.close();
     },
@@ -677,11 +630,11 @@ export default {
     this.loading = true;
     await this.initialize();
     if (this.$route.query.id) {
-      let job = this.jobs.filter(item => item.id === this.$route.query.id);
-      if (job.length > 0) {
-        this.view(job[0]);
+      let user = this.users.filter(item => item.id === this.$route.query.id);
+      if (user.length > 0) {
+        this.view(user[0]);
       } else {
-        this.$router.push("jobs");
+        this.$router.push("users");
         this.$store.dispatch("toast/snackbar", {
           type: "error",
           message: `Invalid URL parameter`,
@@ -693,30 +646,13 @@ export default {
       .filter(item => item.Name)
       .map(m => m);
     this.loading = false;
-    if (!localStorage.getItem("editedJob")) {
-      localStorage.setItem("editedJob", JSON.stringify(this.defaultItem));
+    if (!localStorage.getItem("editedUser")) {
+      localStorage.setItem("editedUser", JSON.stringify(this.defaultItem));
     }
     this.updateStorage(true);
   },
 
   methods: {
-    editorLoaded() {
-      // Pass the template JSON here
-      this.$refs.emailEditor.editor.loadDesign(
-        JSON.parse(localStorage.getItem("design")) || {}
-      );
-    },
-    saveDesign() {
-      this.$refs.emailEditor.editor.saveDesign(design => {
-        localStorage.setItem("design", JSON.stringify(design));
-        console.log("saveDesign", design);
-      });
-    },
-    exportHtml() {
-      this.$refs.emailEditor.editor.exportHtml(data => {
-        console.log("exportHtml", data);
-      });
-    },
     editDeleteBtn(e) {
       alert("Edit or Delete");
       e.stopPropagation();
@@ -732,42 +668,6 @@ export default {
     },
     updateItemsPerPage(number) {
       this.itemsPerPage = number;
-    },
-    convertItem(item) {
-      return { Name: item.Name, id: item.id, Code: item.Code };
-    },
-    selectItem(item) {
-      var text = item.Code && item.Name ? `${item.Code} - ${item.Name}` : "";
-      return text;
-    },
-
-    filterClients(query) {
-      // cancel pending call
-      clearTimeout(this._timerId);
-
-      this.clients = [];
-
-      this.clientIsLoading = true;
-
-      this._timerId = setTimeout(() => {
-        let clients = this.$store.state.clients
-          .filter(item => item.Name)
-          .map(m => m);
-
-        this.clients = clients.filter(c => {
-          return (
-            encodeURIComponent(c.Code)
-              .toString()
-              .toLowerCase()
-              .includes(encodeURIComponent(query).toLowerCase()) ||
-            c.Name.toLowerCase().includes(query.toLowerCase())
-          );
-        });
-        this.clientIsLoading = false;
-      }, 500);
-    },
-    showSelect() {
-      this.allowSelect = !this.allowSelect;
     },
     view(job) {
       this.jobToView = job;
@@ -792,61 +692,13 @@ export default {
 
       return `${day[0] + day[1]}/${month}/${year}`;
     },
-
-    getStatusColor(status) {
-      if (status === "open") {
-        return "primary";
-      } else if (status === "in-progress") {
-        return "secondary";
-      } else if (status === "completed") {
-        return "accent";
-      } else if (status === "delayed") {
-        return "warning";
-      } else {
-        return;
-      }
-    },
-
-    async changeStatus(item, newValue) {
-      this.loading = true;
-      if (item.status === newValue) return (this.loading = false);
-      let index = this.jobs.indexOf(item);
-      item.status = newValue;
-      try {
-        let { id, ...rest } = item;
-        await this.$axios(`/job/update/${item.id}`, {
-          method: "PUT",
-          data: rest
-        }).then(async res => {
-          await Object.assign(this.jobs[index], res.data);
-          this.dialogViewJob = false;
-          this.loading = false;
-          this.$store.dispatch("toast/snackbar", {
-            type: "success",
-            message: `${res.data.client.Name}'s job was updated successfully`,
-            timeout: 3000
-          });
-          localStorage.removeItem("editedJob");
-        });
-      } catch (err) {
-        console.log(err.response);
-        this.dialogViewJob = false;
-        this.loading = false;
-        this.$store.dispatch("toast/snackbar", {
-          type: "error",
-          message: err.response.data.message,
-          timeout: 3000
-        });
-      }
-    },
-
     saveToLocalStorage() {
       let editedItem = this.editedItem;
-      localStorage.setItem("editedJob", JSON.stringify(editedItem));
+      localStorage.setItem("editedUser", JSON.stringify(editedItem));
       this.updateStorage(false);
     },
     updateStorage(showDialog) {
-      let editedItem = JSON.parse(localStorage.getItem("editedJob"));
+      let editedItem = JSON.parse(localStorage.getItem("editedUser"));
       this.editedItem = editedItem;
       if (
         showDialog &&
@@ -871,63 +723,40 @@ export default {
 
     async initialize() {
       this.loading = true;
-      this.emailTemplates = [
-        {
-          id: 1,
-          title: "A - New Job Email Template",
-          details: "B - Lorem ipsum dolor sit amet.",
-          imgUrl:
-            "https://media.istockphoto.com/photos/child-hands-formig-heart-shape-picture-id951945718?k=6&m=951945718&s=612x612&w=0&h=ih-N7RytxrTfhDyvyTQCA5q5xKoJToKSYgdsJ_mHrv0="
-        },
-        {
-          id: 2,
-          title: "B - New Job Email Template",
-          details: "A - Lorem ipsum dolor sit amet.",
-          imgUrl:
-            "https://media.istockphoto.com/photos/child-hands-formig-heart-shape-picture-id951945718?k=6&m=951945718&s=612x612&w=0&h=ih-N7RytxrTfhDyvyTQCA5q5xKoJToKSYgdsJ_mHrv0="
-        },
-        {
-          id: 2,
-          title: "C - New Job Email Template",
-          details: "C - Lorem ipsum dolor sit amet.",
-          imgUrl:
-            "https://media.istockphoto.com/photos/child-hands-formig-heart-shape-picture-id951945718?k=6&m=951945718&s=612x612&w=0&h=ih-N7RytxrTfhDyvyTQCA5q5xKoJToKSYgdsJ_mHrv0="
+      try {
+        let response = await this.$axios("/users", {
+          method: "GET"
+        });
+        if (response) {
+          this.users = response.data;
         }
-      ];
+      } catch (err) {
+        console.log(err.response);
+      }
       this.loading = false;
-      // try {
-      //   let response = await this.$axios("/jobs", {
-      //     method: "GET"
-      //   });
-      //   if (response) {
-      //     this.jobs = response.data;
-      //   }
-      // } catch (err) {
-      //   console.log(err.response);
-      // }
     },
 
     editItem(item) {
-      this.editedIndex = this.jobs.indexOf(item);
+      this.editedIndex = this.users.indexOf(item);
       this.editedItem = item;
       this.dialog = true;
     },
 
     deleteItem(item) {
-      this.editedIndex = this.jobs.indexOf(item);
+      this.editedIndex = this.users.indexOf(item);
       this.itemToDelete = item;
       this.dialogDelete = true;
     },
 
     async deleteItemConfirm() {
-      await this.$axios(`/job/delete/${this.itemToDelete.id}`, {
+      await this.$axios(`/user/delete/${this.itemToDelete.id}`, {
         method: "DELETE"
       })
         .then(res => {
-          this.jobs.splice(this.editedIndex, 1);
+          this.users.splice(this.editedIndex, 1);
           this.$store.dispatch("toast/snackbar", {
             type: "success",
-            message: `${this.itemToDelete.client.Name}'s job was deleted successfully`,
+            message: `${this.itemToDelete.fullname} was deleted successfully`,
             timeout: 2000
           });
           this.closeDelete();
@@ -939,11 +768,11 @@ export default {
 
     close() {
       this.dialog = false;
-      // localStorage.removeItem("editedJob");
-      // this.$nextTick(() => {
-      //   this.editedItem = this.defaultItem;
-      //   this.editedIndex = -1;
-      // });
+      localStorage.removeItem("editedUser");
+      this.$nextTick(() => {
+        this.editedItem = this.defaultItem;
+        this.editedIndex = -1;
+      });
     },
 
     closeDelete() {
@@ -964,7 +793,7 @@ export default {
         editedItem.branch = this.$store.state.branch.id;
         try {
           let { id, ...rest } = editedItem;
-          await this.$axios(`/job/update/${editedItem.id}`, {
+          await this.$axios(`/user/update/${editedItem.id}`, {
             method: "PUT",
             data: rest
           }).then(async res => {
@@ -973,7 +802,7 @@ export default {
             this.close();
             this.$store.dispatch("toast/snackbar", {
               type: "success",
-              message: `${res.data.client.Name}'s job was updated successfully`,
+              message: `${res.data.fullname} was updated successfully`,
               timeout: 3000
             });
           });
@@ -989,16 +818,16 @@ export default {
       } else {
         editedItem.branch = this.$store.state.branch.id;
         try {
-          await this.$axios("/job/create", {
+          await this.$axios("/user/signup", {
             method: "POST",
             data: editedItem
           }).then(res => {
-            this.jobs.push(res.data);
+            this.users.push(res.data);
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/snackbar", {
               type: "success",
-              message: `${res.data.client.Name}'s job was saved successfully`,
+              message: `${res.data.fullname} was saved successfully`,
               timeout: 3000
             });
           });
@@ -1016,7 +845,7 @@ export default {
 
     clear() {
       this.$refs.jobForm.reset();
-      localStorage.setItem("editedJob", JSON.stringify(this.defaultItem));
+      localStorage.setItem("editedUser", JSON.stringify(this.defaultItem));
     }
   }
 };

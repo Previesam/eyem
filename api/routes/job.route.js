@@ -14,7 +14,7 @@ module.exports = (app) => {
 
     // Route to get one job
 
-    app.get('/job/:id', verifyToken, job.findOne);
+    app.get('/job/:id', job.findOne);
 
 
     // Route to update job

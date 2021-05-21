@@ -2,125 +2,127 @@
   <!-- Begin Right Column Item Preview -->
 
   <v-card
-    class="d-flex justify-space-between flex-column dash-item"
-    height="84vh"
-    outlined
-    align-stretch
-    width="100%"
-    v-if="currentItem"
-  >
-    <v-card class="not-rounded" width="100%">
-      <v-card-title class="text-center">
-        <div class="my-5 text-center d-flex top-card">
-          <div class="mr-15">
-            <v-avatar color="primary" size="50" class="mb-5"> AS </v-avatar>
-            <span class="d-block text-center"
-              >{{ currentItem.sender }} Adeyanju</span
-            >
-          </div>
-          <div class="job-attributes">
-            <v-card-text class="text-left">
-              <span>Status:</span>
-              <v-chip color="primary" smallclass="mr-10">Pending</v-chip>
-              <span>Date In:</span>
-              <v-chip color="primary" small>25th Dec, 2020.</v-chip>
-            </v-card-text>
-            <v-card-text class="text-left">
-              <span>Date Out:</span>
-              <v-chip color="primary" small class="mr-10">25th Dec, 2020.</v-chip>
-              <span>Lens:</span>
-              <v-chip color="primary" small>Single Vision</v-chip>
-            </v-card-text>
-            <v-card-text class="text-left">
-              <span>Frame:</span>
-              <v-chip color="primary" small class="mr-10">Gucci</v-chip>
-              <span>Amount:</span>
-              <v-chip color="primary" small>10,000</v-chip>
-            </v-card-text>
-          </div>
-        </div>
-      </v-card-title>
-    </v-card>
-    <v-divider></v-divider>
-    <v-card-text class="text-center">Message History</v-card-text>
-    <v-divider></v-divider>
-    <v-card flat height="100%" class="job-messages-scroll">
-      <v-card-text style="clear: both">
-        <div class="float-left">
-          <span class="float-left mr-2">Client: </span>
-          <v-card
-            color="primary"
-            max-width="400px"
-            class="dash-item float-left mb-5"
-            ><v-card-text class="ma-0 py-0 px-2 text-justify"
-              >Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam
-              veniam animi commodi illo quibusdam mollitia labore. Accusamus
-              alias, consequatur in, voluptatum est natus voluptatem iure
-              dolorum nesciunt doloribus officiis voluptatibus.</v-card-text
-            ></v-card
-          >
-        </div>
-      </v-card-text>
-
-      <v-card-text style="clear: both">
-        <div class="float-left">
-          <span class="float-left mr-2">Client: </span>
-          <v-card
-            color="primary"
-            max-width="400px"
-            class="dash-item float-left mb-5"
-            ><v-card-text class="ma-0 py-0 px-2 text-justify"
-              >Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam
-              veniam animi commodi illo quibusdam mollitia labore. Accusamus
-              alias, consequatur in, voluptatum est natus voluptatem iure
-              dolorum nesciunt doloribus officiis voluptatibus.</v-card-text
-            ></v-card
-          >
-        </div>
-      </v-card-text>
-
-      <v-card-text style="clear: both">
-        <div class="float-right">
-          <span class="mr-2 float-left">You:</span>
-          <v-card max-width="400px" class="float-left dash-item"
-            ><v-card-text class="ma-0 py-0 px-2 text-justify"
-              >Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-              Praesentium totam optio animi unde pariatur delectus tempora neque
-              quidem cupiditate voluptatem. Doloribus repellendus pariatur
-              aliquam consequuntur obcaecati ullam suscipit culpa. Expedita.
-            </v-card-text></v-card
-          >
-        </div>
-      </v-card-text>
-    </v-card>
-    <v-card max-height="55px" class=""
-      ><v-bottom-navigation>
-        <v-icon class="ml-3">mdi-attachment</v-icon>
-        <v-textarea
-          placeholder="Type a message"
-          class="mt-4"
-          rows="1"
-          rounded
-          no-resize
-          dense
-        ></v-textarea
-        ><v-icon class="mr-3">mdi-send</v-icon>
-      </v-bottom-navigation>
-    </v-card>
-  </v-card>
-
-  <!-- End Right Column Item Preview -->
-
-  <!-- Start Preview Placeholder -->
-
-  <v-card
-    v-else
+    rounded
+    class="ml-auto mr-auto"
+    style="overflow-x:scroll"
     height="100%"
-    class="ml-3 d-flex justify-center align-center dash-item"
-    cols="12"
-    width="100%"
+    width="800px"
   >
-    <v-card-title>Please select a job to view.</v-card-title>
+    <v-card-title class="text-body-1" style="font-weight: bold">{{
+      currentItem.client.Name
+    }}</v-card-title>
+    <v-card-subtitle>Job #{{ currentItem.id }}</v-card-subtitle>
+    <v-card-text>
+      Date: {{ formatDate(currentItem.dateIn) }} <br />
+      Frame: {{ currentItem.frame }} <br />
+      Lens: {{ currentItem.lens }}
+    </v-card-text>
+    <div class="col-12 col-md-12 hh-grayBox pt45 pb20">
+      <div class="row justify-content-between">
+        <div
+          class="order-tracking"
+          :style="
+            currentItem.status === 'delayed' ? 'width: 20%' : 'width: 25%'
+          "
+          :class="
+            currentItem.status === 'open'
+              ? 'completed'
+              : ''
+          "
+        >
+          <span class="is-complete"></span>
+          <v-card-text class="pa-0 mt-2 ma-0">Open</v-card-text>
+        </div>
+        <div
+          class="order-tracking"
+          :style="
+            currentItem.status === 'delayed' ? 'width: 20%' : 'width: 25%'
+          "
+          :class="
+            currentItem.status === 'in-progress' ||
+            'delayed' ||
+            'quality-check' ||
+            'completed'
+              ? 'completed'
+              : ''
+          "
+        >
+          <span class="is-complete"></span>
+          <v-card-text class="pa-0 mt-2 ma-0">In Progress</v-card-text>
+        </div>
+        <div
+          class="order-tracking"
+          :style="
+            currentItem.status === 'delayed' ? 'width: 20%' : 'width: 25%'
+          "
+          :class="currentItem.status === 'delayed' ? 'completed' : ''"
+          v-if="currentItem.status === 'delayed'"
+        >
+          <span class="is-complete"></span>
+          <v-card-text class="pa-0 mt-2 ma-0">Delayed</v-card-text>
+        </div>
+        <div
+          class="order-tracking"
+          :style="
+            currentItem.status === 'delayed' ? 'width: 20%' : 'width: 25%'
+          "
+          :class="
+            currentItem.status === 'quality-check' || 'completed'
+              ? 'completed'
+              : ''
+          "
+        >
+          <span class="is-complete"></span>
+          <v-card-text class="pa-0 mt-2 ma-0">Quality Check</v-card-text>
+        </div>
+        <div
+          class="order-tracking"
+          :style="
+            currentItem.status === 'delayed' ? 'width: 20%' : 'width: 25%'
+          "
+          :class="currentItem.status === 'completed' ? 'completed' : ''"
+        >
+          <span class="is-complete"></span>
+          <v-card-text class="pa-0 mt-2 ma-0">Collected</v-card-text>
+        </div>
+      </div>
+    </div>
+    <v-card-subtitle style="font-weight: bold">History:</v-card-subtitle>
+    <v-card-text class="py-0">
+      <v-timeline
+        align-top
+        :dense="$vuetify.breakpoint.width < 600"
+        class="px-0 mx-0"
+      >
+        <v-timeline-item color="pink" small>
+          <template v-slot:opposite>
+            <span>{{ formatDate(currentItem.updatedAt) }}</span>
+          </template>
+          Samuel Adeyanju Changed status to <v-chip>pending</v-chip>
+        </v-timeline-item>
+
+        <v-timeline-item color="teal lighten-3" small>
+          <template v-slot:opposite>
+            <span>{{ formatDate(currentItem.updatedAt) }}</span>
+          </template>
+          Samuel Adeyanju Changed status to <v-chip>pending</v-chip>
+        </v-timeline-item>
+
+        <v-timeline-item color="pink" small>
+          <template v-slot:opposite>
+            <span>{{ formatDate(currentItem.updatedAt) }}</span>
+          </template>
+          Samuel Adeyanju Changed status to <v-chip>pending</v-chip>
+        </v-timeline-item>
+
+        <v-timeline-item color="teal lighten-3" small>
+          <template v-slot:opposite>
+            <span>{{ formatDate(currentItem.updatedAt) }}</span>
+          </template>
+          Samuel Adeyanju Changed status to <v-chip>pending</v-chip>
+        </v-timeline-item>
+      </v-timeline>
+    </v-card-text>
   </v-card>
 
   <!-- End Preview Placeholder -->
@@ -128,116 +130,111 @@
 
 <script>
 export default {
-  layout: 'full-screen',
-  async asyncData({ params, redirect }) {
-    let items = [
-      {
-        id: 1,
-        sender: "Samuel",
-        message: "How are you",
-        type: "email",
-        read: false,
-        selected: false
-      },
-      {
-        id: 2,
-        sender: "Tosin",
-        message: "Sup Whaisd ",
-        type: "chat",
-        read: false,
-        selected: false
-      },
-      {
-        id: 3,
-        sender: "Tosin",
-        message: "Sup Whaisd ",
-        type: "chat",
-        read: false,
-        selected: false
-      },
-      {
-        id: 4,
-        sender: "Tosin",
-        message: "Sup Whaisd ",
-        type: "chat",
-        read: false,
-        selected: false
-      },
-      {
-        id: 5,
-        sender: "Tosin",
-        message: "Sup Whaisd ",
-        type: "chat",
-        read: false,
-        selected: false
-      },
-      {
-        id: 6,
-        sender: "Tosin",
-        message: "Sup Whaisd ",
-        type: "chat",
-        read: false,
-        selected: false
-      },
-      {
-        id: 7,
-        sender: "Tosin",
-        message: "Sup Whaisd ",
-        type: "chat",
-        read: false,
-        selected: false
-      },
-      {
-        id: 8,
-        sender: "Samuel",
-        message: "How are you",
-        type: "email",
-        read: false,
-        selected: false
-      },
-      {
-        id: 9,
-        sender: "Samuel",
-        message: "How are you",
-        type: "email",
-        read: false,
-        selected: false
-      },
-      {
-        id: 10,
-        sender: "Samuel",
-        message: "How are you",
-        type: "email",
-        read: false,
-        selected: false
-      }
-    ];
+  auth: false,
+  layout: "job-preview",
+  async asyncData({ $axios, store, params }) {
+    await $axios(`/job/${params.id}`, {
+      method: "GET"
+    })
+      .then(res => {
+        store.commit("setCurrentItem", res.data);
+        console.log(res.data);
+      })
+      .catch(err => console.log(err.response));
+  },
 
-    let filteredItem = items.filter(i => i.id == params.id);
+  computed: {
+    currentItem() {
+      return this.$store.state.currentItem;
+    }
+  },
 
-    if (!filteredItem) return redirect("/");
+  methods: {
+    formatDate(date) {
+      if (!date) return null;
 
-    return { currentItem: filteredItem };
+      if (date.length < 10) return null;
+
+      const [year, month, day] = date.split("-");
+
+      return `${day[0] + day[1]}/${month}/${year}`;
+    }
   }
 };
 </script>
 
-<style>
-div.top-card {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  flex-wrap: wrap;
-  width: 100%;
+<style scoped>
+.hh-grayBox {
+  background-color: #f8f8f8;
+  margin-bottom: 20px;
+  padding-top: 35px;
+  padding-bottom: 35px;
+  margin-top: 20px;
 }
-
-.job-messages-scroll {
-  overflow-y: scroll;
+.pt45 {
+  padding-top: 45px;
 }
-
-.job-attributes {
-    display: grid;
-    grid-template-columns: 1fr;
-    column-gap: 1rem;
+.order-tracking {
+  text-align: center;
+  width: 20%;
+  position: relative;
+  display: block;
+}
+.order-tracking .is-complete {
+  display: block;
+  position: relative;
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+  border: 0px solid #afafaf;
+  background-color: #f7be16;
+  margin: 0 auto;
+  transition: background 0.25s linear;
+  -webkit-transition: background 0.25s linear;
+  z-index: 2;
+}
+.order-tracking .is-complete:after {
+  display: block;
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 7px;
+  top: -2px;
+  bottom: 0;
+  left: 5px;
+  margin: auto 0;
+  border: 0px solid #afafaf;
+  border-width: 0px 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+}
+.order-tracking.completed .is-complete {
+  border-color: #27aa80;
+  border-width: 0px;
+  background-color: #27aa80;
+}
+.order-tracking.completed .is-complete:after {
+  border-color: #fff;
+  border-width: 0px 3px 3px 0;
+  width: 7px;
+  left: 11px;
+  opacity: 1;
+}
+.order-tracking::before {
+  content: "";
+  display: block;
+  height: 3px;
+  width: calc(100% - 40px);
+  background-color: #f7be16;
+  top: 13px;
+  position: absolute;
+  left: calc(-50% + 20px);
+  z-index: 0;
+}
+.order-tracking:first-child:before {
+  display: none;
+}
+.order-tracking.completed:before {
+  background-color: #27aa80;
 }
 </style>

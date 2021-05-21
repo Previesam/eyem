@@ -1,1 +1,9 @@
 POST http://localhost:3000/api/email/send
+Content-Type: application/json
+
+{
+    "recipients": ["samsmart.ass59@gmail.com"],
+    "from": "info@eyemastersng.com",
+    "subject": "Account Activation",
+    "fullname": "Samuel Adeyanju"
+}

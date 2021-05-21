@@ -1,11 +1,24 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const roleSchema =  mongoose.Schema({
-    roleName: { type: String, unique: true, required: true },
+const roleSchema = mongoose.Schema(
+  {
+    name: { type: String, unique: true, required: true },
     roleDescription: { type: String, required: true },
-    canDelete: { type: Boolean, required: true }
-});
+    permissions: { type: Object, required: true },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User"
+    },
+    lastModifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User"
+    }
+  },
+  { timestamps: true }
+);
 
-roleSchema.set('toJSON', { virtuals: true });
+roleSchema.set("toJSON", { virtuals: true });
 
-module.exports = mongoose.model('Roles', roleSchema);
+module.exports = mongoose.model("Role", roleSchema);

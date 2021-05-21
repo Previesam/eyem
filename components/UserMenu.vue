@@ -14,6 +14,7 @@
             size="30"
             v-bind="attrs"
             v-on="on"
+            class="white--text"
             >{{
               $auth.user.fullname.split(" ")[0][0] +
                 $auth.user.fullname.split(" ")[1][0]
@@ -24,7 +25,7 @@
           <v-list>
             <v-list-item v-if="$auth.loggedIn">
               <v-list-item-avatar>
-                <v-avatar color="primary" size="40">{{
+                <v-avatar color="primary" size="40" class="white--text">{{
                   $auth.user.fullname.split(" ")[0][0] +
                     $auth.user.fullname.split(" ")[1][0]
                 }}</v-avatar>
@@ -44,7 +45,7 @@
                       icon
                       @click="$vuetify.theme.dark = !$vuetify.theme.dark"
                     >
-                      <v-icon>mdi-theme-light-dark</v-icon>
+                      <v-icon>mdi-lightbulb-on</v-icon>
                     </v-btn> </template
                   ><span>{{ $vuetify.theme.dark ? "Light" : "Dark" }}</span>
                 </v-tooltip>
@@ -61,7 +62,7 @@
               >
               <v-list-item-title>User Profile</v-list-item-title>
             </v-list-item>
-            <v-list-item link>
+            <v-list-item link @click="toggleSettingsDrawer()">
               <v-list-item-icon
                 ><v-icon medium>mdi-cog</v-icon></v-list-item-icon
               >
@@ -96,6 +97,9 @@ export default {
         type: "success",
         message: "You have logged out successfully"
       });
+    },
+    toggleSettingsDrawer() {
+      this.$emit("toggleSettingsDrawer")
     }
   }
 };

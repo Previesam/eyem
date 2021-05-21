@@ -1,17 +1,15 @@
 const mongoose = require("mongoose");
-var Job = require("../models/job.model");
+var Role = require("../models/role.model");
 const populateQuery = [
-  { path: "client", select: ["Name", "Code"] },
-  { path: "branch", select: ["Name", "Key"] },
   { path: "createdBy", select: ["fullname", "phone", "email"] },
   { path: "lastModifiedBy", select: ["fullname", "phone", "email"] }
 ];
 
-// Handler for creating new job
+// Handler for creating new role
 
 exports.create = async (req, res) => {
-  const newJob = req.body;
-  await new Job(newJob)
+  const newRole = req.body;
+  await new Role(newRole)
     .save()
     .then(async data => {
       data
@@ -22,15 +20,15 @@ exports.create = async (req, res) => {
     })
     .catch(err => {
       res.status(500).send({
-        message: err.message || "An error occurred while creating job"
+        message: err.message || "An error occurred while creating role"
       });
     });
 };
 
-// Handler for Getting all Jobs
+// Handler for Getting all roles
 
 exports.findAll = async (req, res) => {
-  await Job.find({})
+  await Role.find({})
     .populate(populateQuery)
     .exec((err, data) => {
       if (err) {
@@ -43,10 +41,10 @@ exports.findAll = async (req, res) => {
     });
 };
 
-// Handler for Getting single Job
+// Handler for Getting single role
 
 exports.findOne = (req, res) => {
-  Job.findById(req.params.id)
+  Role.findById(req.params.id)
     .then(data => {
       data
         .execPopulate(populateQuery)
@@ -56,7 +54,7 @@ exports.findOne = (req, res) => {
     })
     .catch(err => {
       if (err.kind === "ObjectId") {
-        res.status(400).send({ message: "Invalid job id" });
+        res.status(400).send({ message: "Invalid role id" });
       } else {
         res
           .status(500)
@@ -65,10 +63,10 @@ exports.findOne = (req, res) => {
     });
 };
 
-// Handler for Updating Job
+// Handler for Updating role
 
 exports.update = async (req, res) => {
-  await Job.findByIdAndUpdate(req.params.id, req.body, { new: true })
+  await Role.findByIdAndUpdate(req.params.id, req.body, { new: true })
     .then(data => {
       data
         .execPopulate(populateQuery)
@@ -79,7 +77,7 @@ exports.update = async (req, res) => {
     })
     .catch(err => {
       if (err.kind === "ObjectId") {
-        res.status(400).send({ message: "Invalid job id" });
+        res.status(400).send({ message: "Invalid role id" });
       } else {
         res
           .status(500)
@@ -88,17 +86,17 @@ exports.update = async (req, res) => {
     });
 };
 
-// Handler for Deleting Job
+// Handler for Deleting Role
 
 exports.delete = async (req, res) => {
-  await Job.findByIdAndDelete(req.params.id)
+  await Role.findByIdAndDelete(req.params.id)
     .then(data => {
       console.log(data);
-      res.send({ message: "Job deleted successfully" });
+      res.send({ message: "Role deleted successfully" });
     })
     .catch(err => {
       if (err.kind === "ObjectId") {
-        res.status(400).send({ message: "Invalid job id" });
+        res.status(400).send({ message: "Invalid role id" });
       } else {
         res
           .status(500)

@@ -13,7 +13,7 @@
               v-on="{ ...tooltip, ...menu }"
             >
               <v-icon small :left="$vuetify.breakpoint.width > 450">
-                mdi-chevron-down </v-icon
+                mdi-source-branch </v-icon
               ><span :hidden="$vuetify.breakpoint.width < 450">{{
                 $store.state.branch.Name
               }}</span>
