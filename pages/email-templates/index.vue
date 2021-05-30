@@ -1,6 +1,76 @@
 <template>
-  <v-card width="100%" min-height="84vh" class="rounded mt-1 mx-auto">
+  <v-card
+    width="100%"
+    :min-height="editedItem.editing ? 'auto' : '84vh'"
+    class="rounded mt-1 mx-auto"
+    :loading="loading"
+  >
+    <v-card
+      max-height="100%"
+      style="overflow-hidden"
+      id="email-editor-container"
+      v-if="editedItem.editing"
+    >
+      <v-form v-model="valid" ref="templateForm">
+        <v-card-title>
+          <h1 class="text-h6">{{ formTitle }}</h1>
+          <v-spacer></v-spacer>
+          <v-btn
+            small
+            class="rounded text-capitalize body-2"
+            outlined
+            color="primary"
+            tile
+            @click="save()"
+            :disabled="!valid"
+            :loading="loading"
+            ><v-icon small :left="$vuetify.breakpoint.width >= 600"
+              >mdi-content-save</v-icon
+            ><span v-show="$vuetify.breakpoint.width >= 600">Save</span>
+          </v-btn>
+          <v-btn
+            small
+            class="rounded ml-3 text-capitalize body-2"
+            outlined
+            color="accent"
+            tile
+            :disabled="!valid"
+            ><v-icon small :left="$vuetify.breakpoint.width >= 600"
+              >mdi-email</v-icon
+            ><span v-show="$vuetify.breakpoint.width >= 600">Test</span>
+          </v-btn>
+          <v-btn icon @click="close()"><v-icon>mdi-close</v-icon></v-btn>
+        </v-card-title>
+        <v-card-text class="py-0 px-3 ma-0"
+          ><v-text-field
+            v-model="editedItem.title"
+            label="Title"
+            dense
+            outlined
+            :rules="rules"
+          ></v-text-field
+        ></v-card-text>
+        <v-card-text class="py-0 px-3 ma-0"
+          ><v-textarea
+            rows="2"
+            v-model="editedItem.description"
+            label="Description"
+            dense
+            :rules="rules"
+            outlined
+          ></v-textarea
+        ></v-card-text>
+      </v-form>
+      <v-card-text class="px-3 ma-0 py-0" id="email-editor"
+        ><froala
+          :tag="'textarea'"
+          :config="config"
+          v-model="editedItem.html"
+        ></froala
+      ></v-card-text>
+    </v-card>
     <v-data-iterator
+      v-else
       :items="emailTemplates"
       :items-per-page.sync="itemsPerPage"
       :page.sync="page"
@@ -49,72 +119,16 @@
           </template>
 
           <v-spacer></v-spacer>
-
-          <!-- Begin Create and Edit Dialog -->
-
-          <v-dialog
-            v-model="dialog"
-            scrollable
-            :fullscreen="$vuetify.breakpoint.width >= 600 ? false : true"
-            overlay-color="blue"
-          >
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                color="primary"
-                outlined
-                class="text-capitalize"
-                v-bind="attrs"
-                v-on="on"
-                ><v-icon
-                  :left="$vuetify.breakpoint.smAndDown ? false : true"
-                  small
-                  >mdi-plus</v-icon
-                >
-                <span :hidden="$vuetify.breakpoint.smAndDown"
-                  >New Template</span
-                >
-              </v-btn>
-            </template>
-            <v-card :class="$vuetify.breakpoint.width >= 600 ? 'rounded' : ''">
-              <div id="email-editor-container">
-                <v-card-title>
-                  <h1 class="text-h6">Template Builder</h1>
-                  <v-spacer></v-spacer>
-                  <v-btn
-                    small
-                    class="rounded text-capitalize body-2"
-                    outlined
-                    color="primary"
-                    tile
-                    v-on:click="saveDesign"
-                    >Save Design</v-btn
-                  >
-                  <v-btn
-                    small
-                    class="rounded ml-3 text-capitalize body-2"
-                    outlined
-                    color="accent"
-                    tile
-                    v-on:click="exportHtml"
-                    >Export HTML</v-btn
-                  >
-                  <v-btn icon @click="close()"
-                    ><v-icon>mdi-close</v-icon></v-btn
-                  >
-                </v-card-title>
-                <EmailEditor
-                  :appearance="appearance"
-                  :min-height="minHeight"
-                  :project-id="projectId"
-                  :locale="locale"
-                  :tools="tools"
-                  :options="options"
-                  ref="emailEditor"
-                  v-on:load="editorLoaded"
-                />
-              </div>
-            </v-card>
-          </v-dialog>
+          <v-btn
+            color="primary"
+            outlined
+            class="text-capitalize"
+            @click="newItem()"
+            ><v-icon :left="$vuetify.breakpoint.smAndDown ? false : true" small
+              >mdi-plus</v-icon
+            >
+            <span :hidden="$vuetify.breakpoint.smAndDown">New Template</span>
+          </v-btn>
 
           <!-- End Create and Edit Dialog -->
 
@@ -138,8 +152,8 @@
               >
               <v-card-title class="my-3 subheading text-center"
                 >Are you sure you want to delete
-                {{ `${deleteItemClientName}'s` }}
-                Job?</v-card-title
+                {{ itemToDelete.title }}
+                ?</v-card-title
               >
               <v-card-actions>
                 <v-spacer></v-spacer>
@@ -163,14 +177,14 @@
           <!-- Begin preview dialog -->
 
           <v-dialog
-            v-model="dialogViewJob"
+            v-model="dialogViewTemplate"
             persistent
             scrollable
             :fullscreen="$vuetify.breakpoint.width <= 600 ? true : false"
             overlay-color="blue"
             width="500px"
           >
-            <v-card>
+            <!-- <v-card>
               <v-divider></v-divider>
               <v-card-text class="pa-2">
                 <div class="mb-2 subtitle-1 d-flex">
@@ -309,7 +323,7 @@
                   </div>
                 </div>
               </v-card-text>
-            </v-card>
+            </v-card> -->
           </v-dialog>
 
           <!-- End Preview Dialog -->
@@ -332,7 +346,7 @@
                     {{ item.title }}
                   </v-card-title>
                   <v-card-subtitle>
-                    {{ item.details }}
+                    {{ item.description }}
                   </v-card-subtitle>
                 </div>
                 <v-card-actions>
@@ -342,7 +356,7 @@
                     text
                     class="text-capitalize"
                     small
-                    @click="editDeleteBtn($event)"
+                    @click="editItem(item, $event)"
                     >Edit</v-btn
                   >
                   <v-btn
@@ -351,12 +365,21 @@
                     text
                     class="ml-2 text-capitalize"
                     small
-                    @click="editDeleteBtn($event)"
+                    @click="deleteItem(item, $event)"
                     >Delete</v-btn
                   >
                 </v-card-actions>
               </div>
             </v-card>
+            <!-- <v-card>
+              <v-card-text class="px-3 ma-0 py-0" id="email-editor"
+                ><froala
+                  :tag="'textarea'"
+                  :config="config"
+                  v-model="editedTemplate"
+                ></froala
+              ></v-card-text>
+            </v-card> -->
           </v-col>
         </v-row>
       </template>
@@ -423,31 +446,23 @@
 </template>
 
 <script>
-import { EmailEditor } from "vue-email-editor";
-
 export default {
-  name: "Jobs",
-  components: {
-    EmailEditor
-  },
+  name: "EmailTemplates",
   data: function(vm) {
     return {
-      minHeight: "95%",
-      locale: "en",
-      projectId: 0, // replace with your project id
-      tools: {
-        // disable image tool
-        // image: {
-        //     enabled: false
-        // }
-      },
-      options: {},
-      appearance: {
-        theme: this.$vuetify.theme.dark ? "dark" : "light",
-        panels: {
-          tools: {
-            dock: "right"
+      valid: false,
+      rules: [
+        value => !!value || "Required.",
+        value => (value && value.length >= 3) || "Min 3 characters"
+      ],
+      config: {
+        events: {
+          "froalaEditor.initialized": function() {
+            console.log("initialized");
           }
+        },
+        inlineClasses: {
+          'fr-class-footer': 'Footer'
         }
       },
       page: 1,
@@ -458,97 +473,34 @@ export default {
         value => !!value || "Required.",
         value => (value && value.length >= 3) || "Min 3 characters"
       ],
-      defaultStatuses: [
-        { title: "Open", value: "open" },
-        { title: "In-Progess", value: "in-progress" },
-        { title: "Delayed", value: "delayed" },
-        { title: "Completed", value: "completed" }
-      ],
       search: "",
       menu2: false,
       menu3: false,
       dialog: false,
-      dialogViewJob: false,
-      jobToView: {
+      dialogViewTemplate: false,
+      templateToView: {
         id: "",
-        client: {
-          id: "",
-          Code: "",
-          Name: ""
-        },
-        dateIn: new Date().toISOString().substr(0, 10),
-        dateOut: new Date().toISOString().substr(0, 10),
-        prescription: {
-          re: "",
-          le: "",
-          add: ""
-        },
-        status: "open",
-        frame: "",
-        lens: "",
-        total: "",
-        deposit: "",
-        balance: "",
-        optician: "",
-        doctor: "",
-        branch: ""
+        html: "",
+        title: "",
+        description: ""
       },
       dialogDelete: false,
       emailTemplates: [],
       editedIndex: -1,
       editedItem: {
-        client: {
-          id: "",
-          Code: "",
-          Name: ""
-        },
-        dateIn: new Date().toISOString().substr(0, 10),
-        dateOut: new Date().toISOString().substr(0, 10),
-        prescription: {
-          re: "",
-          le: "",
-          add: ""
-        },
-        status: "open",
-        frame: "",
-        lens: "",
-        total: "",
-        deposit: "",
-        balance: "",
-        optician: "",
-        doctor: "",
-        branch: ""
+        editing: false,
+        html: "",
+        title: "",
+        description: ""
       },
-      dateInFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
-      dateOutFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
       defaultItem: {
-        client: {
-          id: "",
-          Code: "",
-          Name: ""
-        },
-        dateIn: new Date().toISOString().substr(0, 10),
-        dateOut: new Date().toISOString().substr(0, 10),
-        prescription: {
-          re: "",
-          le: "",
-          add: ""
-        },
-        status: "open",
-        frame: "",
-        lens: "",
-        total: "",
-        deposit: "",
-        balance: "",
-        optician: "",
-        doctor: "",
-        branch: ""
+        editing: false,
+        html: "Edit Your Content Here!",
+        title: "",
+        description: ""
       },
       itemToDelete: {},
-      clientIsLoading: false,
-      clientSearch: "",
-      clients: [],
-      keys: ["Title", "Details"],
+      keys: ["Title", "Description"],
       itemsPerPageArray: [2, 4, 12],
       sortDesc: false,
       filter: {},
@@ -568,49 +520,19 @@ export default {
       return this.itemToDelete?.client?.Name;
     },
     formTitle() {
-      return this.editedIndex === -1 ? "New Job" : "Edit Job";
+      return this.editedIndex === -1 ? "New Template" : "Edit Template";
     },
-    re() {
-      return this.editedItem.prescription.re;
+    title() {
+      return this.editedItem.title;
     },
-    le() {
-      return this.editedItem.prescription.le;
+    html() {
+      return this.editedItem.html;
     },
-    add() {
-      return this.editedItem.prescription.add;
+    active() {
+      return this.editedItem.active;
     },
-    dateIn() {
-      return this.editedItem.dateIn;
-    },
-    dateOut() {
-      return this.editedItem.dateOut;
-    },
-    doctor() {
-      return this.editedItem.doctor;
-    },
-    total() {
-      return this.editedItem.total;
-    },
-    frame() {
-      return this.editedItem.frame;
-    },
-    lens() {
-      return this.editedItem.lens;
-    },
-    status() {
-      return this.editedItem.status;
-    },
-    deposit() {
-      return this.editedItem.deposit;
-    },
-    balance() {
-      return this.editedItem.balance;
-    },
-    optician() {
-      return this.editedItem.optician;
-    },
-    client() {
-      return this.editedItem.client?.id;
+    description() {
+      return this.editedItem.description;
     }
   },
 
@@ -627,48 +549,13 @@ export default {
     dialogDelete(val) {
       val || this.closeDelete();
     },
-    re() {
+    title() {
       this.saveToLocalStorage();
     },
-    le() {
+    html() {
       this.saveToLocalStorage();
     },
-    add() {
-      this.saveToLocalStorage();
-    },
-    dateIn() {
-      this.dateInFormatted = this.formatDate(this.editedItem.dateIn);
-      this.saveToLocalStorage();
-    },
-    dateOut() {
-      this.dateOutFormatted = this.formatDate(this.editedItem.dateOut);
-      this.saveToLocalStorage();
-    },
-    doctor() {
-      this.saveToLocalStorage();
-    },
-    total() {
-      this.saveToLocalStorage();
-    },
-    frame() {
-      this.saveToLocalStorage();
-    },
-    lens() {
-      this.saveToLocalStorage();
-    },
-    status() {
-      this.saveToLocalStorage();
-    },
-    deposit() {
-      this.saveToLocalStorage();
-    },
-    balance() {
-      this.saveToLocalStorage();
-    },
-    optician() {
-      this.saveToLocalStorage();
-    },
-    client() {
+    description() {
       this.saveToLocalStorage();
     }
   },
@@ -677,11 +564,13 @@ export default {
     this.loading = true;
     await this.initialize();
     if (this.$route.query.id) {
-      let job = this.jobs.filter(item => item.id === this.$route.query.id);
-      if (job.length > 0) {
-        this.view(job[0]);
+      let template = this.emailTemplates.filter(
+        item => item.id === this.$route.query.id
+      );
+      if (template.length > 0) {
+        this.view(template[0]);
       } else {
-        this.$router.push("jobs");
+        this.$router.push("email-templates");
         this.$store.dispatch("toast/snackbar", {
           type: "error",
           message: `Invalid URL parameter`,
@@ -689,38 +578,15 @@ export default {
         });
       }
     }
-    this.clients = this.$store.state.clients
-      .filter(item => item.Name)
-      .map(m => m);
     this.loading = false;
-    if (!localStorage.getItem("editedJob")) {
-      localStorage.setItem("editedJob", JSON.stringify(this.defaultItem));
+    if (!localStorage.getItem("editedTemplate")) {
+      localStorage.setItem("editedTemplate", JSON.stringify(this.defaultItem));
     }
-    this.updateStorage(true);
+    this.updateStorage();
+    this.editedIndex = localStorage.getItem("editedIndex") || -1;
   },
 
   methods: {
-    editorLoaded() {
-      // Pass the template JSON here
-      this.$refs.emailEditor.editor.loadDesign(
-        JSON.parse(localStorage.getItem("design")) || {}
-      );
-    },
-    saveDesign() {
-      this.$refs.emailEditor.editor.saveDesign(design => {
-        localStorage.setItem("design", JSON.stringify(design));
-        console.log("saveDesign", design);
-      });
-    },
-    exportHtml() {
-      this.$refs.emailEditor.editor.exportHtml(data => {
-        console.log("exportHtml", data);
-      });
-    },
-    editDeleteBtn(e) {
-      alert("Edit or Delete");
-      e.stopPropagation();
-    },
     alert(item, e) {
       alert(item.title);
     },
@@ -766,12 +632,9 @@ export default {
         this.clientIsLoading = false;
       }, 500);
     },
-    showSelect() {
-      this.allowSelect = !this.allowSelect;
-    },
-    view(job) {
-      this.jobToView = job;
-      this.dialogViewJob = true;
+    view(template) {
+      this.templateToView = template;
+      this.dialogViewTemplate = true;
     },
     parseDate(date) {
       if (!date) return null;
@@ -793,141 +656,61 @@ export default {
       return `${day[0] + day[1]}/${month}/${year}`;
     },
 
-    getStatusColor(status) {
-      if (status === "open") {
-        return "primary";
-      } else if (status === "in-progress") {
-        return "secondary";
-      } else if (status === "completed") {
-        return "accent";
-      } else if (status === "delayed") {
-        return "warning";
-      } else {
-        return;
-      }
-    },
-
-    async changeStatus(item, newValue) {
-      this.loading = true;
-      if (item.status === newValue) return (this.loading = false);
-      let index = this.jobs.indexOf(item);
-      item.status = newValue;
-      try {
-        let { id, ...rest } = item;
-        await this.$axios(`/job/update/${item.id}`, {
-          method: "PUT",
-          data: rest
-        }).then(async res => {
-          await Object.assign(this.jobs[index], res.data);
-          this.dialogViewJob = false;
-          this.loading = false;
-          this.$store.dispatch("toast/snackbar", {
-            type: "success",
-            message: `${res.data.client.Name}'s job was updated successfully`,
-            timeout: 3000
-          });
-          localStorage.removeItem("editedJob");
-        });
-      } catch (err) {
-        console.log(err.response);
-        this.dialogViewJob = false;
-        this.loading = false;
-        this.$store.dispatch("toast/snackbar", {
-          type: "error",
-          message: err.response.data.message,
-          timeout: 3000
-        });
-      }
-    },
-
     saveToLocalStorage() {
-      let editedItem = this.editedItem;
-      localStorage.setItem("editedJob", JSON.stringify(editedItem));
-      this.updateStorage(false);
+      let editedTemplate = this.editedItem;
+      localStorage.setItem("editedTemplate", JSON.stringify(editedTemplate));
+      this.updateStorage();
     },
-    updateStorage(showDialog) {
-      let editedItem = JSON.parse(localStorage.getItem("editedJob"));
-      this.editedItem = editedItem;
-      if (
-        showDialog &&
-        (editedItem.id ||
-          editedItem.client.id ||
-          editedItem.client.Name ||
-          editedItem.client.Code ||
-          editedItem.prescription.re ||
-          editedItem.prescription.le ||
-          editedItem.prescription.add ||
-          editedItem.dateIn !== new Date().toISOString().substr(0, 10) ||
-          editedItem.dateOut !== new Date().toISOString().substr(0, 10) ||
-          editedItem.total ||
-          editedItem.deposit ||
-          editedItem.balance ||
-          editedItem.optician ||
-          editedItem.doctor)
-      ) {
-        this.dialog = true;
-      }
+    updateStorage() {
+      let editedTemplate = JSON.parse(localStorage.getItem("editedTemplate"));
+      this.editedItem = editedTemplate;
     },
 
     async initialize() {
       this.loading = true;
-      this.emailTemplates = [
-        {
-          id: 1,
-          title: "A - New Job Email Template",
-          details: "B - Lorem ipsum dolor sit amet.",
-          imgUrl:
-            "https://media.istockphoto.com/photos/child-hands-formig-heart-shape-picture-id951945718?k=6&m=951945718&s=612x612&w=0&h=ih-N7RytxrTfhDyvyTQCA5q5xKoJToKSYgdsJ_mHrv0="
-        },
-        {
-          id: 2,
-          title: "B - New Job Email Template",
-          details: "A - Lorem ipsum dolor sit amet.",
-          imgUrl:
-            "https://media.istockphoto.com/photos/child-hands-formig-heart-shape-picture-id951945718?k=6&m=951945718&s=612x612&w=0&h=ih-N7RytxrTfhDyvyTQCA5q5xKoJToKSYgdsJ_mHrv0="
-        },
-        {
-          id: 2,
-          title: "C - New Job Email Template",
-          details: "C - Lorem ipsum dolor sit amet.",
-          imgUrl:
-            "https://media.istockphoto.com/photos/child-hands-formig-heart-shape-picture-id951945718?k=6&m=951945718&s=612x612&w=0&h=ih-N7RytxrTfhDyvyTQCA5q5xKoJToKSYgdsJ_mHrv0="
+      try {
+        let response = await this.$axios("/email/templates", {
+          method: "GET"
+        });
+        if (response) {
+          this.emailTemplates = response.data;
         }
-      ];
+      } catch (err) {
+        console.log(err.response);
+      }
       this.loading = false;
-      // try {
-      //   let response = await this.$axios("/jobs", {
-      //     method: "GET"
-      //   });
-      //   if (response) {
-      //     this.jobs = response.data;
-      //   }
-      // } catch (err) {
-      //   console.log(err.response);
-      // }
     },
 
-    editItem(item) {
-      this.editedIndex = this.jobs.indexOf(item);
+    editItem(item, e) {
+      this.editedIndex = this.emailTemplates.indexOf(item);
+      localStorage.setItem("editedIndex", this.editedIndex);
       this.editedItem = item;
-      this.dialog = true;
+      this.editedItem.editing = true;
+      localStorage.setItem("editedTemplate", JSON.stringify(this.editedItem));
+      e.stopPropagation();
     },
 
-    deleteItem(item) {
-      this.editedIndex = this.jobs.indexOf(item);
+    newItem() {
+      this.editedItem.editing = true;
+      localStorage.setItem("editedTemplate", JSON.stringify(this.editedItem));
+    },
+
+    deleteItem(item, e) {
+      this.editedIndex = this.emailTemplates.indexOf(item);
       this.itemToDelete = item;
       this.dialogDelete = true;
+      e.stopPropagation();
     },
 
     async deleteItemConfirm() {
-      await this.$axios(`/job/delete/${this.itemToDelete.id}`, {
+      await this.$axios(`/email/template/delete/${this.itemToDelete.id}`, {
         method: "DELETE"
       })
         .then(res => {
-          this.jobs.splice(this.editedIndex, 1);
+          this.emailTemplates.splice(this.editedIndex, 1);
           this.$store.dispatch("toast/snackbar", {
             type: "success",
-            message: `${this.itemToDelete.client.Name}'s job was deleted successfully`,
+            message: `${this.itemToDelete.title} was deleted successfully`,
             timeout: 2000
           });
           this.closeDelete();
@@ -938,12 +721,13 @@ export default {
     },
 
     close() {
-      this.dialog = false;
-      // localStorage.removeItem("editedJob");
-      // this.$nextTick(() => {
-      //   this.editedItem = this.defaultItem;
-      //   this.editedIndex = -1;
-      // });
+      this.editedItem.editing = false;
+      this.$nextTick(() => {
+        this.editedItem = this.defaultItem;
+        localStorage.removeItem("editedIndex");
+        localStorage.removeItem("editedTemplate");
+        this.editedIndex = -1;
+      });
     },
 
     closeDelete() {
@@ -957,23 +741,23 @@ export default {
     async save() {
       this.loading = true;
       let editedItem = this.editedItem;
-      if (editedItem.client.Name) {
-        editedItem.client = editedItem.client.id;
-      }
       if (this.editedIndex > -1) {
-        editedItem.branch = this.$store.state.branch.id;
         try {
           let { id, ...rest } = editedItem;
-          await this.$axios(`/job/update/${editedItem.id}`, {
+          rest.lastModifiedBy = this.$auth.user._id;
+          await this.$axios(`/email/template/update/${id}`, {
             method: "PUT",
             data: rest
           }).then(async res => {
-            await Object.assign(this.jobs[this.editedIndex], res.data);
+            await Object.assign(
+              this.emailTemplates[this.editedIndex],
+              res.data
+            );
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/snackbar", {
               type: "success",
-              message: `${res.data.client.Name}'s job was updated successfully`,
+              message: `${res.data.title} template was updated successfully`,
               timeout: 3000
             });
           });
@@ -987,18 +771,19 @@ export default {
           });
         }
       } else {
-        editedItem.branch = this.$store.state.branch.id;
+        editedItem.createdBy = this.$auth.user._id;
+        editedItem.lastModifiedBy = editedItem.createdBy;
         try {
-          await this.$axios("/job/create", {
+          await this.$axios("/email/template/create", {
             method: "POST",
             data: editedItem
           }).then(res => {
-            this.jobs.push(res.data);
+            this.emailTemplates.push(res.data);
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/snackbar", {
               type: "success",
-              message: `${res.data.client.Name}'s job was saved successfully`,
+              message: `${res.data.title} template was saved successfully`,
               timeout: 3000
             });
           });
@@ -1015,8 +800,8 @@ export default {
     },
 
     clear() {
-      this.$refs.jobForm.reset();
-      localStorage.setItem("editedJob", JSON.stringify(this.defaultItem));
+      this.$refs.templateForm.reset();
+      localStorage.setItem("editedTemplate", JSON.stringify(this.defaultItem));
     }
   }
 };
@@ -1027,14 +812,9 @@ export default {
   min-height: 20px !important;
 }
 
-.overflow-scroll {
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-#email-editor-container,
-#editor-1 {
+#email-editor-container {
   height: 85vh;
+  width: 100%;
 }
 
 div.emailTemplates {

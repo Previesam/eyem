@@ -118,9 +118,34 @@
                               Item
                             </span>
                             <v-spacer></v-spacer>
-                            <span class="mr-8 text-body-2">Create</span>
-                            <span class="mr-8 text-body-2">Edit</span>
-                            <span class="text-body-2">Delete</span>
+                            <span
+                              class="mr-8 text-body-2"
+                              v-if="$vuetify.breakpoint.width >= 600"
+                              >View</span
+                            >
+                            <v-icon class="mr-8" small v-else>mdi-eye</v-icon>
+                            <span
+                              class="mr-8 text-body-2"
+                              v-if="$vuetify.breakpoint.width >= 600"
+                              >Create</span
+                            >
+                            <v-icon class="mr-8" small v-else
+                              >mdi-content-save</v-icon
+                            >
+                            <span
+                              v-if="$vuetify.breakpoint.width >= 600"
+                              class="mr-8 text-body-2"
+                              >Edit</span
+                            >
+                            <v-icon class="mr-8" small v-else
+                              >mdi-pencil</v-icon
+                            >
+                            <span
+                              v-if="$vuetify.breakpoint.width >= 600"
+                              class="text-body-2"
+                              >Delete</span
+                            >
+                            <v-icon small v-else>mdi-delete</v-icon>
                           </v-card-title>
                         </v-card>
                       </v-col>
@@ -130,7 +155,12 @@
                           :key="key"
                           class="mb-2"
                         >
-                          <v-card-title class="py-1 emailTemplates">
+                          <v-card-title
+                            :class="{
+                              'pr-1': $vuetify.breakpoint.width <= 600
+                            }"
+                            class="py-1 emailTemplates"
+                          >
                             <span
                               class="text-body-2 text-capitalize"
                               style="font-weight: bold"
@@ -138,25 +168,62 @@
                               {{ item.display }}
                             </span>
                             <v-spacer></v-spacer>
-                            <span class="mr-8"
+                            <span
+                              :class="
+                                $vuetify.breakpoint.width >= 600
+                                  ? 'mr-9'
+                                  : 'mr-4'
+                              "
+                              ><v-checkbox
+                                v-model="item.view"
+                                :rules="[
+                                  !!item.create ||
+                                    !!item.edit ||
+                                    !!item.delete ||
+                                    !!item.view ||
+                                    'Please select at least one option'
+                                ]"
+                              ></v-checkbox
+                            ></span>
+                            <span
+                              :class="
+                                $vuetify.breakpoint.width >= 600
+                                  ? 'mr-8'
+                                  : 'mr-4'
+                              "
                               ><v-checkbox
                                 :rules="[
                                   !!item.create ||
                                     !!item.edit ||
                                     !!item.delete ||
+                                    !!item.view ||
                                     'Please select at least one option'
                                 ]"
+                                @change="
+                                  item.create ? (item.view = true) : false
+                                "
                                 v-model="item.create"
                               ></v-checkbox
                             ></span>
-                            <span class="mr-8"
+                            <span
+                              :class="
+                                $vuetify.breakpoint.width >= 600
+                                  ? 'mr-8'
+                                  : 'mr-4'
+                              "
                               ><v-checkbox
                                 :rules="[
                                   !!item.edit ||
-                                    !!item.create ||
                                     !!item.delete ||
+                                    !!item.create ||
+                                    !!item.view ||
                                     'Please select at least one option'
                                 ]"
+                                @change="
+                                  item.edit
+                                    ? ((item.view = true), (item.create = true))
+                                    : false
+                                "
                                 v-model="item.edit"
                               ></v-checkbox
                             ></span>
@@ -166,8 +233,16 @@
                                   !!item.delete ||
                                     !!item.edit ||
                                     !!item.create ||
+                                    !!item.view ||
                                     'Please select at least one option'
                                 ]"
+                                @change="
+                                  item.delete
+                                    ? ((item.view = true),
+                                      (item.create = true),
+                                      (item.edit = true))
+                                    : false
+                                "
                                 v-model="item.delete"
                               ></v-checkbox
                             ></span>
@@ -291,9 +366,32 @@
                             Item
                           </span>
                           <v-spacer></v-spacer>
-                          <span class="mr-8 text-body-2">Create</span>
-                          <span class="mr-8 text-body-2">Edit</span>
-                          <span class="text-body-2">Delete</span>
+                          <span
+                            class="mr-8 text-body-2"
+                            v-if="$vuetify.breakpoint.width >= 600"
+                            >View</span
+                          >
+                          <v-icon class="mr-8" small v-else>mdi-eye</v-icon>
+                          <span
+                            class="mr-8 text-body-2"
+                            v-if="$vuetify.breakpoint.width >= 600"
+                            >Create</span
+                          >
+                          <v-icon class="mr-8" small v-else
+                            >mdi-content-save</v-icon
+                          >
+                          <span
+                            v-if="$vuetify.breakpoint.width >= 600"
+                            class="mr-8 text-body-2"
+                            >Edit</span
+                          >
+                          <v-icon class="mr-8" small v-else>mdi-pencil</v-icon>
+                          <span
+                            v-if="$vuetify.breakpoint.width >= 600"
+                            class="text-body-2"
+                            >Delete</span
+                          >
+                          <v-icon small v-else>mdi-delete</v-icon>
                         </v-card-title>
                       </v-card>
                     </v-col>
@@ -303,7 +401,10 @@
                         :key="key"
                         class="mb-2"
                       >
-                        <v-card-title class="py-1 emailTemplates">
+                        <v-card-title
+                          :class="{ 'pr-1': $vuetify.breakpoint.width <= 600 }"
+                          class="py-1 emailTemplates"
+                        >
                           <span
                             class="text-body-2 text-capitalize"
                             style="font-weight: bold"
@@ -311,39 +412,36 @@
                             {{ item.display }}
                           </span>
                           <v-spacer></v-spacer>
-                          <span class="mr-8"
+                          <span
+                            :class="
+                              $vuetify.breakpoint.width >= 600 ? 'mr-9' : 'mr-4'
+                            "
                             ><v-checkbox
                               readonly
-                              :rules="[
-                                !!item.create ||
-                                  !!item.edit ||
-                                  !!item.delete ||
-                                  'Please select at least one option'
-                              ]"
+                              v-model="item.view"
+                            ></v-checkbox
+                          ></span>
+                          <span
+                            :class="
+                              $vuetify.breakpoint.width >= 600 ? 'mr-8' : 'mr-4'
+                            "
+                            ><v-checkbox
+                              readonly
                               v-model="item.create"
                             ></v-checkbox
                           ></span>
-                          <span class="mr-8"
+                          <span
+                            :class="
+                              $vuetify.breakpoint.width >= 600 ? 'mr-8' : 'mr-4'
+                            "
                             ><v-checkbox
                               readonly
-                              :rules="[
-                                !!item.edit ||
-                                  !!item.create ||
-                                  !!item.delete ||
-                                  'Please select at least one option'
-                              ]"
                               v-model="item.edit"
                             ></v-checkbox
                           ></span>
                           <span
                             ><v-checkbox
                               readonly
-                              :rules="[
-                                !!item.delete ||
-                                  !!item.edit ||
-                                  !!item.create ||
-                                  'Please select at least one option'
-                              ]"
                               v-model="item.delete"
                             ></v-checkbox
                           ></span>
@@ -499,12 +597,6 @@ export default {
           value => (value && value.length >= 3) || "Min 3 characters"
         ]
       },
-      defaultStatuses: [
-        { title: "Open", value: "open" },
-        { title: "In-Progess", value: "in-progress" },
-        { title: "Delayed", value: "delayed" },
-        { title: "Completed", value: "completed" }
-      ],
       search: "",
       dialog: false,
       dialogView: false,
@@ -513,57 +605,66 @@ export default {
         roleDescription: "",
         permissions: {
           messages: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Messages"
           },
           jobs: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Jobs"
           },
           appointments: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Appointments"
           },
           clockInOut: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Clock In/Out"
           },
           itHelpDesk: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "IT Help Desk"
           },
           manageBranch: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Manage Branches"
           },
           manageUsers: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Manage Users"
           },
           permissions: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Permissions"
           },
           emailTemplates: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Email Templates"
           }
         }
@@ -575,57 +676,66 @@ export default {
         roleDescription: "",
         permissions: {
           messages: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Messages"
           },
           jobs: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Jobs"
           },
           appointments: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Appointments"
           },
           clockInOut: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Clock In/Out"
           },
           itHelpDesk: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "IT Help Desk"
           },
           manageBranch: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Manage Branches"
           },
           manageUsers: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Manage Users"
           },
           permissions: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Permissions"
           },
           emailTemplates: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Email Templates"
           }
         }
@@ -635,57 +745,66 @@ export default {
         roleDescription: "",
         permissions: {
           messages: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Messages"
           },
           jobs: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Jobs"
           },
           appointments: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Appointments"
           },
           clockInOut: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Clock In/Out"
           },
           itHelpDesk: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "IT Help Desk"
           },
           manageBranch: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Manage Branches"
           },
           manageUsers: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Manage Users"
           },
           permissions: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Permissions"
           },
           emailTemplates: {
-            create: true,
-            edit: true,
-            delete: true,
+            view: false,
+            create: false,
+            edit: false,
+            delete: false,
             display: "Email Templates"
           }
         }
@@ -722,6 +841,7 @@ export default {
     },
     messages() {
       return (
+        this.editedItem.permissions.messages.view +
         this.editedItem.permissions.messages.create +
         this.editedItem.permissions.messages.edit +
         this.editedItem.permissions.messages.delete
@@ -729,6 +849,7 @@ export default {
     },
     jobs() {
       return (
+        this.editedItem.permissions.jobs.view +
         this.editedItem.permissions.jobs.create +
         this.editedItem.permissions.jobs.edit +
         this.editedItem.permissions.jobs.delete
@@ -736,6 +857,7 @@ export default {
     },
     appointments() {
       return (
+        this.editedItem.permissions.appointments.view +
         this.editedItem.permissions.appointments.create +
         this.editedItem.permissions.appointments.edit +
         this.editedItem.permissions.appointments.delete
@@ -743,6 +865,7 @@ export default {
     },
     clockInOut() {
       return (
+        this.editedItem.permissions.clockInOut.view +
         this.editedItem.permissions.clockInOut.create +
         this.editedItem.permissions.clockInOut.edit +
         this.editedItem.permissions.clockInOut.delete
@@ -750,6 +873,7 @@ export default {
     },
     itHelpDesk() {
       return (
+        this.editedItem.permissions.itHelpDesk.view +
         this.editedItem.permissions.itHelpDesk.create +
         this.editedItem.permissions.itHelpDesk.edit +
         this.editedItem.permissions.itHelpDesk.delete
@@ -757,6 +881,7 @@ export default {
     },
     manageBranch() {
       return (
+        this.editedItem.permissions.manageBranch.view +
         this.editedItem.permissions.manageBranch.create +
         this.editedItem.permissions.manageBranch.edit +
         this.editedItem.permissions.manageBranch.delete
@@ -764,6 +889,7 @@ export default {
     },
     manageUsers() {
       return (
+        this.editedItem.permissions.manageUsers.view +
         this.editedItem.permissions.manageUsers.create +
         this.editedItem.permissions.manageUsers.edit +
         this.editedItem.permissions.manageUsers.delete
@@ -771,6 +897,7 @@ export default {
     },
     permissions() {
       return (
+        this.editedItem.permissions.permissions.view +
         this.editedItem.permissions.permissions.create +
         this.editedItem.permissions.permissions.edit +
         this.editedItem.permissions.permissions.delete
@@ -778,6 +905,7 @@ export default {
     },
     emailTemplates() {
       return (
+        this.editedItem.permissions.emailTemplates.view +
         this.editedItem.permissions.emailTemplates.create +
         this.editedItem.permissions.emailTemplates.edit +
         this.editedItem.permissions.emailTemplates.delete

@@ -11,22 +11,22 @@
           href="https://facebook.com"
           style="text-decoration: none"
           class="mr-2"
-          ><v-icon size="20" color="primary">mdi-facebook</v-icon></a
+          ><v-icon size="19" color="primary">mdi-facebook</v-icon></a
         >
         <a href="https://twitter.com" style="text-decoration: none" class="mr-2"
-          ><v-icon size="20" color="accent">mdi-twitter</v-icon></a
+          ><v-icon size="19" color="accent">mdi-twitter</v-icon></a
         >
         <a
           href="https://instagram.com"
           style="text-decoration: none"
           class="mr-2"
-          ><v-icon size="20" color="orange">mdi-instagram</v-icon></a
+          ><v-icon size="19" color="orange">mdi-instagram</v-icon></a
         >
         <a href="https://youtube.com" class="mr-2" style="text-decoration: none"
-          ><v-icon color="red">mdi-youtube</v-icon></a
+          ><v-icon size="19" color="red">mdi-youtube</v-icon></a
         >
         <a href="https://whatsapp.com" style="text-decoration: none"
-          ><v-icon size="20" color="green">mdi-whatsapp</v-icon></a
+          ><v-icon size="19" color="green">mdi-whatsapp</v-icon></a
         >
       </v-app-bar>
       <v-container style="height:100%; width:100%" fluid>

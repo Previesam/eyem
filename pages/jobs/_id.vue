@@ -1,13 +1,7 @@
 <template>
   <!-- Begin Right Column Item Preview -->
 
-  <v-card
-    rounded
-    class="ml-auto mr-auto"
-    style="overflow-x:scroll"
-    height="100%"
-    width="800px"
-  >
+  <v-card rounded class="ml-auto mr-auto" height="100%" width="800px">
     <v-card-title class="text-body-1" style="font-weight: bold">{{
       currentItem.client.Name
     }}</v-card-title>
@@ -21,11 +15,11 @@
       <div class="row justify-content-between">
         <div
           class="order-tracking"
-          :style="
-            currentItem.status === 'delayed' ? 'width: 20%' : 'width: 25%'
-          "
           :class="
-            currentItem.status === 'open'
+            currentItem.status === 'open' ||
+            'in-progress' ||
+            'quality-check' ||
+            'completed'
               ? 'completed'
               : ''
           "
@@ -35,51 +29,34 @@
         </div>
         <div
           class="order-tracking"
-          :style="
-            currentItem.status === 'delayed' ? 'width: 20%' : 'width: 25%'
-          "
-          :class="
-            currentItem.status === 'in-progress' ||
-            'delayed' ||
-            'quality-check' ||
-            'completed'
-              ? 'completed'
-              : ''
-          "
+          :class="currentItem.status === 'open' ? '' : 'completed'"
         >
           <span class="is-complete"></span>
           <v-card-text class="pa-0 mt-2 ma-0">In Progress</v-card-text>
         </div>
         <div
           class="order-tracking"
-          :style="
-            currentItem.status === 'delayed' ? 'width: 20%' : 'width: 25%'
-          "
           :class="currentItem.status === 'delayed' ? 'completed' : ''"
-          v-if="currentItem.status === 'delayed'"
+          v-show="currentItem.status === 'delayed'"
         >
-          <span class="is-complete"></span>
+          <span class="is-complete" style="background-color: red"></span>
           <v-card-text class="pa-0 mt-2 ma-0">Delayed</v-card-text>
         </div>
         <div
           class="order-tracking"
-          :style="
-            currentItem.status === 'delayed' ? 'width: 20%' : 'width: 25%'
-          "
           :class="
-            currentItem.status === 'quality-check' || 'completed'
+            currentItem.status.includes('quality-check') ||
+            currentItem.status.includes('completed')
               ? 'completed'
               : ''
           "
+          v-show="currentItem.status !== 'delayed'"
         >
           <span class="is-complete"></span>
           <v-card-text class="pa-0 mt-2 ma-0">Quality Check</v-card-text>
         </div>
         <div
           class="order-tracking"
-          :style="
-            currentItem.status === 'delayed' ? 'width: 20%' : 'width: 25%'
-          "
           :class="currentItem.status === 'completed' ? 'completed' : ''"
         >
           <span class="is-complete"></span>
@@ -88,38 +65,35 @@
       </div>
     </div>
     <v-card-subtitle style="font-weight: bold">History:</v-card-subtitle>
-    <v-card-text class="py-0">
+    <v-card-text
+      style="font-weight: 500; display: block; height: 37%; overflow-y: scroll"
+      class="py-0 my-0"
+    >
+      <div v-if="currentItem.history.length < 1" class="text-center">
+        Nothing to show here...
+      </div>
       <v-timeline
         align-top
+        v-else
         :dense="$vuetify.breakpoint.width < 600"
         class="px-0 mx-0"
       >
-        <v-timeline-item color="pink" small>
+        <v-timeline-item
+          v-for="(history, index) of currentItem.history"
+          :key="index"
+          :color="getStatusColor(history.status)"
+          small
+        >
           <template v-slot:opposite>
-            <span>{{ formatDate(currentItem.updatedAt) }}</span>
+            <span class="caption">{{ formatDate(history.date) }}</span>
           </template>
-          Samuel Adeyanju Changed status to <v-chip>pending</v-chip>
-        </v-timeline-item>
-
-        <v-timeline-item color="teal lighten-3" small>
-          <template v-slot:opposite>
-            <span>{{ formatDate(currentItem.updatedAt) }}</span>
-          </template>
-          Samuel Adeyanju Changed status to <v-chip>pending</v-chip>
-        </v-timeline-item>
-
-        <v-timeline-item color="pink" small>
-          <template v-slot:opposite>
-            <span>{{ formatDate(currentItem.updatedAt) }}</span>
-          </template>
-          Samuel Adeyanju Changed status to <v-chip>pending</v-chip>
-        </v-timeline-item>
-
-        <v-timeline-item color="teal lighten-3" small>
-          <template v-slot:opposite>
-            <span>{{ formatDate(currentItem.updatedAt) }}</span>
-          </template>
-          Samuel Adeyanju Changed status to <v-chip>pending</v-chip>
+          {{ history.name }} set job as
+          <v-chip small :color="getStatusColor(history.status)">{{
+            history.status
+          }}</v-chip>
+          <span class="caption" v-show="$vuetify.breakpoint.width < 600">{{
+            formatDate(history.date)
+          }}</span>
         </v-timeline-item>
       </v-timeline>
     </v-card-text>
@@ -132,15 +106,21 @@
 export default {
   auth: false,
   layout: "job-preview",
-  async asyncData({ $axios, store, params }) {
+  async asyncData({ $axios, store, params, error }) {
     await $axios(`/job/${params.id}`, {
       method: "GET"
     })
       .then(res => {
+        if (res.data.message)
+          error({ statusCode: 404, message: "Job not found" });
         store.commit("setCurrentItem", res.data);
-        console.log(res.data);
       })
-      .catch(err => console.log(err.response));
+      .catch(
+        err => (
+          console.error(err.response),
+          error({ statusCode: 404, message: "Job not found" })
+        )
+      );
   },
 
   computed: {
@@ -150,6 +130,19 @@ export default {
   },
 
   methods: {
+    getStatusColor(status) {
+      if (status === "open") {
+        return "primary";
+      } else if (status === "in-progress") {
+        return "secondary";
+      } else if (status === "completed") {
+        return "accent";
+      } else if (status === "delayed") {
+        return "warning";
+      } else {
+        return;
+      }
+    },
     formatDate(date) {
       if (!date) return null;
 
@@ -176,7 +169,7 @@ export default {
 }
 .order-tracking {
   text-align: center;
-  width: 20%;
+  width: 25%;
   position: relative;
   display: block;
 }

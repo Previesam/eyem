@@ -1,4 +1,6 @@
 import colors from "vuetify/es5/util/colors";
+var webpack = require("webpack");
+var path = require("path");
 // const baseHref = process.env.BASE_HREF || '/';
 
 export default {
@@ -11,7 +13,18 @@ export default {
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { hid: "description", name: "description", content: "" }
     ],
-    link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }]
+    link: [
+      { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
+      {
+        rel: "stylesheet",
+        href:
+          "https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+      },
+      {
+        rel: "stylesheet",
+        href: "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.css"
+      }
+    ]
   },
 
   // Global CSS (https://go.nuxtjs.dev/config-css)
@@ -21,7 +34,22 @@ export default {
     //   "../node_modules/@ionic/core/css/normalize.css",
     //   "../node_modules/@ionic/core/css/structure.css",
     //   "../node_modules/@ionic/core/css/typography.css",
-    //   "../node_modules/@ionic/core/css/ionic.bundle.css"
+    //   "../node_modules/@ionic/core/css/ionic.bundle.css",
+    "~/node_modules/froala-editor/css/froala_editor.pkgd.css",
+    "~/node_modules/froala-editor/css/froala_style.min.css",
+    "~/node_modules/froala-editor/css/plugins/char_counter.min.css",
+    "~/node_modules/froala-editor/css/plugins/code_view.min.css",
+    "~/node_modules/froala-editor/css/plugins/colors.min.css",
+    "~/node_modules/froala-editor/css/plugins/draggable.min.css",
+    "~/node_modules/froala-editor/css/plugins/emoticons.min.css",
+    "~/node_modules/froala-editor/css/plugins/image.min.css",
+    "~/node_modules/froala-editor/css/plugins/image_manager.min.css",
+    "~/node_modules/froala-editor/css/plugins/quick_insert.min.css",
+    "~/node_modules/froala-editor/css/plugins/line_breaker.css",
+    "~/node_modules/froala-editor/css/plugins/special_characters.css",
+    "~/node_modules/froala-editor/css/third_party/spell_checker.min.css",
+    "~/node_modules/froala-editor/css/plugins/table.min.css",
+    "~/node_modules/froala-editor/css/plugins/video.min.css",
     "~/assets/style.css"
   ],
 
@@ -37,6 +65,7 @@ export default {
   plugins: [
     // add created plugin:
     "~/plugins/v-mask.js",
+    { src: "~/plugins/froala-editor.js", mode: "client" }
     // { src: "~/plugins/ionic.js", mode: "client" }
   ],
 
@@ -172,6 +201,12 @@ export default {
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
+    plugins: [
+      new webpack.ProvidePlugin({
+        $: "jquery",
+        jQuery: "jquery"
+      })
+    ],
     extend(config, { isDev, isClient }) {
       config.node = {
         fs: "empty"

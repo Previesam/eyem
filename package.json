@@ -23,7 +23,7 @@
     "express": "^4.17.1",
     "fs": "0.0.1-security",
     "helmet": "^4.3.1",
-    "jsdom": "^11.12.0",
+    "jquery": "^3.6.0",
     "jsonwebtoken": "^8.5.1",
     "lodash.startcase": "^4.4.0",
     "lodash.uniqueid": "^4.0.1",
@@ -40,6 +40,7 @@
     "validator": "^13.5.2",
     "vee-validate": "^3.3.8",
     "vue-email-editor": "^0.7.2",
+    "vue-froala-wysiwyg": "^3.2.7",
     "vuex": "^3.6.0",
     "ws": "^6.2.1"
   },
