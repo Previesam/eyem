@@ -605,7 +605,8 @@ export default {
         balance: "",
         optician: "",
         doctor: "",
-        branch: ""
+        branch: "",
+        history: []
       },
       dialogDelete: false,
       headers: [
@@ -660,7 +661,8 @@ export default {
         balance: "",
         optician: "",
         doctor: "",
-        branch: ""
+        branch: "",
+        history: []
       },
       dateInFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
       dateOutFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
@@ -685,7 +687,8 @@ export default {
         balance: "",
         optician: "",
         doctor: "",
-        branch: ""
+        branch: "",
+        history: []
       },
       itemToDelete: {},
       clientIsLoading: false,
@@ -909,6 +912,11 @@ export default {
       if (item.status === newValue) return (this.loading = false);
       let index = this.jobs.indexOf(item);
       item.status = newValue;
+      item.history.push({
+        status: newValue,
+        name: this.$auth.user.fullname,
+        date: new Date().toISOString().substr(0, 10)
+      });
       try {
         let { id, ...rest } = item;
         rest.lastModifiedBy = this.$auth.user._id;
@@ -1033,6 +1041,11 @@ export default {
       if (editedItem.client.Name) {
         editedItem.client = editedItem.client.id;
       }
+      editedItem.history.push({
+        status: editedItem.status,
+        name: this.$auth.user.fullname,
+        date: new Date().toISOString().substr(0, 10)
+      });
       if (this.editedIndex > -1) {
         try {
           let { id, ...rest } = editedItem;

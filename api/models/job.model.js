@@ -23,12 +23,19 @@ const JobSchema = mongoose.Schema(
       required: true,
       ref: "Branch"
     },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
-    lastModifiedBy: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" }
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User"
+    },
+    lastModifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User"
+    },
+    history: [{ status: String, name: String, date: Date }]
   },
   { toJSON: { virtuals: true }, timestamps: true }
 );
-
-// JobSchema.set("toJSON", { virtuals: true });
 
 module.exports = mongoose.model("Job", JobSchema);

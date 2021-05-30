@@ -265,7 +265,7 @@ export default {
   },
 
   async mounted() {
-    await this.initDarkMode();
+    // await this.initDarkMode();
   },
 
   async beforeMount() {
