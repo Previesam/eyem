@@ -327,8 +327,7 @@
             width="600px"
           >
             <v-card>
-              <v-divider></v-divider>
-              <v-card-text class="pa-2">
+              <v-container fluid>
                 <div class="mb-2 subtitle-1 d-flex">
                   <div>
                     <div class="caption">
@@ -341,7 +340,7 @@
                       }}
                     </div>
                     <div class="subtitle-2 font-weight-bold">
-                      Role # {{ roleToView.id }}
+                      Role #{{ roleToView.id }}
                     </div>
                   </div>
                   <div class="ml-auto my-auto">
@@ -351,6 +350,8 @@
                   </div>
                 </div>
                 <v-divider></v-divider>
+              </v-container>
+              <v-card-text class="pa-2">
                 <v-card-text class="text-body-1" style="font-weight: bold"
                   ><v-icon left>mdi-account</v-icon>
                   {{ roleToView.name }}</v-card-text

@@ -182,148 +182,63 @@
             scrollable
             :fullscreen="$vuetify.breakpoint.width <= 600 ? true : false"
             overlay-color="blue"
-            width="500px"
+            max-width="800px"
           >
-            <!-- <v-card>
-              <v-divider></v-divider>
-              <v-card-text class="pa-2">
+            <v-card>
+              <v-container fluid>
                 <div class="mb-2 subtitle-1 d-flex">
                   <div>
                     <div class="caption">
-                      {{ formatDate(jobToView.dateIn) }}
+                      Created:
+                      {{
+                        formatDate(
+                          templateToView.createdAt ||
+                            new Date().toISOString().substr(0, 10)
+                        )
+                      }}
                     </div>
                     <div class="subtitle-2 font-weight-bold">
-                      Job # {{ jobToView.id }}
+                      Template #{{ templateToView.id }}
                     </div>
                   </div>
                   <div class="ml-auto my-auto">
-                    <v-icon @click.stop="dialogViewJob = !dialogViewJob"
+                    <v-icon
+                      @click.stop="dialogViewTemplate = !dialogViewTemplate"
                       >mdi-close</v-icon
                     >
                   </div>
                 </div>
                 <v-divider></v-divider>
-                <div class="my-4 d-flex">
-                  <div>
-                    <v-icon left>mdi-account</v-icon
-                    ><span class="subtitle-2 font-weight-bold">{{
-                      jobToView.client.Name
-                    }}</span>
-                  </div>
-                  <div class="ml-auto">
-                    <v-menu
-                      transition="slide-y-transition"
-                      bottom
-                      close-on-content-click
-                    >
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-chip
-                          small
-                          :color="getStatusColor(jobToView.status)"
-                          v-bind="attrs"
-                          v-on="on"
-                        >
-                          <v-avatar left>
-                            <v-icon small
-                              >mdi-checkbox-marked-circle</v-icon
-                            > </v-avatar
-                          ><span>{{
-                            defaultStatuses.filter(
-                              m => m.value === jobToView.status
-                            )[0].title
-                          }}</span>
-                        </v-chip>
-                      </template>
-                      <v-list dense>
-                        <v-list-item
-                          v-for="(status, i) in defaultStatuses"
-                          :key="i"
-                          link
-                        >
-                          <v-list-item-title
-                            @click="changeStatus(jobToView, status.value)"
-                            >{{ status.title }}</v-list-item-title
-                          >
-                        </v-list-item>
-                      </v-list>
-                    </v-menu>
-                  </div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Date In:</div>
-                  <div class="ml-auto">{{ formatDate(jobToView.dateIn) }}</div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Date Out:</div>
-                  <div class="ml-auto">{{ formatDate(jobToView.dateOut) }}</div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Right Eye:</div>
-                  <div class="ml-auto">
-                    <v-chip small>{{ jobToView.prescription.re }}</v-chip>
-                  </div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Left Eye:</div>
-                  <div class="ml-auto">
-                    <v-chip small>{{ jobToView.prescription.le }}</v-chip>
-                  </div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Add:</div>
-                  <div class="ml-auto">
-                    <v-chip small>{{ jobToView.prescription.add }}</v-chip>
-                  </div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Frame:</div>
-                  <div class="ml-auto">{{ jobToView.frame }}</div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Lens:</div>
-                  <div class="ml-auto">{{ jobToView.lens }}</div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Doctor:</div>
-                  <div class="ml-auto">{{ jobToView.doctor }}</div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Optician:</div>
-                  <div class="ml-auto">{{ jobToView.optician }}</div>
-                </div>
-                <div class="my-4 d-flex">
-                  <v-btn
-                    color="accent"
-                    small
-                    outlined
-                    rounded
-                    class="text-capitalize mx-auto"
-                    >Pay Balance</v-btn
-                  >
-                </div>
-                <v-divider></v-divider>
-                <div class="my-2 d-flex flex-wrap">
-                  <div class="d-flex my-2 mx-auto">
-                    <div>Total:</div>
-                    <div class="mx-2">
-                      <v-chip small>{{ jobToView.total }}</v-chip>
-                    </div>
-                  </div>
-                  <div class="d-flex my-2 mx-auto">
-                    <div>Deposit:</div>
-                    <div class="mx-2">
-                      <v-chip small>{{ jobToView.deposit }}</v-chip>
-                    </div>
-                  </div>
-                  <div class="d-flex my-2 mx-auto">
-                    <div>Balance:</div>
-                    <div class="mx-2">
-                      <v-chip small>{{ jobToView.balance }}</v-chip>
-                    </div>
-                  </div>
-                </div>
+              </v-container>
+              <v-card-text>
+                <v-card-text>{{ templateToView.description }}</v-card-text>
+                <v-container fluid>
+                  <v-card
+                    v-html="templateToView.html"
+                    class="pa-3 fr-view"
+                  ></v-card>
+                </v-container>
               </v-card-text>
-            </v-card> -->
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="accent"
+                  class="text-capitalize"
+                  small
+                  outlined
+                  @click="editItem(templateToView, $event)"
+                  >Edit</v-btn
+                >
+                <v-btn
+                  color="red darken-2"
+                  outlined
+                  class="ml-2 text-capitalize"
+                  small
+                  @click="deleteItem(templateToView, $event)"
+                  >Delete</v-btn
+                >
+              </v-card-actions>
+            </v-card>
           </v-dialog>
 
           <!-- End Preview Dialog -->
@@ -333,7 +248,7 @@
         <v-row class="px-1" dense>
           <v-col cols="12">
             <v-card
-              @click.stop="alert(item, $event)"
+              @click.stop="view(item, $event)"
               v-for="item in props.items"
               :key="item.id"
               class="mb-2"
@@ -462,7 +377,7 @@ export default {
           }
         },
         inlineClasses: {
-          'fr-class-footer': 'Footer'
+          "fr-class-footer": "Footer"
         }
       },
       page: 1,
@@ -587,9 +502,6 @@ export default {
   },
 
   methods: {
-    alert(item, e) {
-      alert(item.title);
-    },
     nextPage() {
       if (this.page + 1 <= this.numberOfPages) this.page += 1;
     },
@@ -632,9 +544,10 @@ export default {
         this.clientIsLoading = false;
       }, 500);
     },
-    view(template) {
+    view(template, e) {
       this.templateToView = template;
       this.dialogViewTemplate = true;
+      e.stopPropagation();
     },
     parseDate(date) {
       if (!date) return null;
@@ -685,6 +598,7 @@ export default {
       this.editedIndex = this.emailTemplates.indexOf(item);
       localStorage.setItem("editedIndex", this.editedIndex);
       this.editedItem = item;
+      this.dialogViewTemplate = false;
       this.editedItem.editing = true;
       localStorage.setItem("editedTemplate", JSON.stringify(this.editedItem));
       e.stopPropagation();
@@ -698,6 +612,7 @@ export default {
     deleteItem(item, e) {
       this.editedIndex = this.emailTemplates.indexOf(item);
       this.itemToDelete = item;
+      this.dialogViewTemplate = false;
       this.dialogDelete = true;
       e.stopPropagation();
     },
