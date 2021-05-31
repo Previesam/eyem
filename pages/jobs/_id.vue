@@ -11,7 +11,7 @@
       Frame: {{ currentItem.frame }} <br />
       Lens: {{ currentItem.lens }}
     </v-card-text>
-    <div class="col-12 col-md-12 hh-grayBox pt45 pb20">
+    <div  :style="{ background: $vuetify.theme.themes[theme].background }" class="col-12 col-md-12 hh-grayBox pt45 pb20">
       <div class="row justify-content-between">
         <div
           class="order-tracking"
@@ -126,6 +126,9 @@ export default {
   computed: {
     currentItem() {
       return this.$store.state.currentItem;
+    },
+    theme() {
+      return this.$vuetify.theme.dark ? "dark" : "light";
     }
   },
 
