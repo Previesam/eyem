@@ -5,10 +5,11 @@ const Roles = require("../models/role.model.js");
 
 const populateQuery = [
   { path: "role", select: ["name", "permissions"] },
-  { path: "defaultBranch", select: ["Name", "Key"] }
+  { path: "defaultBranch", select: ["Name", "Key"] },
+  { path: "createdBy", select: ["fullname", "phone", "email"] },
+  { path: "lastModifiedBy", select: ["fullname", "phone", "email"] },
+  { path: "branches", select: ["Name", "Key"] }
 ];
-
-
 
 // All Imports
 
@@ -34,9 +35,15 @@ exports.create = async (req, res) => {
     });
   }
 
-  if (req.body.fullname.length < 3) {
+  if (req.body.firstname.length < 3) {
     errors.push({
-      message: "Full name must have at least 3 characters"
+      message: "First name must have at least 3 characters"
+    });
+  }
+
+  if (req.body.lastname.length < 3) {
+    errors.push({
+      message: "Last name must have at least 3 characters"
     });
   }
 
@@ -182,6 +189,8 @@ exports.findAll = async (req, res) => {
   // fullname = "Samuel Adeyanju";
   // console.log(welcomeEmail.replace("[fullname]", fullname));
   await User.find({})
+    .populate(populateQuery)
+    .exec()
     .then(data => {
       return res.send(data);
     })
@@ -215,46 +224,6 @@ exports.findOne = async (req, res) => {
           message: err.message || "Unknown error occurred while retrieving user"
         });
       }
-    });
-};
-
-// Assign role
-
-exports.assignRole = async (req, res) => {
-  if (!req.body.userid || !req.body.roleid) {
-    return res
-      .status(400)
-      .send({ message: "User/role details can not be empty!" });
-  }
-
-  // validate
-  const user = await User.findById(req.body.userid);
-  if (!user) {
-    return res.status(404).send("User not found");
-  }
-
-  //find role by id
-  const role = await Roles.findById(req.body.roleid);
-  if (!role) {
-    return res.status(404).send("Role not found");
-  }
-
-  if (user.roles.includes(role.roleName)) {
-    return res.status(400).send("User exist in role already!");
-  }
-
-  user.roles.push(role.roleName);
-  // save user
-  user
-    .save()
-    .then(data => {
-      return res.status(404).send("User added to role");
-    })
-    .catch(err => {
-      if (err.kind === "ObjectId") {
-        return res.status(404).send("User not added to role");
-      }
-      return res.status(500).send("Error adding user to role");
     });
 };
 
@@ -385,34 +354,25 @@ exports.refresh = async (req, res) => {
 
 exports.update = async (req, res) => {
   // Validate Request
-  if (req.body.email == "") {
+  if (!req.body.email) {
     return res.status(400).send({
       message: "User email cannot be empty"
     });
   }
 
   //get user
-  const user = await User.findById(req.params.Id);
+  const user = await User.findById(req.params.id);
 
   // validate
   if (!user) {
-    return res.status(404).send("User not found");
+    return res.status(404).send({ message: "User not found" });
   }
 
-  if (
-    user.email !== req.body.email &&
-    User.findOne({
-      email: req.body.email
-    })
-  ) {
-    return res
-      .status(500)
-      .send('Username "' + req.body.email + '" already exist!');
-  }
-
-  // hash password if it was entered
-  if (req.body.password) {
-    req.body.hash = bcrypt.hashSync(req.body.password, 10);
+  if (user.email !== req.body.email) {
+    return res.status(400).send({
+      message:
+        'Email "' + req.body.email + '" does not match email in database!'
+    });
   }
 
   // copy userinfo properties to user
@@ -422,17 +382,23 @@ exports.update = async (req, res) => {
     .save()
     .then(data => {
       if (!data) {
-        return res.status(404).send("User not found with id " + req.params.Id);
+        return res
+          .status(404)
+          .send({ message: "User not found with id " + req.params.id });
       }
-      res.send(data);
+      data.execPopulate(populateQuery, (err, data) => {
+        res.send(data);
+      });
     })
     .catch(err => {
       if (err.kind === "ObjectId") {
-        return res.status(404).send("User not found with id " + req.params.Id);
+        return res
+          .status(404)
+          .send({ message: "User not found with id " + req.params.id });
       }
-      return res
-        .status(500)
-        .send("Error updating User with id " + req.params.Id);
+      return res.status(500).send({
+        message: err.message || "Error updating User with id " + req.params.id
+      });
     });
 };
 

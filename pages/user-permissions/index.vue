@@ -1,5 +1,10 @@
 <template>
-  <v-card width="100%" min-height="84vh" class="rounded mt-1 mx-auto">
+  <v-card
+    width="100%"
+    min-height="84vh"
+    class="rounded mt-1 mx-auto"
+    :loading="loading"
+  >
     <v-data-iterator
       :items="roles"
       :items-per-page.sync="itemsPerPage"
@@ -559,7 +564,7 @@
             Page {{ page }} of {{ numberOfPages }}
           </span>
           <v-btn
-            fab
+            icon
             dark
             color="blue darken-3"
             class="mr-1"
@@ -569,7 +574,7 @@
             <v-icon>mdi-chevron-left</v-icon>
           </v-btn>
           <v-btn
-            fab
+            icon
             x-small
             dark
             color="blue darken-3"

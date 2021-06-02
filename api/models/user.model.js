@@ -15,8 +15,11 @@ const UserSchema = mongoose.Schema(
       }
     },
     hash: { type: String },
-    fullname: { type: String, required: true },
+    firstname: { type: String, required: true },
+    lastname: { type: String, required: true },
     phone: { type: String },
+    dateOfBirth: { type: Date },
+    designation: { type: String },
     role: { type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true },
     passport: { type: String },
     accountDetails: {
@@ -29,8 +32,21 @@ const UserSchema = mongoose.Schema(
       ref: "Branch",
       required: true
     },
+    branches: [
+      { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Branch" }
+    ],
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User"
+    },
+    lastModifiedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User"
+    },
     inactive: { type: Boolean, default: true, required: true },
-    regInfo: {
+    activationInfo: {
       code: { type: String, require: true, unique: true },
       expiresIn: { type: Date, required: true }
     }

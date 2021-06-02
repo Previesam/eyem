@@ -61,7 +61,6 @@ let diffArray = (arr1, arr2) => {
 };
 
 let timer;
-let branchTimer;
 
 var updateBranches = async () => {
   await axios("https://manager.eyemastersng.com/api/index.json", {
@@ -241,8 +240,6 @@ var updateClients = async () => {
 };
 
 // updateClients();
-
-
 
 // define a simple route
 app.get("/", (req, res) => {

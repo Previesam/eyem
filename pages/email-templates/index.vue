@@ -130,8 +130,6 @@
             <span :hidden="$vuetify.breakpoint.smAndDown">New Template</span>
           </v-btn>
 
-          <!-- End Create and Edit Dialog -->
-
           <!-- Begin Delete Dialog -->
 
           <v-dialog
@@ -214,7 +212,12 @@
                 <v-card-text>{{ templateToView.description }}</v-card-text>
                 <v-container fluid>
                   <v-card
-                    v-html="templateToView.html"
+                    v-html="
+                      formatTemplateToView(
+                        templateToView.html,
+                        $vuetify.theme.dark
+                      )
+                    "
                     class="pa-3 fr-view"
                   ></v-card>
                 </v-container>
@@ -286,15 +289,6 @@
                 </v-card-actions>
               </div>
             </v-card>
-            <!-- <v-card>
-              <v-card-text class="px-3 ma-0 py-0" id="email-editor"
-                ><froala
-                  :tag="'textarea'"
-                  :config="config"
-                  v-model="editedTemplate"
-                ></froala
-              ></v-card-text>
-            </v-card> -->
           </v-col>
         </v-row>
       </template>
@@ -335,7 +329,7 @@
             Page {{ page }} of {{ numberOfPages }}
           </span>
           <v-btn
-            fab
+            icon
             dark
             color="blue darken-3"
             class="mr-1"
@@ -345,7 +339,7 @@
             <v-icon>mdi-chevron-left</v-icon>
           </v-btn>
           <v-btn
-            fab
+            icon
             x-small
             dark
             color="blue darken-3"
@@ -511,39 +505,6 @@ export default {
     updateItemsPerPage(number) {
       this.itemsPerPage = number;
     },
-    convertItem(item) {
-      return { Name: item.Name, id: item.id, Code: item.Code };
-    },
-    selectItem(item) {
-      var text = item.Code && item.Name ? `${item.Code} - ${item.Name}` : "";
-      return text;
-    },
-
-    filterClients(query) {
-      // cancel pending call
-      clearTimeout(this._timerId);
-
-      this.clients = [];
-
-      this.clientIsLoading = true;
-
-      this._timerId = setTimeout(() => {
-        let clients = this.$store.state.clients
-          .filter(item => item.Name)
-          .map(m => m);
-
-        this.clients = clients.filter(c => {
-          return (
-            encodeURIComponent(c.Code)
-              .toString()
-              .toLowerCase()
-              .includes(encodeURIComponent(query).toLowerCase()) ||
-            c.Name.toLowerCase().includes(query.toLowerCase())
-          );
-        });
-        this.clientIsLoading = false;
-      }, 500);
-    },
     view(template, e) {
       this.templateToView = template;
       this.dialogViewTemplate = true;
@@ -574,6 +535,7 @@ export default {
       localStorage.setItem("editedTemplate", JSON.stringify(editedTemplate));
       this.updateStorage();
     },
+
     updateStorage() {
       let editedTemplate = JSON.parse(localStorage.getItem("editedTemplate"));
       this.editedItem = editedTemplate;
@@ -607,6 +569,11 @@ export default {
     newItem() {
       this.editedItem.editing = true;
       localStorage.setItem("editedTemplate", JSON.stringify(this.editedItem));
+    },
+
+    formatTemplateToView(template, dark) {
+      if (!dark) return template;
+      return template.replaceAll("color: rgb(0, 0, 0);", "");
     },
 
     deleteItem(item, e) {

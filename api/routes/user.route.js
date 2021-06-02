@@ -24,10 +24,6 @@ module.exports = (app) => {
 
     app.get('/auth/user', verifyToken, user.findOne);
 
-    // Route to assign role to user
-
-    app.post('/user/assign-role/', user.assignRole);
-
     // Route to update user
 
     app.put('/user/update/:id', user.update);

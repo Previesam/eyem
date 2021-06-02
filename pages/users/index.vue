@@ -1,5 +1,10 @@
 <template>
-  <v-card width="100%" min-height="84vh" class="rounded mt-1 mx-auto">
+  <v-card
+    width="100%"
+    min-height="84vh"
+    class="rounded mt-1 mx-auto"
+    :loading="loading"
+  >
     <v-data-iterator
       :items="users"
       :items-per-page.sync="itemsPerPage"
@@ -57,6 +62,7 @@
             scrollable
             :fullscreen="$vuetify.breakpoint.width >= 600 ? false : true"
             overlay-color="blue"
+            max-width="800px"
           >
             <template v-slot:activator="{ on, attrs }">
               <v-btn
@@ -74,11 +80,179 @@
               </v-btn>
             </template>
             <v-card :class="$vuetify.breakpoint.width >= 600 ? 'rounded' : ''">
-              <v-card-title>
+              <v-card-title class="pa-3">
                 <h1 class="text-h6">{{ formTitle }}</h1>
                 <v-spacer></v-spacer>
                 <v-btn icon @click="close()"><v-icon>mdi-close</v-icon></v-btn>
               </v-card-title>
+              <v-card-text>
+                <v-container fluid>
+                  <v-form v-model="valid" ref="userForm">
+                    <v-row>
+                      <v-col cols="12" sm="6">
+                        <v-text-field
+                          :rules="rules.name"
+                          v-model="editedItem.firstname"
+                          label="First Name"
+                          dense
+                          prepend-inner-icon="mdi-account"
+                          outlined
+                        >
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-text-field
+                          :rules="rules.name"
+                          v-model="editedItem.lastname"
+                          label="Last Name"
+                          dense
+                          prepend-inner-icon="mdi-account"
+                          outlined
+                        >
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-text-field
+                          :rules="rules.name"
+                          v-model="editedItem.email"
+                          label="Email"
+                          dense
+                          prepend-inner-icon="mdi-email"
+                          outlined
+                        >
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-text-field
+                          :rules="rules.name"
+                          v-model="editedItem.phone"
+                          label="Phone No"
+                          dense
+                          prepend-inner-icon="mdi-phone"
+                          outlined
+                        >
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-menu
+                          ref="menu2"
+                          v-model="menu2"
+                          :nudge-right="40"
+                          :close-on-content-click="true"
+                          transition="scale-transition"
+                          offset-y
+                          max-width="290px"
+                          min-width="290px"
+                        >
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-text-field
+                              :rules="rules.name"
+                              v-model="dobFormatted"
+                              dense
+                              label="Date of Birth"
+                              hint="MM/DD/YYYY"
+                              prepend-inner-icon="mdi-calendar"
+                              outlined
+                              v-bind="attrs"
+                              @blur="
+                                editedItem.dateOfBirth = parseDate(dobFormatted)
+                              "
+                              v-on="on"
+                              required
+                            ></v-text-field>
+                          </template>
+                          <v-date-picker
+                            v-model="editedItem.dateOfBirth"
+                            no-title
+                            @input="menu1 = false"
+                          ></v-date-picker>
+                        </v-menu>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-autocomplete
+                          :rules="rules.role"
+                          v-model="editedItem.role"
+                          item-value="id"
+                          :items="roles"
+                          item-text="name"
+                          label="Role"
+                          dense
+                          prepend-inner-icon="mdi-account-key"
+                          outlined
+                        >
+                        </v-autocomplete>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-text-field
+                          :rules="rules.name"
+                          v-model="editedItem.designation"
+                          label="Designation"
+                          dense
+                          prepend-inner-icon="mdi-account-group"
+                          outlined
+                        >
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6">
+                        <v-autocomplete
+                          :rules="[
+                            val => !!val || 'Required',
+                            val =>
+                              editedItem.branches
+                                .map(i => i.id)
+                                .includes(val) ||
+                              editedItem.branches.includes(val) ||
+                              'Selected branch must be included in the branches allowed'
+                          ]"
+                          :items="branches"
+                          item-text="Name"
+                          item-value="id"
+                          v-model="editedItem.defaultBranch"
+                          label="Default Branch"
+                          dense
+                          prepend-inner-icon="mdi-source-branch"
+                          outlined
+                        >
+                        </v-autocomplete>
+                      </v-col>
+                      <v-col cols="12">
+                        <v-autocomplete
+                          :rules="rules.branches"
+                          multiple
+                          small-chips
+                          chips
+                          deletable-chips
+                          :items="branches"
+                          item-text="Name"
+                          item-value="_id"
+                          v-model="editedItem.branches"
+                          label="Branches Allowed"
+                          dense
+                          prepend-inner-icon="mdi-source-branch"
+                          outlined
+                        >
+                        </v-autocomplete>
+                      </v-col>
+                    </v-row>
+                  </v-form>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="red darken-1" text @click="clear()">
+                  Clear
+                </v-btn>
+                <v-btn
+                  :loading="loading"
+                  elevation="2"
+                  color="blue darken-1"
+                  :disabled="!valid"
+                  text
+                  @click.stop="save()"
+                >
+                  Save
+                </v-btn>
+              </v-card-actions>
             </v-card>
           </v-dialog>
 
@@ -129,153 +303,13 @@
           <!-- Begin preview dialog -->
 
           <v-dialog
-            v-model="dialogViewJob"
+            v-model="dialogViewUser"
             persistent
             scrollable
             :fullscreen="$vuetify.breakpoint.width <= 600 ? true : false"
             overlay-color="blue"
             width="500px"
           >
-            <v-card>
-              <v-divider></v-divider>
-              <v-card-text class="pa-2">
-                <div class="mb-2 subtitle-1 d-flex">
-                  <div>
-                    <div class="caption">
-                      {{ formatDate(jobToView.dateIn) }}
-                    </div>
-                    <div class="subtitle-2 font-weight-bold">
-                      Job # {{ jobToView.id }}
-                    </div>
-                  </div>
-                  <div class="ml-auto my-auto">
-                    <v-icon @click.stop="dialogViewJob = !dialogViewJob"
-                      >mdi-close</v-icon
-                    >
-                  </div>
-                </div>
-                <v-divider></v-divider>
-                <div class="my-4 d-flex">
-                  <div>
-                    <v-icon left>mdi-account</v-icon
-                    ><span class="subtitle-2 font-weight-bold">{{
-                      jobToView.client.Name
-                    }}</span>
-                  </div>
-                  <div class="ml-auto">
-                    <v-menu
-                      transition="slide-y-transition"
-                      bottom
-                      close-on-content-click
-                    >
-                      <template v-slot:activator="{ on, attrs }">
-                        <v-chip
-                          small
-                          :color="getStatusColor(jobToView.status)"
-                          v-bind="attrs"
-                          v-on="on"
-                        >
-                          <v-avatar left>
-                            <v-icon small
-                              >mdi-checkbox-marked-circle</v-icon
-                            > </v-avatar
-                          ><span>{{
-                            defaultStatuses.filter(
-                              m => m.value === jobToView.status
-                            )[0].title
-                          }}</span>
-                        </v-chip>
-                      </template>
-                      <v-list dense>
-                        <v-list-item
-                          v-for="(status, i) in defaultStatuses"
-                          :key="i"
-                          link
-                        >
-                          <v-list-item-title
-                            @click="changeStatus(jobToView, status.value)"
-                            >{{ status.title }}</v-list-item-title
-                          >
-                        </v-list-item>
-                      </v-list>
-                    </v-menu>
-                  </div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Date In:</div>
-                  <div class="ml-auto">{{ formatDate(jobToView.dateIn) }}</div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Date Out:</div>
-                  <div class="ml-auto">{{ formatDate(jobToView.dateOut) }}</div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Right Eye:</div>
-                  <div class="ml-auto">
-                    <v-chip small>{{ jobToView.prescription.re }}</v-chip>
-                  </div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Left Eye:</div>
-                  <div class="ml-auto">
-                    <v-chip small>{{ jobToView.prescription.le }}</v-chip>
-                  </div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Add:</div>
-                  <div class="ml-auto">
-                    <v-chip small>{{ jobToView.prescription.add }}</v-chip>
-                  </div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Frame:</div>
-                  <div class="ml-auto">{{ jobToView.frame }}</div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Lens:</div>
-                  <div class="ml-auto">{{ jobToView.lens }}</div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Doctor:</div>
-                  <div class="ml-auto">{{ jobToView.doctor }}</div>
-                </div>
-                <div class="my-2 d-flex">
-                  <div>Optician:</div>
-                  <div class="ml-auto">{{ jobToView.optician }}</div>
-                </div>
-                <div class="my-4 d-flex">
-                  <v-btn
-                    color="accent"
-                    small
-                    outlined
-                    rounded
-                    class="text-capitalize mx-auto"
-                    >Pay Balance</v-btn
-                  >
-                </div>
-                <v-divider></v-divider>
-                <div class="my-2 d-flex flex-wrap">
-                  <div class="d-flex my-2 mx-auto">
-                    <div>Total:</div>
-                    <div class="mx-2">
-                      <v-chip small>{{ jobToView.total }}</v-chip>
-                    </div>
-                  </div>
-                  <div class="d-flex my-2 mx-auto">
-                    <div>Deposit:</div>
-                    <div class="mx-2">
-                      <v-chip small>{{ jobToView.deposit }}</v-chip>
-                    </div>
-                  </div>
-                  <div class="d-flex my-2 mx-auto">
-                    <div>Balance:</div>
-                    <div class="mx-2">
-                      <v-chip small>{{ jobToView.balance }}</v-chip>
-                    </div>
-                  </div>
-                </div>
-              </v-card-text>
-            </v-card>
           </v-dialog>
 
           <!-- End Preview Dialog -->
@@ -295,10 +329,10 @@
               >
                 <div>
                   <v-card-title class="text-body-1" style="font-weight: bold">
-                    {{ item.fullname }}
+                    {{ item.firstname + " " + item.lastname }}
                   </v-card-title>
                   <v-card-subtitle class="pb-0">
-                    {{ item.role }} > {{ item.designation }}
+                    {{ item.role.name }} > {{ item.designation }}
                   </v-card-subtitle>
                   <v-card-actions>
                     <v-btn
@@ -307,7 +341,7 @@
                       text
                       class="text-capitalize"
                       small
-                      @click="editDeleteBtn($event)"
+                      @click="editItem(item, $event)"
                       >Edit</v-btn
                     >
                     <v-btn
@@ -316,7 +350,7 @@
                       text
                       class="ml-1 text-capitalize"
                       small
-                      @click="editDeleteBtn($event)"
+                      @click="deleteItem(item, $event)"
                       >Delete</v-btn
                     >
                   </v-card-actions>
@@ -333,8 +367,7 @@
                   dark
                   ><v-img v-if="item.imgUrl" :src="item.imgUrl"></v-img
                   ><span v-else>{{
-                    item.fullname.split(` `)[0][0] +
-                      item.fullname.split(` `)[1][0]
+                    item.firstname[0] + item.lastname[0]
                   }}</span></v-avatar
                 >
               </div>
@@ -379,7 +412,7 @@
             Page {{ page }} of {{ numberOfPages }}
           </span>
           <v-btn
-            fab
+            icon
             dark
             color="blue darken-3"
             class="mr-1"
@@ -389,7 +422,7 @@
             <v-icon>mdi-chevron-left</v-icon>
           </v-btn>
           <v-btn
-            fab
+            icon
             x-small
             dark
             color="blue darken-3"
@@ -411,108 +444,58 @@ export default {
     return {
       page: 1,
       valid: false,
-      allowSelect: false,
       loading: false,
-      rules: [
-        value => !!value || "Required.",
-        value => (value && value.length >= 3) || "Min 3 characters"
-      ],
-      defaultStatuses: [
-        { title: "Open", value: "open" },
-        { title: "In-Progess", value: "in-progress" },
-        { title: "Delayed", value: "delayed" },
-        { title: "Completed", value: "completed" }
-      ],
+      rules: {
+        name: [
+          value => !!value || "Required.",
+          value => (value && value.length >= 3) || "Min 3 characters"
+        ],
+        role: [value => !!value || "Required"],
+        branches: [val => !!val || "Required"]
+      },
       search: "",
       menu2: false,
       menu3: false,
       dialog: false,
-      dialogViewJob: false,
-      jobToView: {
-        id: "",
-        client: {
-          id: "",
-          Code: "",
-          Name: ""
-        },
-        dateIn: new Date().toISOString().substr(0, 10),
-        dateOut: new Date().toISOString().substr(0, 10),
-        prescription: {
-          re: "",
-          le: "",
-          add: ""
-        },
-        status: "open",
-        frame: "",
-        lens: "",
-        total: "",
-        deposit: "",
-        balance: "",
-        optician: "",
-        doctor: "",
-        branch: ""
-      },
+      dialogViewUser: false,
+      userToView: {},
       dialogDelete: false,
-      emailTemplates: [],
       editedIndex: -1,
       editedItem: {
-        client: {
-          id: "",
-          Code: "",
-          Name: ""
-        },
-        dateIn: new Date().toISOString().substr(0, 10),
-        dateOut: new Date().toISOString().substr(0, 10),
-        prescription: {
-          re: "",
-          le: "",
-          add: ""
-        },
-        status: "open",
-        frame: "",
-        lens: "",
-        total: "",
-        deposit: "",
-        balance: "",
-        optician: "",
-        doctor: "",
-        branch: ""
+        email: "",
+        dateOfBirth: new Date().toISOString().substr(0, 10),
+        firstname: "",
+        lastname: "",
+        phone: "",
+        designation: "",
+        role: "",
+        branches: [],
+        defaultBranch: "",
+        inactive: false
       },
-      dateInFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
-      dateOutFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
       defaultItem: {
-        client: {
-          id: "",
-          Code: "",
-          Name: ""
-        },
-        dateIn: new Date().toISOString().substr(0, 10),
-        dateOut: new Date().toISOString().substr(0, 10),
-        prescription: {
-          re: "",
-          le: "",
-          add: ""
-        },
-        status: "open",
-        frame: "",
-        lens: "",
-        total: "",
-        deposit: "",
-        balance: "",
-        optician: "",
-        doctor: "",
-        branch: ""
+        email: "",
+        dateOfBirth: new Date().toISOString().substr(0, 10),
+        firstname: "",
+        lastname: "",
+        phone: "",
+        designation: "",
+        role: "",
+        branches: [],
+        defaultBranch: "",
+        inactive: false
       },
+      dobFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
       itemToDelete: {},
-      clientIsLoading: false,
-      clientSearch: "",
-      keys: ["Title", "Details"],
+      keys: ["First Name", "Last Name", "Designation"],
       itemsPerPageArray: [2, 4, 12],
       sortDesc: false,
       filter: {},
       itemsPerPage: 2,
-      sortBy: "title",
-      users: []
+      sortBy: "firstname",
+      users: [],
+      roles: [],
+      branches: []
     };
   },
 
@@ -529,47 +512,36 @@ export default {
     formTitle() {
       return this.editedIndex === -1 ? "New User" : "Edit User";
     },
-    re() {
-      return this.editedItem.prescription.re;
+    firstname() {
+      return this.editedItem.firstname;
     },
-    le() {
-      return this.editedItem.prescription.le;
+    email() {
+      return this.editedItem.email;
     },
-    add() {
-      return this.editedItem.prescription.add;
+    lastname() {
+      return this.editedItem.lastname;
     },
-    dateIn() {
-      return this.editedItem.dateIn;
+    phone() {
+      return this.editedItem.phone;
     },
-    dateOut() {
-      return this.editedItem.dateOut;
+    dateOfBirth() {
+      return this.editedItem.dateOfBirth;
     },
-    doctor() {
-      return this.editedItem.doctor;
+    role() {
+      return this.editedItem.role?.id || this.editedItem.role;
     },
-    total() {
-      return this.editedItem.total;
+    defaultBranch() {
+      return this.editedItem.defaultBranch?.id || this.editedItem.defaultBranch;
     },
-    frame() {
-      return this.editedItem.frame;
+    designation() {
+      return this.editedItem.designation;
     },
-    lens() {
-      return this.editedItem.lens;
-    },
-    status() {
-      return this.editedItem.status;
-    },
-    deposit() {
-      return this.editedItem.deposit;
-    },
-    balance() {
-      return this.editedItem.balance;
-    },
-    optician() {
-      return this.editedItem.optician;
-    },
-    client() {
-      return this.editedItem.client?.id;
+    branchesAllowed() {
+      let string = "";
+      this.editedItem.branches.forEach(i => {
+        string += ", " + i._id;
+      });
+      return string;
     }
   },
 
@@ -580,48 +552,29 @@ export default {
     dialogDelete(val) {
       val || this.closeDelete();
     },
-    re() {
+    firstname() {
       this.saveToLocalStorage();
     },
-    le() {
+    lastname() {
       this.saveToLocalStorage();
     },
-    add() {
+    email() {
       this.saveToLocalStorage();
     },
-    dateIn() {
-      this.dateInFormatted = this.formatDate(this.editedItem.dateIn);
+    phone() {
       this.saveToLocalStorage();
     },
-    dateOut() {
-      this.dateOutFormatted = this.formatDate(this.editedItem.dateOut);
+    dateOfBirth() {
+      this.dobFormatted = this.formatDate(this.editedItem.dateOfBirth);
       this.saveToLocalStorage();
     },
-    doctor() {
+    role() {
       this.saveToLocalStorage();
     },
-    total() {
+    designation() {
       this.saveToLocalStorage();
     },
-    frame() {
-      this.saveToLocalStorage();
-    },
-    lens() {
-      this.saveToLocalStorage();
-    },
-    status() {
-      this.saveToLocalStorage();
-    },
-    deposit() {
-      this.saveToLocalStorage();
-    },
-    balance() {
-      this.saveToLocalStorage();
-    },
-    optician() {
-      this.saveToLocalStorage();
-    },
-    client() {
+    branchesAllowed() {
       this.saveToLocalStorage();
     }
   },
@@ -653,13 +606,6 @@ export default {
   },
 
   methods: {
-    editDeleteBtn(e) {
-      alert("Edit or Delete");
-      e.stopPropagation();
-    },
-    alert(item, e) {
-      alert(item.title);
-    },
     nextPage() {
       if (this.page + 1 <= this.numberOfPages) this.page += 1;
     },
@@ -703,19 +649,12 @@ export default {
       if (
         showDialog &&
         (editedItem.id ||
-          editedItem.client.id ||
-          editedItem.client.Name ||
-          editedItem.client.Code ||
-          editedItem.prescription.re ||
-          editedItem.prescription.le ||
-          editedItem.prescription.add ||
-          editedItem.dateIn !== new Date().toISOString().substr(0, 10) ||
-          editedItem.dateOut !== new Date().toISOString().substr(0, 10) ||
-          editedItem.total ||
-          editedItem.deposit ||
-          editedItem.balance ||
-          editedItem.optician ||
-          editedItem.doctor)
+          editedItem.firstname ||
+          editedItem.lastname ||
+          editedItem.role ||
+          editedItem.defaultBranch ||
+          editedItem.designation ||
+          editedItem.dateOfBirth !== new Date().toISOString().substr(0, 10))
       ) {
         this.dialog = true;
       }
@@ -724,28 +663,49 @@ export default {
     async initialize() {
       this.loading = true;
       try {
-        let response = await this.$axios("/users", {
+        let res = await this.$axios("/users", {
           method: "GET"
         });
-        if (response) {
-          this.users = response.data;
-        }
+        this.users = res.data;
       } catch (err) {
         console.log(err.response);
       }
+      try {
+        let res = await this.$axios("/roles", {
+          method: "GET"
+        });
+        this.roles = res.data;
+      } catch (err) {
+        console.log(err.response);
+      }
+
+      let branches = await this.$axios("/branches", {
+        method: "GET"
+      })
+        .then(res => {
+          return res.data;
+        })
+        .catch(err => {
+          console.log(err);
+        });
+
+      this.branches = branches;
       this.loading = false;
     },
 
-    editItem(item) {
+    editItem(item, e) {
       this.editedIndex = this.users.indexOf(item);
       this.editedItem = item;
       this.dialog = true;
+      this.$refs.userForm.validate();
+      e.stopPropagation();
     },
 
-    deleteItem(item) {
+    deleteItem(item, e) {
       this.editedIndex = this.users.indexOf(item);
       this.itemToDelete = item;
       this.dialogDelete = true;
+      e.stopPropagation();
     },
 
     async deleteItemConfirm() {
@@ -769,9 +729,11 @@ export default {
     close() {
       this.dialog = false;
       localStorage.removeItem("editedUser");
+      this.clear();
       this.$nextTick(() => {
         this.editedItem = this.defaultItem;
         this.editedIndex = -1;
+        this.clear();
       });
     },
 
@@ -786,23 +748,20 @@ export default {
     async save() {
       this.loading = true;
       let editedItem = this.editedItem;
-      if (editedItem.client.Name) {
-        editedItem.client = editedItem.client.id;
-      }
       if (this.editedIndex > -1) {
-        editedItem.branch = this.$store.state.branch.id;
         try {
           let { id, ...rest } = editedItem;
+          rest.lastModifiedBy = this.$auth.user._id;
           await this.$axios(`/user/update/${editedItem.id}`, {
             method: "PUT",
             data: rest
           }).then(async res => {
-            await Object.assign(this.jobs[this.editedIndex], res.data);
+            await Object.assign(this.users[this.editedIndex], res.data);
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/snackbar", {
               type: "success",
-              message: `${res.data.fullname} was updated successfully`,
+              message: `${res.data.firstname} was updated successfully`,
               timeout: 3000
             });
           });
@@ -816,7 +775,8 @@ export default {
           });
         }
       } else {
-        editedItem.branch = this.$store.state.branch.id;
+        editedItem.createdBy = this.$auth.user._id;
+        editedItem.lastModifiedBy = editedItem.createdBy;
         try {
           await this.$axios("/user/signup", {
             method: "POST",
@@ -844,7 +804,7 @@ export default {
     },
 
     clear() {
-      this.$refs.jobForm.reset();
+      this.$refs.userForm.reset();
       localStorage.setItem("editedUser", JSON.stringify(this.defaultItem));
     }
   }

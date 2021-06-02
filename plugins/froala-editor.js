@@ -49,7 +49,7 @@ FroalaEditor.RegisterCommand("my_dropdown", {
       "Social Links",
     "<a target='_blank' href='https://eyemastersng.com'>www.eyemastersng.com</a>":
       "Website",
-    "<a class='fr-class-button' href='' target='_blank'>Activate</a>": "Button",
+    "<a class='fr-class-button' href='' target='_blank'><span style='color: rgb(255, 255, 255);'><strong>Activate</strong></span></a>": "Button",
     "<p><a href='http://www.eyemastersng.com' rel='noopener noreferrer' target='_blank'><img src='https://eyemastersng.com/wp-content/uploads/2020/02/Logo-New.png' style='width: 300px;' class='fr-fic fr-dib'></a></p>":
       "Logo"
   },
