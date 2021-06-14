@@ -1,35 +1,37 @@
-module.exports = (app) => {
+module.exports = app => {
+  const user = require("../controllers/user.controller.js");
 
-    const user = require('../controllers/user.controller.js');
+  const { verifyToken } = require("../config/verify.token");
 
-    const { verifyToken } = require('../config/verify.token');
+  // Route to create new user
 
-    // Route to create new user
+  app.post("/user/signup", user.create);
 
-    app.post('/user/signup', user.create);
+  // Route to authenticate user
 
-    // Route to authenticate user
+  app.post("/auth/login", user.authenticate);
 
-    app.post('/auth/login', user.authenticate);
+  // Route to refresh user
 
-    // Route to refresh user
+  app.post("/auth/refresh", user.refresh);
 
-    app.post('/auth/refresh', user.refresh);
+  // Route to get all users
 
-    // Route to get all users
+  app.get("/users", verifyToken, user.findAll);
 
-    app.get('/users', verifyToken, user.findAll);
+  // Route to get authenticated user
 
-    // Route to get one user
+  app.get("/auth/user", verifyToken, user.findAuthUser);
 
-    app.get('/auth/user', verifyToken, user.findOne);
+  // Route to get single user
 
-    // Route to update user
+  app.get("/user/:id", verifyToken, user.findOne);
 
-    app.put('/user/update/:id', user.update);
+  // Route to update user
 
-    // Route to delete user
+  app.put("/user/update/:id", user.update);
 
-    app.delete('/user/delete/:id', user.delete);
+  // Route to delete user
 
-}
+  app.delete("/user/delete/:id", user.delete);
+};

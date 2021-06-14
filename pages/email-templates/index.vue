@@ -1,7 +1,7 @@
 <template>
   <v-card
     width="100%"
-    :min-height="editedItem.editing ? 'auto' : '84vh'"
+    :min-height="$vuetify.breakpoint.mobile ? '86vh' : '84.6vh'"
     class="rounded mt-1 mx-auto"
     :loading="loading"
   >
@@ -118,12 +118,13 @@
             </v-btn-toggle>
           </template>
 
-          <v-spacer></v-spacer>
+          <v-spacer v-show="userPermissions[$route.path].create"></v-spacer>
           <v-btn
             color="primary"
             outlined
             class="text-capitalize"
             @click="newItem()"
+            v-show="userPermissions[$route.path].create"
             ><v-icon :left="$vuetify.breakpoint.smAndDown ? false : true" small
               >mdi-plus</v-icon
             >
@@ -230,6 +231,7 @@
                   small
                   outlined
                   @click="editItem(templateToView, $event)"
+                  v-show="userPermissions[$route.path].edit"
                   >Edit</v-btn
                 >
                 <v-btn
@@ -238,6 +240,7 @@
                   class="ml-2 text-capitalize"
                   small
                   @click="deleteItem(templateToView, $event)"
+                  v-show="userPermissions[$route.path].delete"
                   >Delete</v-btn
                 >
               </v-card-actions>
@@ -251,7 +254,9 @@
         <v-row class="px-1" dense>
           <v-col cols="12">
             <v-card
-              @click.stop="view(item, $event)"
+              @click.stop="
+                userPermissions[$route.path].view ? view(item, $event) : false
+              "
               v-for="item in props.items"
               :key="item.id"
               class="mb-2"
@@ -275,6 +280,7 @@
                     class="text-capitalize"
                     small
                     @click="editItem(item, $event)"
+                    v-show="userPermissions[$route.path].edit"
                     >Edit</v-btn
                   >
                   <v-btn
@@ -284,6 +290,7 @@
                     class="ml-2 text-capitalize"
                     small
                     @click="deleteItem(item, $event)"
+                    v-show="userPermissions[$route.path].delete"
                     >Delete</v-btn
                   >
                 </v-card-actions>
@@ -442,6 +449,9 @@ export default {
     },
     description() {
       return this.editedItem.description;
+    },
+    userPermissions() {
+      return this.$auth.user.role.permissions;
     }
   },
 
@@ -590,8 +600,8 @@ export default {
       })
         .then(res => {
           this.emailTemplates.splice(this.editedIndex, 1);
-          this.$store.dispatch("toast/snackbar", {
-            type: "success",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "success",
             message: `${this.itemToDelete.title} was deleted successfully`,
             timeout: 2000
           });
@@ -637,8 +647,8 @@ export default {
             );
             this.loading = false;
             this.close();
-            this.$store.dispatch("toast/snackbar", {
-              type: "success",
+            this.$store.dispatch("toast/callAddSnackbar", {
+              color: "success",
               message: `${res.data.title} template was updated successfully`,
               timeout: 3000
             });
@@ -646,8 +656,8 @@ export default {
         } catch (err) {
           console.log(err.response);
           this.loading = false;
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "error",
             message: err.response.data.message,
             timeout: 3000
           });
@@ -663,8 +673,8 @@ export default {
             this.emailTemplates.push(res.data);
             this.loading = false;
             this.close();
-            this.$store.dispatch("toast/snackbar", {
-              type: "success",
+            this.$store.dispatch("toast/callAddSnackbar", {
+              color: "success",
               message: `${res.data.title} template was saved successfully`,
               timeout: 3000
             });
@@ -672,8 +682,8 @@ export default {
         } catch (err) {
           this.loading = false;
           console.log(err.response);
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "error",
             message: err.response.data.message,
             timeout: 3000
           });

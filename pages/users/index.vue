@@ -1,7 +1,7 @@
 <template>
   <v-card
     width="100%"
-    min-height="84vh"
+    :min-height="$vuetify.breakpoint.mobile ? '86vh' : '84.6vh'"
     class="rounded mt-1 mx-auto"
     :loading="loading"
   >
@@ -53,7 +53,7 @@
             </v-btn-toggle>
           </template>
 
-          <v-spacer></v-spacer>
+          <v-spacer v-show="userPermissions[$route.path].create"></v-spacer>
 
           <!-- Begin Create and Edit Dialog -->
 
@@ -71,6 +71,7 @@
                 class="text-capitalize"
                 v-bind="attrs"
                 v-on="on"
+                v-show="userPermissions[$route.path].create"
                 ><v-icon
                   :left="$vuetify.breakpoint.smAndDown ? false : true"
                   small
@@ -200,8 +201,8 @@
                             val =>
                               editedItem.branches
                                 .map(i => i.id)
-                                .includes(val) ||
-                              editedItem.branches.includes(val) ||
+                                .includes(getId(val) || val) ||
+                              editedItem.branches.includes(getId(val) || val) ||
                               'Selected branch must be included in the branches allowed'
                           ]"
                           :items="branches"
@@ -341,6 +342,7 @@
                       text
                       class="text-capitalize"
                       small
+                      v-show="userPermissions[$route.path].edit"
                       @click="editItem(item, $event)"
                       >Edit</v-btn
                     >
@@ -350,6 +352,7 @@
                       text
                       class="ml-1 text-capitalize"
                       small
+                      v-show="userPermissions[$route.path].delete"
                       @click="deleteItem(item, $event)"
                       >Delete</v-btn
                     >
@@ -542,6 +545,9 @@ export default {
         string += ", " + i._id;
       });
       return string;
+    },
+    userPermissions() {
+      return this.$auth.user.role.permissions;
     }
   },
 
@@ -588,8 +594,8 @@ export default {
         this.view(user[0]);
       } else {
         this.$router.push("users");
-        this.$store.dispatch("toast/snackbar", {
-          type: "error",
+        this.$store.dispatch("toast/callAddSnackbar", {
+          color: "error",
           message: `Invalid URL parameter`,
           timeout: 3000
         });
@@ -606,6 +612,9 @@ export default {
   },
 
   methods: {
+    getId(val) {
+      return val?.id;
+    },
     nextPage() {
       if (this.page + 1 <= this.numberOfPages) this.page += 1;
     },
@@ -667,6 +676,7 @@ export default {
           method: "GET"
         });
         this.users = res.data;
+        console.log(this.users)
       } catch (err) {
         console.log(err.response);
       }
@@ -697,7 +707,6 @@ export default {
       this.editedIndex = this.users.indexOf(item);
       this.editedItem = item;
       this.dialog = true;
-      this.$refs.userForm.validate();
       e.stopPropagation();
     },
 
@@ -714,10 +723,10 @@ export default {
       })
         .then(res => {
           this.users.splice(this.editedIndex, 1);
-          this.$store.dispatch("toast/snackbar", {
-            type: "success",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "success",
             message: `${this.itemToDelete.fullname} was deleted successfully`,
-            timeout: 2000
+            timeout: 3000
           });
           this.closeDelete();
         })
@@ -759,8 +768,8 @@ export default {
             await Object.assign(this.users[this.editedIndex], res.data);
             this.loading = false;
             this.close();
-            this.$store.dispatch("toast/snackbar", {
-              type: "success",
+            this.$store.dispatch("toast/callAddSnackbar", {
+              color: "success",
               message: `${res.data.firstname} was updated successfully`,
               timeout: 3000
             });
@@ -768,10 +777,10 @@ export default {
         } catch (err) {
           console.log(err.response);
           this.loading = false;
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "error",
             message: err.response.data.message,
-            timeout: 3000
+            timeout: 100000
           });
         }
       } else {
@@ -785,8 +794,8 @@ export default {
             this.users.push(res.data);
             this.loading = false;
             this.close();
-            this.$store.dispatch("toast/snackbar", {
-              type: "success",
+            this.$store.dispatch("toast/callAddSnackbar", {
+              color: "success",
               message: `${res.data.fullname} was saved successfully`,
               timeout: 3000
             });
@@ -794,7 +803,7 @@ export default {
         } catch (err) {
           this.loading = false;
           console.log(err.response);
-          this.$store.dispatch("toast/snackbar", {
+          this.$store.dispatch("toast/callAddSnackbar", {
             type: "error",
             message: err.response.data.message,
             timeout: 3000

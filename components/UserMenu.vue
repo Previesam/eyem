@@ -15,10 +15,7 @@
             v-bind="attrs"
             v-on="on"
             class="white--text"
-            >{{
-              $auth.user.fullname.split(" ")[0][0] +
-                $auth.user.fullname.split(" ")[1][0]
-            }}</v-avatar
+            >{{ user.firstname[0] + user.lastname[0] }}</v-avatar
           >
         </template>
         <v-card>
@@ -26,14 +23,17 @@
             <v-list-item v-if="$auth.loggedIn">
               <v-list-item-avatar>
                 <v-avatar color="primary" size="40" class="white--text">{{
-                  $auth.user.fullname.split(" ")[0][0] +
-                    $auth.user.fullname.split(" ")[1][0]
+                  user.firstname[0] + user.lastname[0]
                 }}</v-avatar>
               </v-list-item-avatar>
 
               <v-list-item-content>
-                <v-list-item-title>{{ $auth.user.fullname }}</v-list-item-title>
-                <v-list-item-subtitle>{{ "I.T Support" }}</v-list-item-subtitle>
+                <v-list-item-title>{{
+                  user.firstname + " " + user.lastname
+                }}</v-list-item-title>
+                <v-list-item-subtitle>{{
+                  user.designation
+                }}</v-list-item-subtitle>
               </v-list-item-content>
 
               <v-list-item-action
@@ -84,8 +84,21 @@
 <script>
 export default {
   props: {
-    userMenu: Boolean
+    callToggleUserMenu: Boolean,
+    user: Object
   },
+  data() {
+    return {
+      userMenu: false,
+    }
+  },
+
+  watch: {
+    callToggleUserMenu: function(newVal, oldVal) {
+      this.toggleDrawer();
+    }
+  },
+
   methods: {
     async logout() {
       await this.$auth.logout();
@@ -93,13 +106,16 @@ export default {
       this.sendToast();
     },
     sendToast() {
-      this.$store.dispatch("toast/snackbar", {
-        type: "success",
+      this.$store.dispatch("toast/callAddSnackbar", {
+        ccolor: "success",
         message: "You have logged out successfully"
       });
     },
     toggleSettingsDrawer() {
-      this.$emit("toggleSettingsDrawer")
+      this.$emit("toggleSettingsDrawer");
+    },
+    toggleMenu() {
+      this.userMenu = !this.userMenu
     }
   }
 };

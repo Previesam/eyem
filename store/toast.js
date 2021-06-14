@@ -1,26 +1,24 @@
 export const state = () => ({
-  type: "",
-  snackbar: false,
-  timeout: 2000,
-  message: "Samuel"
+  snackbars: []
 });
 
 export const mutations = {
-  showSnackbar: (state, payload) => {
-    state.message = payload.message;
-    state.type = payload.type;
-    if (payload.timeout) {
-      state.timeout = payload.timeout;
-    }
-    state.snackbar = true;
+  addSnackbar: (state, payload) => {
+    state.snackbars.push(payload);
   },
-  closeSnackbar: state => {
-    state.snackbar = false;
+  resetSnackbars: (state, payload) => {
+    state.snackbars = [];
+  },
+  closeSnackbar: (state, index) => {
+    state.snackbars.splice(index, 1);
   }
 };
 
 export const actions = {
-  snackbar: (context, payload) => {
-    context.commit("showSnackbar", payload);
+  callAddSnackbar: (context, payload) => {
+    context.commit("addSnackbar", payload);
+  },
+  callCloseSnackbar: (context, payload) => {
+    context.commit("closeSnackbar", payload);
   }
 };

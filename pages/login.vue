@@ -1,24 +1,5 @@
 <template>
   <v-card width="900">
-    <v-snackbar
-      :transition="
-        snackbar ? 'slide-x-transition' : 'slide-x-reverse-transition'
-      "
-      outlined
-      top
-      right
-      v-model="snackbar"
-      :timeout="timeout"
-      :color="type"
-    >
-      {{ toastMessage }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn small icon text v-bind="attrs" @click="snackbar = false">
-          <v-icon small>mdi-close</v-icon>
-        </v-btn>
-      </template>
-    </v-snackbar>
     <v-container fluid class="container">
       <div class="left-side">
         <div>
@@ -126,33 +107,14 @@ export default {
       loading: false
     };
   },
-  computed: {
-    timeout() {
-      return this.$store.state.toast.timeout;
-    },
-    snackbar: {
-      get() {
-        return this.$store.state.toast.snackbar;
-      },
-      set() {
-        this.$store.commit("toast/closeSnackbar");
-      }
-    },
-    type() {
-      return this.$store.state.toast.type;
-    },
-    toastMessage() {
-      return this.$store.state.toast.message;
-    }
-  },
   methods: {
     handleEvent(event) {
       if (event.key !== "Enter" || !this.valid) return;
       this.userLogin();
     },
     sendToast() {
-      this.$store.dispatch("toast/snackbar", {
-        type: "success",
+      this.$store.dispatch("toast/callAddSnackbar", {
+        color: "success",
         message: `Login successful! Welcome back ${this.$auth.user.fullname}`
       });
     },
@@ -168,23 +130,23 @@ export default {
       } catch (err) {
         if (err.response) {
           let error = err.response.data;
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "error",
             message: error.message,
             timeout: 3000
           });
           this.loading = false;
         } else if (err.request) {
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "error",
             message:
               "An error occurred while logging your in, please try again",
             timeout: 3000
           });
           this.loading = false;
         } else {
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "error",
             message:
               "Unknown error occurred while login to your account, please try again",
             timeout: 3000

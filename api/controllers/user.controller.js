@@ -65,36 +65,6 @@ exports.create = async (req, res) => {
     });
   }
 
-  // if (!req.body.password) {
-  //   errors.push({
-  //     message: "Password cannot be empty"
-  //   });
-  // }
-
-  // if (req.body.password.length < 6) {
-  //   errors.push({
-  //     message: "Password must be atleast 6 characters long"
-  //   });
-  // }
-
-  // if (req.body.password !== req.body.confirmPassword) {
-  //   errors.push({
-  //     message: "Password and password confirmation does not match"
-  //   });
-  // }
-
-  //   if (!req.body.phone) {
-  //     return res.status(400).send({
-  //       message: "Phone number is required"
-  //     });
-  //   }
-
-  //   if (req.body.phone.length < 11) {
-  //     return res.status(400).send({
-  //       message: "Phone number needs to be at least 11 characters long"
-  //     });
-  //   }
-
   if (errors.length > 0) return res.status(400).send({ errors });
 
   // Check if user already exist
@@ -188,10 +158,11 @@ exports.setPassword = (req, res) => {
 exports.findAll = async (req, res) => {
   // fullname = "Samuel Adeyanju";
   // console.log(welcomeEmail.replace("[fullname]", fullname));
-  await User.find({})
+  await User.find({}, { hash: 0 })
     .populate(populateQuery)
     .exec()
-    .then(data => {
+    .then(async data => {
+      console.log(data)
       return res.send(data);
     })
     .catch(err => {
@@ -201,9 +172,9 @@ exports.findAll = async (req, res) => {
     });
 };
 
-// Method for finding one user
+// Method for finding authenticated user
 
-exports.findOne = async (req, res) => {
+exports.findAuthUser = async (req, res) => {
   await User.findById(req.userId)
     .then(data => {
       if (!data) {
@@ -211,8 +182,38 @@ exports.findOne = async (req, res) => {
           message: "Cannot find user with Id " + req.userId
         });
       }
-      const { hash, ...nohash } = data._doc;
-      return res.send({ user: nohash });
+      data.execPopulate(populateQuery, (err, data) => {
+        const { hash, ...nohash } = data._doc;
+        return res.send({ user: nohash });
+      });
+    })
+    .catch(err => {
+      if (err.kind === "ObjectId") {
+        return res.status(404).send({
+          message: "Cannot find user with the Id " + req.userId
+        });
+      } else {
+        return res.status(500).send({
+          message: err.message || "Unknown error occurred while retrieving user"
+        });
+      }
+    });
+};
+
+// Module for finding one user
+
+exports.findOne = async (req, res) => {
+  await User.findById(req.params.id)
+    .then(data => {
+      if (!data) {
+        return res.status(404).send({
+          message: "Cannot find user with Id " + req.userId
+        });
+      }
+      data.execPopulate(populateQuery, (err, data) => {
+        const { hash, ...nohash } = data._doc;
+        return res.send({ user: nohash });
+      });
     })
     .catch(err => {
       if (err.kind === "ObjectId") {

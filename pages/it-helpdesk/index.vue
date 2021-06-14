@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card class="rounded mt-1">
+    <v-card :min-height="$vuetify.breakpoint.mobile ? '86vh' : '84.6vh'" class="rounded mt-1">
       <v-card-title>
         <!-- <span class="mr-5 subheading primary--text">Issues</span> -->
         <v-text-field

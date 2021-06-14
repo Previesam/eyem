@@ -1,7 +1,7 @@
 <template>
   <v-card
     width="100%"
-    min-height="84vh"
+    :min-height="$vuetify.breakpoint.mobile ? '86vh' : '84.6vh'"
     class="rounded mt-1 mx-auto"
     :loading="loading"
   >
@@ -53,7 +53,7 @@
             </v-btn-toggle>
           </template>
 
-          <v-spacer></v-spacer>
+          <v-spacer v-show="userPermissions[$route.path].create"></v-spacer>
 
           <!-- Begin Create and Edit Dialog -->
 
@@ -71,6 +71,7 @@
                 class="text-capitalize"
                 v-bind="attrs"
                 v-on="on"
+                v-show="userPermissions[$route.path].create"
                 ><v-icon
                   :left="$vuetify.breakpoint.smAndDown ? false : true"
                   small
@@ -465,6 +466,7 @@
                   small
                   outlined
                   @click="editItem(roleToView)"
+                  v-show="userPermissions[$route.path].edit"
                   >Edit</v-btn
                 >
                 <v-btn
@@ -473,6 +475,7 @@
                   class="ml-2 text-capitalize"
                   small
                   @click="deleteItem(roleToView)"
+                  v-show="userPermissions[$route.path].delete"
                   >Delete</v-btn
                 >
               </v-card-actions>
@@ -489,7 +492,7 @@
               v-for="item in props.items"
               :key="item.id"
               class="mb-2"
-              @click="view(item)"
+              @click="userPermissions[$route.path].view ? view(item) : false"
             >
               <div
                 class="emailTemplates d-flex flex-no-wrap justify-space-between"
@@ -510,6 +513,7 @@
                     class="text-capitalize"
                     small
                     @click="editItem(item)"
+                    v-show="userPermissions[$route.path].edit"
                     >Edit</v-btn
                   >
                   <v-btn
@@ -519,6 +523,7 @@
                     class="ml-1 text-capitalize"
                     small
                     @click="deleteItem(item)"
+                    v-show="userPermissions[$route.path].delete"
                     >Delete</v-btn
                   >
                 </v-card-actions>
@@ -610,63 +615,63 @@ export default {
         name: "",
         roleDescription: "",
         permissions: {
-          messages: {
+          "/messages": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Messages"
           },
-          jobs: {
+          "/jobs": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Jobs"
           },
-          appointments: {
+          "/appointments": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Appointments"
           },
-          clockInOut: {
+          "/clock-in-out": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Clock In/Out"
           },
-          itHelpDesk: {
+          "/it-helpdesk": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "IT Help Desk"
           },
-          manageBranch: {
+          "/branches": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Manage Branches"
           },
-          manageUsers: {
+          "/users": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Manage Users"
           },
-          permissions: {
+          "/user-permissions": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Permissions"
           },
-          emailTemplates: {
+          "/email-templates": {
             view: false,
             create: false,
             edit: false,
@@ -681,63 +686,63 @@ export default {
         name: "",
         roleDescription: "",
         permissions: {
-          messages: {
+          "/messages": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Messages"
           },
-          jobs: {
+          "/jobs": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Jobs"
           },
-          appointments: {
+          "/appointments": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Appointments"
           },
-          clockInOut: {
+          "/clock-in-out": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Clock In/Out"
           },
-          itHelpDesk: {
+          "/it-helpdesk": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "IT Help Desk"
           },
-          manageBranch: {
+          "/branches": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Manage Branches"
           },
-          manageUsers: {
+          "/users": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Manage Users"
           },
-          permissions: {
+          "/user-permissions": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Permissions"
           },
-          emailTemplates: {
+          "/email-templates": {
             view: false,
             create: false,
             edit: false,
@@ -750,63 +755,63 @@ export default {
         name: "",
         roleDescription: "",
         permissions: {
-          messages: {
+          "/messages": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Messages"
           },
-          jobs: {
+          "/jobs": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Jobs"
           },
-          appointments: {
+          "/appointments": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Appointments"
           },
-          clockInOut: {
+          "/clock-in-out": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Clock In/Out"
           },
-          itHelpDesk: {
+          "/it-helpdesk": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "IT Help Desk"
           },
-          manageBranch: {
+          "/branches": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Manage Branches"
           },
-          manageUsers: {
+          "/users": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Manage Users"
           },
-          permissions: {
+          "/user-permissions": {
             view: false,
             create: false,
             edit: false,
             delete: false,
             display: "Permissions"
           },
-          emailTemplates: {
+          "/email-templates": {
             view: false,
             create: false,
             edit: false,
@@ -847,75 +852,79 @@ export default {
     },
     messages() {
       return (
-        this.editedItem.permissions.messages.view +
-        this.editedItem.permissions.messages.create +
-        this.editedItem.permissions.messages.edit +
-        this.editedItem.permissions.messages.delete
+        this.editedItem.permissions["/messages"].view +
+        this.editedItem.permissions["/messages"].create +
+        this.editedItem.permissions["/messages"].edit +
+        this.editedItem.permissions["/messages"].delete
       );
     },
     jobs() {
       return (
-        this.editedItem.permissions.jobs.view +
-        this.editedItem.permissions.jobs.create +
-        this.editedItem.permissions.jobs.edit +
-        this.editedItem.permissions.jobs.delete
+        this.editedItem.permissions["/jobs"].view +
+        this.editedItem.permissions["/jobs"].create +
+        this.editedItem.permissions["/jobs"].edit +
+        this.editedItem.permissions["/jobs"].delete
       );
     },
     appointments() {
       return (
-        this.editedItem.permissions.appointments.view +
-        this.editedItem.permissions.appointments.create +
-        this.editedItem.permissions.appointments.edit +
-        this.editedItem.permissions.appointments.delete
+        this.editedItem.permissions["/appointments"].view +
+        this.editedItem.permissions["/appointments"].create +
+        this.editedItem.permissions["/appointments"].edit +
+        this.editedItem.permissions["/appointments"].delete
       );
     },
     clockInOut() {
       return (
-        this.editedItem.permissions.clockInOut.view +
-        this.editedItem.permissions.clockInOut.create +
-        this.editedItem.permissions.clockInOut.edit +
-        this.editedItem.permissions.clockInOut.delete
+        this.editedItem.permissions["/clock-in-out"].view +
+        this.editedItem.permissions["/clock-in-out"].create +
+        this.editedItem.permissions["/clock-in-out"].edit +
+        this.editedItem.permissions["/clock-in-out"].delete
       );
     },
     itHelpDesk() {
       return (
-        this.editedItem.permissions.itHelpDesk.view +
-        this.editedItem.permissions.itHelpDesk.create +
-        this.editedItem.permissions.itHelpDesk.edit +
-        this.editedItem.permissions.itHelpDesk.delete
+        this.editedItem.permissions["/it-helpdesk"].view +
+        this.editedItem.permissions["/it-helpdesk"].create +
+        this.editedItem.permissions["/it-helpdesk"].edit +
+        this.editedItem.permissions["/it-helpdesk"].delete
       );
     },
     manageBranch() {
       return (
-        this.editedItem.permissions.manageBranch.view +
-        this.editedItem.permissions.manageBranch.create +
-        this.editedItem.permissions.manageBranch.edit +
-        this.editedItem.permissions.manageBranch.delete
+        this.editedItem.permissions["/branches"].view +
+        this.editedItem.permissions["/branches"].create +
+        this.editedItem.permissions["/branches"].edit +
+        this.editedItem.permissions["/branches"].delete
       );
     },
     manageUsers() {
       return (
-        this.editedItem.permissions.manageUsers.view +
-        this.editedItem.permissions.manageUsers.create +
-        this.editedItem.permissions.manageUsers.edit +
-        this.editedItem.permissions.manageUsers.delete
+        this.editedItem.permissions["/users"].view +
+        this.editedItem.permissions["/users"].create +
+        this.editedItem.permissions["/users"].edit +
+        this.editedItem.permissions["/users"].delete
       );
     },
     permissions() {
       return (
-        this.editedItem.permissions.permissions.view +
-        this.editedItem.permissions.permissions.create +
-        this.editedItem.permissions.permissions.edit +
-        this.editedItem.permissions.permissions.delete
+        this.editedItem.permissions["/user-permissions"].view +
+        this.editedItem.permissions["/user-permissions"].create +
+        this.editedItem.permissions["/user-permissions"].edit +
+        this.editedItem.permissions["/user-permissions"].delete
       );
     },
     emailTemplates() {
       return (
-        this.editedItem.permissions.emailTemplates.view +
-        this.editedItem.permissions.emailTemplates.create +
-        this.editedItem.permissions.emailTemplates.edit +
-        this.editedItem.permissions.emailTemplates.delete
+        this.editedItem.permissions["/email-templates"].view +
+        this.editedItem.permissions["/email-templates"].create +
+        this.editedItem.permissions["/email-templates"].edit +
+        this.editedItem.permissions["/email-templates"].delete
       );
+    },
+    // Current User Permission
+    userPermissions() {
+      return this.$auth.user.role.permissions;
     }
   },
 
@@ -927,7 +936,6 @@ export default {
       val || this.closeDelete();
     },
     name() {
-      console.log(this.editedItem.name);
       this.saveToLocalStorage();
     },
     roleDescription() {
@@ -1071,8 +1079,8 @@ export default {
       })
         .then(res => {
           this.roles.splice(this.editedIndex, 1);
-          this.$store.dispatch("toast/snackbar", {
-            type: "success",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "success",
             message: `${this.itemToDelete.name} role was deleted successfully`,
             timeout: 2000
           });
@@ -1112,10 +1120,13 @@ export default {
             data: rest
           }).then(async res => {
             await Object.assign(this.roles[this.editedIndex], res.data);
+            if (res.data.id === this.$auth.user.role.id) {
+              this.$auth.user.role = res.data;
+            }
             this.loading = false;
             this.close();
-            this.$store.dispatch("toast/snackbar", {
-              type: "success",
+            this.$store.dispatch("toast/callAddSnackbar", {
+              color: "success",
               message: `${res.data.name} role was updated successfully`,
               timeout: 3000
             });
@@ -1123,8 +1134,8 @@ export default {
         } catch (err) {
           console.log(err.response);
           this.loading = false;
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "error",
             message: err.response.data.message,
             timeout: 3000
           });
@@ -1140,8 +1151,8 @@ export default {
             this.roles.push(res.data);
             this.loading = false;
             this.close();
-            this.$store.dispatch("toast/snackbar", {
-              type: "success",
+            this.$store.dispatch("toast/callAddSnackbar", {
+              color: "success",
               message: `${res.data.name} role was saved successfully`,
               timeout: 3000
             });
@@ -1149,8 +1160,8 @@ export default {
         } catch (err) {
           this.loading = false;
           console.log(err.response);
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "error",
             message: err.response.data.message,
             timeout: 3000
           });

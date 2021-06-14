@@ -22,7 +22,8 @@ export default {
       },
       {
         rel: "stylesheet",
-        href: "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.css"
+        href:
+          "https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.3.0/codemirror.min.css"
       }
     ]
   },
@@ -65,6 +66,7 @@ export default {
   plugins: [
     // add created plugin:
     "~/plugins/v-mask.js",
+    "~/plugins/v-snackbars.js",
     { src: "~/plugins/froala-editor.js", mode: "client" }
     // { src: "~/plugins/ionic.js", mode: "client" }
   ],
@@ -201,6 +203,7 @@ export default {
 
   // Build Configuration (https://go.nuxtjs.dev/config-build)
   build: {
+    transpile: [/^v-snackbars($|\/)/],
     plugins: [
       new webpack.ProvidePlugin({
         $: "jquery",

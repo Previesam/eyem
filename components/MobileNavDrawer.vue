@@ -5,12 +5,18 @@
     app
     :class="$vuetify.breakpoint.width < 600 ? 'rounded-top' : ''"
   >
-    <v-list>
+    <v-list dense>
+      <v-list-item dense>
+        <span class="text-caption" style="font-weight: bold">App Menu</span>
+        <v-spacer></v-spacer
+        ><v-icon @click="toggleDrawer()">mdi-close</v-icon></v-list-item
+      >
       <v-list-item
         v-for="(item, i) in items"
         :key="i"
         :to="item.to"
         router
+        v-show="$auth.loggedIn && checkPermission(item.to)"
         exact
       >
         <v-list-item-action class="mr-5">
@@ -33,13 +39,20 @@
 export default {
   props: {
     items: Array,
-    callToggleDrawer: Boolean
+    callToggleDrawer: Boolean,
+    user: Object
   },
 
   data() {
     return {
       drawer: false
     };
+  },
+
+  computed: {
+    permissions() {
+      return this.user.role.permissions;
+    }
   },
 
   watch: {
@@ -51,6 +64,11 @@ export default {
   methods: {
     toggleDrawer() {
       this.drawer = !this.drawer;
+    },
+    checkPermission(item) {
+      if (item === "/") return true;
+      if (this.permissions[item].view) return true;
+      return false;
     }
   }
 };

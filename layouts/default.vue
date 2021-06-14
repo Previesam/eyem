@@ -1,31 +1,26 @@
 <template>
   <!-- Begin Application default view -->
   <v-app :style="{ background: $vuetify.theme.themes[theme].background }">
-    <v-snackbar
-      :transition="
-        snackbar ? 'slide-x-transition' : 'slide-x-reverse-transition'
-      "
+    <v-snackbars
       outlined
       top
       right
-      v-model="snackbar"
-      :timeout="timeout"
-      :color="type"
+      :objects.sync="$store.state.toast.snackbars"
+      timeout="10000"
     >
-      {{ toastMessage }}
-
-      <template v-slot:action="{ attrs }">
-        <v-btn small icon text v-bind="attrs" @click="snackbar = false">
+      <template v-slot:action="{ index }">
+        <v-btn small icon text @click="closeSnackbar(index)">
           <v-icon small>mdi-close</v-icon>
         </v-btn>
       </template>
-    </v-snackbar>
+    </v-snackbars>
     <!-- Begin Mobile Navigation Drawer -->
 
     <MobileNavDrawer
       v-if="$vuetify.breakpoint.mobile"
       :items="items"
       :callToggleDrawer="drawer"
+      :user="user"
     />
 
     <!-- End Mobile Naviagtion Drawer -->
@@ -35,15 +30,17 @@
     <DesktopNavDrawer
       v-else
       :items="items"
+      :user="user"
       :callToggleMiniVariant="miniVariant"
+      class="ml-2"
     />
 
     <!-- End Desktop Navigation Drawer -->
 
     <!-- Settings Drawer -->
 
-    <SettingsDrawer :callToggleDrawer="settingsDrawer" />
-    
+    <SettingsDrawer :callToggleDrawer="settingsDrawer" :user="user" />
+
     <!-- End Settings Drawer -->
 
     <!-- Begin App Toolbar -->
@@ -51,8 +48,7 @@
     <v-app-bar
       fixed
       max-width="100%"
-      class="rounded"
-      :class="$vuetify.breakpoint.mobile ? 'mx-0 my-0' : 'ml-4 mr-2 my-1'"
+      :class="$vuetify.breakpoint.mobile ? 'mx-0 my-0' : 'rounded ml-4 mr-2 my-1'"
       :height="$vuetify.breakpoint.mobile ? '50px' : '40px'"
       app
     >
@@ -95,7 +91,7 @@
 
       <UserMenu
         @toggleSettingsDrawer="toggleSettingsDrawer"
-        :userMenu="userMenu"
+        :callToggleDrawer="userMenu" :user="user"
       />
 
       <!-- End User Menu -->
@@ -111,10 +107,10 @@
 
     <!-- Begin Main Area -->
 
-    <v-main class="mt-0" :class="$vuetify.breakpoint.mobile ? '' : 'ml-2'">
+    <v-main style="background-attachment: fixed; background-image: url('https://images.pexels.com/photos/3293148/pexels-photo-3293148.jpeg')" >
       <v-container
-        style="overflow-x: hidden"
-        :class="$vuetify.breakpoint.mobile ? 'mx-0 px-2' : 'mx-0 px-3'"
+        style="overflow-x: hidden;"
+        :class="$vuetify.breakpoint.mobile ? 'mx-0 px-2 py-2' : 'pl-4 pr-2'"
         fluid
       >
         <nuxt />
@@ -125,8 +121,8 @@
 
     <!-- Begin App Footer -->
 
-    <v-footer fixed app class="my-1 rounded mx-2">
-      <span class="ma-auto">&copy; {{ new Date().getFullYear() }}</span>
+    <v-footer fixed app :class="$vuetify.breakpoint.mobile ? 'mx-0 my-0' : 'rounded ml-2 mr-2 my-1'">
+      <span class="ma-auto text-caption">&copy; {{ new Date().getFullYear() }}. Eyemasters Limited</span>
     </v-footer>
     <v-progress-linear
       :active="$store.state.loading"
@@ -148,6 +144,7 @@ import UserMenu from "../components/UserMenu";
 import LocationsMenu from "../components/LocationsMenu";
 import BreadCrumb from "../components/BreadCrumb";
 import SettingsDrawer from "../components/SettingsDrawer";
+import VSnackbars from "v-snackbars";
 
 export default {
   components: {
@@ -157,7 +154,8 @@ export default {
     UserMenu,
     LocationsMenu,
     BreadCrumb,
-    SettingsDrawer
+    SettingsDrawer,
+    "v-snackbars": VSnackbars
   },
   name: "DefaultView",
   data() {
@@ -207,26 +205,25 @@ export default {
     theme() {
       return this.$vuetify.theme.dark ? "dark" : "light";
     },
-    timeout() {
-      return this.$store.state.toast.timeout;
-    },
-    snackbar: {
-      get() {
-        return this.$store.state.toast.snackbar;
-      },
-      set() {
-        this.$store.commit("toast/closeSnackbar");
-      }
-    },
-    type() {
-      return this.$store.state.toast.type;
-    },
-    toastMessage() {
-      return this.$store.state.toast.message;
+    // snackbars: {
+    //   get: function(vm) {
+    //     return vm.$store.state.toast.snackbars;
+    //   },
+    //   set: function(vm, val) {
+    //     // vm.$store.state.toast.snackbars = val;
+    //     console.log(val);
+    //   }
+    // }
+    user() {
+      return this.$auth.user;
     }
   },
 
   methods: {
+    closeSnackbar(index) {
+      this.$store.dispatch("toast/callCloseSnackbar", index);
+    },
+
     toggleSettingsDrawer() {
       this.settingsDrawer = !this.settingsDrawer;
     },
@@ -250,17 +247,17 @@ export default {
     },
 
     async getBranches() {
-      let branches = await this.$axios("/branches", {
-        method: "GET"
-      })
-        .then(res => {
-          return res.data;
-        })
-        .catch(err => {
-          console.log(err);
-        });
-
-      this.branches = branches;
+      // let branches = await this.$axios("/branches", {
+      //   method: "GET"
+      // })
+      //   .then(res => {
+      //     return res.data;
+      //   })
+      //   .catch(err => {
+      //     console.log(err);
+      //   });
+      this.branches = this.$auth.user.branches;
+      this.$store.commit("switchBranch", this.$auth.user.defaultBranch)
     }
   },
 

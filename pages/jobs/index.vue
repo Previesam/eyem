@@ -1,12 +1,14 @@
 <template>
   <div>
-    <v-card min-height="84vh" width="100%" class="rounded mt-1">
+    <v-card :min-height="$vuetify.breakpoint.mobile ? '86vh' : '84.6vh'" width="100%" class="rounded mt-1">
       <v-card-title>
         <!-- <span class="mr-5 subheading primary--text">Appointments</span> -->
 
         <v-btn icon @click="showSelect()" class="mr-3"
-          ><v-icon>mdi-menu</v-icon></v-btn
+          ><v-icon>mdi-checkbox-marked-circle-outline</v-icon></v-btn
         >
+
+        <v-spacer v-show="!userPermissions[$route.path].create"></v-spacer>
 
         <!-- Begin Search Box -->
 
@@ -23,7 +25,7 @@
 
         <!-- End Search Box -->
 
-        <v-spacer></v-spacer>
+        <v-spacer v-show="userPermissions[$route.path].create"></v-spacer>
 
         <!-- Begin Create and Edit Dialog -->
 
@@ -42,6 +44,7 @@
               class="text-capitalize"
               v-bind="attrs"
               v-on="on"
+              v-show="userPermissions[$route.path].create"
               ><v-icon
                 :left="$vuetify.breakpoint.smAndDown ? false : true"
                 small
@@ -745,6 +748,9 @@ export default {
     },
     client() {
       return this.editedItem.client?.id;
+    },
+    userPermissions() {
+      return this.$auth.user.role.permissions;
     }
   },
 
@@ -926,8 +932,8 @@ export default {
         }).then(async res => {
           await Object.assign(this.jobs[index], res.data);
           this.loading = false;
-          this.$store.dispatch("toast/snackbar", {
-            type: "success",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "success",
             message: `${res.data.client.Name}'s job was updated successfully`,
             timeout: 3000
           });
@@ -936,8 +942,8 @@ export default {
       } catch (err) {
         console.log(err.response);
         this.loading = false;
-        this.$store.dispatch("toast/snackbar", {
-          type: "error",
+        this.$store.dispatch("toast/callAddSnackbar", {
+          color: "error",
           message: err.response.data.message,
           timeout: 3000
         });
@@ -1004,8 +1010,8 @@ export default {
       })
         .then(res => {
           this.jobs.splice(this.editedIndex, 1);
-          this.$store.dispatch("toast/snackbar", {
-            type: "success",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "success",
             message: `${this.itemToDelete.client.Name}'s job was deleted successfully`,
             timeout: 2000
           });
@@ -1057,8 +1063,8 @@ export default {
             await Object.assign(this.jobs[this.editedIndex], res.data);
             this.loading = false;
             this.close();
-            this.$store.dispatch("toast/snackbar", {
-              type: "success",
+            this.$store.dispatch("toast/callAddSnackbar", {
+              color: "success",
               message: `${res.data.client.Name}'s job was updated successfully`,
               timeout: 3000
             });
@@ -1066,8 +1072,8 @@ export default {
         } catch (err) {
           console.log(err.response);
           this.loading = false;
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "error",
             message: err.response.data.message,
             timeout: 3000
           });
@@ -1085,8 +1091,8 @@ export default {
             this.jobs.push(res.data);
             this.loading = false;
             this.close();
-            this.$store.dispatch("toast/snackbar", {
-              type: "success",
+            this.$store.dispatch("toast/callAddSnackbar", {
+              color: "success",
               message: `${res.data.client.Name}'s job was saved successfully`,
               timeout: 3000
             });
@@ -1094,8 +1100,8 @@ export default {
         } catch (err) {
           this.loading = false;
           console.log(err.response);
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
+          this.$store.dispatch("toast/callAddSnackbar", {
+            color: "error",
             message: err.response.data.message,
             timeout: 3000
           });
