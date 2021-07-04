@@ -22,7 +22,9 @@ var transport = nodemailer.createTransport({
 const app = express();
 
 // Cross-Origin resource sharing check
-app.use(cors());
+app.use(cors({
+  origin : "localhost"
+}));
 
 // morgan implementation logging of request information
 app.use(morgan("common"));

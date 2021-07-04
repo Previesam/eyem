@@ -48,7 +48,9 @@
     <v-app-bar
       fixed
       max-width="100%"
-      :class="$vuetify.breakpoint.mobile ? 'mx-0 my-0' : 'rounded ml-4 mr-2 my-1'"
+      :class="
+        $vuetify.breakpoint.mobile ? 'mx-0 my-0' : 'rounded ml-4 mr-2 my-1'
+      "
       :height="$vuetify.breakpoint.mobile ? '50px' : '40px'"
       app
     >
@@ -91,7 +93,8 @@
 
       <UserMenu
         @toggleSettingsDrawer="toggleSettingsDrawer"
-        :callToggleDrawer="userMenu" :user="user"
+        :callToggleDrawer="userMenu"
+        :user="user"
       />
 
       <!-- End User Menu -->
@@ -107,9 +110,14 @@
 
     <!-- Begin Main Area -->
 
-    <v-main style="background-attachment: fixed; background-image: url('https://images.pexels.com/photos/3293148/pexels-photo-3293148.jpeg')" >
+    <v-main
+      style="
+        background-attachment: fixed;
+        background-image: url('https://images.pexels.com/photos/3293148/pexels-photo-3293148.jpeg');
+      "
+    >
       <v-container
-        style="overflow-x: hidden;"
+        style="overflow-x: hidden"
         :class="$vuetify.breakpoint.mobile ? 'mx-0 px-2 py-2' : 'pl-4 pr-2'"
         fluid
       >
@@ -121,8 +129,16 @@
 
     <!-- Begin App Footer -->
 
-    <v-footer fixed app :class="$vuetify.breakpoint.mobile ? 'mx-0 my-0' : 'rounded ml-2 mr-2 my-1'">
-      <span class="ma-auto text-caption">&copy; {{ new Date().getFullYear() }}. Eyemasters Limited</span>
+    <v-footer
+      fixed
+      app
+      :class="
+        $vuetify.breakpoint.mobile ? 'mx-0 my-0' : 'rounded ml-2 mr-2 my-1'
+      "
+    >
+      <span class="ma-auto text-caption"
+        >&copy; {{ new Date().getFullYear() }}. Eyemasters Limited</span
+      >
     </v-footer>
     <v-progress-linear
       :active="$store.state.loading"
@@ -155,7 +171,7 @@ export default {
     LocationsMenu,
     BreadCrumb,
     SettingsDrawer,
-    "v-snackbars": VSnackbars
+    "v-snackbars": VSnackbars,
   },
   name: "DefaultView",
   data() {
@@ -165,39 +181,38 @@ export default {
         {
           icon: "mdi-view-dashboard",
           title: "Dashboard",
-          to: "/"
+          to: "/",
         },
         {
           icon: "mdi-android-messages",
           title: "Messages",
-          to: "/messages"
+          to: "/messages",
         },
         {
           icon: "mdi-inbox-multiple",
           title: "Jobs",
-          to: "/jobs"
+          to: "/jobs",
         },
         {
           icon: "mdi-account-multiple-plus",
           title: "Appointments",
-          to: "/appointments"
+          to: "/appointments",
         },
         {
           icon: "mdi-account-clock",
           title: "Clock In/Out",
-          to: "/clock-in-out"
+          to: "/clock-in-out",
         },
         {
           icon: "mdi-help",
           title: "IT Help Desk",
-          to: "/it-helpdesk"
-        }
+          to: "/it-helpdesk",
+        },
       ],
       miniVariant: false,
       userMenu: false,
       drawer: false,
       settingsDrawer: false,
-      branches: []
     };
   },
 
@@ -205,18 +220,12 @@ export default {
     theme() {
       return this.$vuetify.theme.dark ? "dark" : "light";
     },
-    // snackbars: {
-    //   get: function(vm) {
-    //     return vm.$store.state.toast.snackbars;
-    //   },
-    //   set: function(vm, val) {
-    //     // vm.$store.state.toast.snackbars = val;
-    //     console.log(val);
-    //   }
-    // }
     user() {
       return this.$auth.user;
-    }
+    },
+    branches() {
+      return this.$auth.user.branches;
+    },
   },
 
   methods: {
@@ -235,7 +244,7 @@ export default {
 
       console.log(darkMediaQuery);
 
-      darkMediaQuery.addEventListener("change", e => {
+      darkMediaQuery.addEventListener("change", (e) => {
         this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
       });
 
@@ -256,9 +265,8 @@ export default {
       //   .catch(err => {
       //     console.log(err);
       //   });
-      this.branches = this.$auth.user.branches;
-      this.$store.commit("switchBranch", this.$auth.user.defaultBranch)
-    }
+      this.$store.commit("switchBranch", this.$auth.user.defaultBranch);
+    },
   },
 
   async mounted() {
@@ -273,7 +281,7 @@ export default {
     await this.$store.commit("updateClients");
 
     await this.$store.commit("toggleLoading", false);
-  }
+  },
 };
 </script>
 <style>

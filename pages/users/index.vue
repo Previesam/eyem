@@ -197,13 +197,13 @@
                       <v-col cols="12" sm="6">
                         <v-autocomplete
                           :rules="[
-                            val => !!val || 'Required',
-                            val =>
+                            (val) => !!val || 'Required',
+                            (val) =>
                               editedItem.branches
-                                .map(i => i.id)
+                                .map((i) => i.id)
                                 .includes(getId(val) || val) ||
                               editedItem.branches.includes(getId(val) || val) ||
-                              'Selected branch must be included in the branches allowed'
+                              'Selected branch must be included in the branches allowed',
                           ]"
                           :items="branches"
                           item-text="Name"
@@ -218,6 +218,11 @@
                       </v-col>
                       <v-col cols="12">
                         <v-autocomplete
+                          @input="
+                            editedItem.defaultBranch
+                              ? $refs.userForm.validate()
+                              : false
+                          "
                           :rules="rules.branches"
                           multiple
                           small-chips
@@ -408,10 +413,7 @@
 
           <v-spacer></v-spacer>
 
-          <span
-            class="mr-4
-            grey--text"
-          >
+          <span class="mr-4 grey--text">
             Page {{ page }} of {{ numberOfPages }}
           </span>
           <v-btn
@@ -443,18 +445,18 @@
 <script>
 export default {
   name: "Users",
-  data: function(vm) {
+  data: function (vm) {
     return {
       page: 1,
       valid: false,
       loading: false,
       rules: {
         name: [
-          value => !!value || "Required.",
-          value => (value && value.length >= 3) || "Min 3 characters"
+          (value) => !!value || "Required.",
+          (value) => (value && value.length >= 3) || "Min 3 characters",
         ],
-        role: [value => !!value || "Required"],
-        branches: [val => !!val || "Required"]
+        role: [(value) => !!value || "Required"],
+        branches: [(val) => !!val || "Required"],
       },
       search: "",
       menu2: false,
@@ -474,7 +476,7 @@ export default {
         role: "",
         branches: [],
         defaultBranch: "",
-        inactive: false
+        inactive: false,
       },
       defaultItem: {
         email: "",
@@ -486,7 +488,7 @@ export default {
         role: "",
         branches: [],
         defaultBranch: "",
-        inactive: false
+        inactive: false,
       },
       dobFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
       itemToDelete: {},
@@ -498,7 +500,7 @@ export default {
       sortBy: "firstname",
       users: [],
       roles: [],
-      branches: []
+      branches: [],
     };
   },
 
@@ -507,7 +509,7 @@ export default {
       return Math.ceil(this.users.length / this.itemsPerPage);
     },
     filteredKeys() {
-      return this.keys.filter(key => key !== "Name");
+      return this.keys.filter((key) => key !== "Name");
     },
     deleteItemClientName() {
       return this.itemToDelete?.client?.Name;
@@ -541,14 +543,14 @@ export default {
     },
     branchesAllowed() {
       let string = "";
-      this.editedItem.branches.forEach(i => {
+      this.editedItem.branches.forEach((i) => {
         string += ", " + i._id;
       });
       return string;
     },
     userPermissions() {
       return this.$auth.user.role.permissions;
-    }
+    },
   },
 
   watch: {
@@ -582,14 +584,14 @@ export default {
     },
     branchesAllowed() {
       this.saveToLocalStorage();
-    }
+    },
   },
 
   async mounted() {
     this.loading = true;
     await this.initialize();
     if (this.$route.query.id) {
-      let user = this.users.filter(item => item.id === this.$route.query.id);
+      let user = this.users.filter((item) => item.id === this.$route.query.id);
       if (user.length > 0) {
         this.view(user[0]);
       } else {
@@ -597,13 +599,13 @@ export default {
         this.$store.dispatch("toast/callAddSnackbar", {
           color: "error",
           message: `Invalid URL parameter`,
-          timeout: 3000
+          timeout: 3000,
         });
       }
     }
     this.clients = this.$store.state.clients
-      .filter(item => item.Name)
-      .map(m => m);
+      .filter((item) => item.Name)
+      .map((m) => m);
     this.loading = false;
     if (!localStorage.getItem("editedUser")) {
       localStorage.setItem("editedUser", JSON.stringify(this.defaultItem));
@@ -673,16 +675,16 @@ export default {
       this.loading = true;
       try {
         let res = await this.$axios("/users", {
-          method: "GET"
+          method: "GET",
         });
         this.users = res.data;
-        console.log(this.users)
+        console.log(this.users);
       } catch (err) {
         console.log(err.response);
       }
       try {
         let res = await this.$axios("/roles", {
-          method: "GET"
+          method: "GET",
         });
         this.roles = res.data;
       } catch (err) {
@@ -690,12 +692,12 @@ export default {
       }
 
       let branches = await this.$axios("/branches", {
-        method: "GET"
+        method: "GET",
       })
-        .then(res => {
+        .then((res) => {
           return res.data;
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err);
         });
 
@@ -719,18 +721,18 @@ export default {
 
     async deleteItemConfirm() {
       await this.$axios(`/user/delete/${this.itemToDelete.id}`, {
-        method: "DELETE"
+        method: "DELETE",
       })
-        .then(res => {
+        .then((res) => {
           this.users.splice(this.editedIndex, 1);
           this.$store.dispatch("toast/callAddSnackbar", {
             color: "success",
             message: `${this.itemToDelete.fullname} was deleted successfully`,
-            timeout: 3000
+            timeout: 3000,
           });
           this.closeDelete();
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err.response);
         });
     },
@@ -763,15 +765,19 @@ export default {
           rest.lastModifiedBy = this.$auth.user._id;
           await this.$axios(`/user/update/${editedItem.id}`, {
             method: "PUT",
-            data: rest
-          }).then(async res => {
+            data: rest,
+          }).then(async (res) => {
             await Object.assign(this.users[this.editedIndex], res.data);
+            if (this.$auth.user._id === res.data._id) {
+              this.$auth.user = res.data;
+              console.log("done");
+            }
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/callAddSnackbar", {
               color: "success",
               message: `${res.data.firstname} was updated successfully`,
-              timeout: 3000
+              timeout: 3000,
             });
           });
         } catch (err) {
@@ -780,7 +786,7 @@ export default {
           this.$store.dispatch("toast/callAddSnackbar", {
             color: "error",
             message: err.response.data.message,
-            timeout: 100000
+            timeout: 100000,
           });
         }
       } else {
@@ -789,15 +795,15 @@ export default {
         try {
           await this.$axios("/user/signup", {
             method: "POST",
-            data: editedItem
-          }).then(res => {
+            data: editedItem,
+          }).then((res) => {
             this.users.push(res.data);
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/callAddSnackbar", {
               color: "success",
               message: `${res.data.fullname} was saved successfully`,
-              timeout: 3000
+              timeout: 3000,
             });
           });
         } catch (err) {
@@ -806,7 +812,7 @@ export default {
           this.$store.dispatch("toast/callAddSnackbar", {
             type: "error",
             message: err.response.data.message,
-            timeout: 3000
+            timeout: 3000,
           });
         }
       }
@@ -815,8 +821,8 @@ export default {
     clear() {
       this.$refs.userForm.reset();
       localStorage.setItem("editedUser", JSON.stringify(this.defaultItem));
-    }
-  }
+    },
+  },
 };
 </script>
 
