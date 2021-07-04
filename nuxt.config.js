@@ -62,6 +62,14 @@ export default {
     }
   },
 
+  loaders: {
+    vue: {
+      compilerOptions: {
+        preserveWhitespace: false
+      }
+    }
+  },
+
   // Plugins to run before rendering page (https://go.nuxtjs.dev/config-plugins)
   plugins: [
     // add created plugin:

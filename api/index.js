@@ -7,6 +7,16 @@ const Client = require("./models/client.model");
 const Branch = require("./models/branch.model");
 const axios = require("axios");
 const nodeHtmlToImage = require("node-html-to-image");
+const nodemailer = require("nodemailer");
+const handlebars = require("handlebars");
+
+var transport = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS
+  }
+});
 
 // create express app
 const app = express();
@@ -35,7 +45,7 @@ app.use(express.json());
 // Configuring the database
 const dbConfig = require("./config/database.config.js");
 const mongoose = require("mongoose");
-const { link } = require("fs");
+const { link, readFileSync } = require("fs");
 const { clear } = require("console");
 
 mongoose.Promise = global.Promise;
@@ -89,8 +99,7 @@ var updateBranches = async () => {
             newBranch
               .save()
               .then(data => console.log(data))
-              .catch(err => {
-              });
+              .catch(err => { });
             return console.log("data");
           }
         });
@@ -247,8 +256,40 @@ app.get("/", (req, res) => {
 });
 
 app.get("/html-image", (req, res) => {
-  let html  = req.body.html;
+  let html = req.body.html;
   res.send(html);
+});
+
+app.get("/test-email", async (req, res) => {
+  let source = readFileSync(__dirname + '/templates/job.html').toString()
+  // let source = `<style>.fr-class-footer {display: block; padding: 10px; background-color: rgb(0, 0, 255); color: rgb(255, 255, 255); max-width: 100%;} .fr-class-button {display: block; margin: 0 auto; width: 100px; border-radius: 0.5rem; background-color: rgb(0, 0, 255); padding: 5px; text-transform: capitalize; line-height: 1.5; text-align: center; text-transform: capitalize; } .fr-class-button > a {text-decoration: none;}</style><p><a href="http://www.eyemastersng.com" rel="noopener noreferrer" target="_blank"><img src="https://eyemastersng.com/wp-content/uploads/2020/02/Logo-New.png" style="width: 300px;" class="fr-fic fr-dib"></a></p><hr><p><br></p><h2>New User Activation</h2><p><br></p><p>Hello {{ receiver_name }},</p><p>Congratulations, your account was created successfully, kindly click below to activate your account.</p><p><br></p><p class="fr-class-button"><a href="https://eyemastersng.com" target="_blank"><span style="color: rgb(255, 255, 255);"><strong>Activate</strong></span></a></p><p><br></p><p>Thank you.</p><p><br></p><p class="fr-class-footer" style="text-align: center;">Eyemasters Limited<br>35, Freedom Way, Ikate Lagos.<br><a href="https://eyemastersng.com" target="_blank"><span style="color: rgb(255, 255, 255);">www.eyemastersng.com</span></a><br><span style="color: rgb(255, 255, 255);font-size: 18px;"><a href="https://facebook.com/eyemastersnigeria" target="_blank"><i class="fa  fa-facebook-square fr-deletable"></i></a>&nbsp; <a href="https://twitter.com/eye_mastersng" target="_blank"><i class="fa  fa-twitter-square fr-deletable">&nbsp;</i></a> <a href="https://instagram.com/eyemasters" target="_blank"><i class="fa  fa-instagram fr-deletable">&nbsp;</i></a></span><br><span style="color: rgb(255, 255, 255);"><a href="https://twitter.com/eye_mastersng" target="_blank"></a><a href="https://instagram.com/eyemasters" target="_blank"></a></span></p>`;
+
+  let data = {
+    client_name: "Samuel Adeyanju",
+    job_status: "Ready"
+  };
+
+  let styleStart = source.indexOf("<style>");
+  let styleEnd = source.indexOf("</style>") + 8;
+
+  let style = source.slice(styleStart, styleEnd);
+
+  console.log(style);
+
+  let template = handlebars.compile(source);
+
+  let mailOptions = {
+    from: "info@eyemastersng.com",
+    to: "drnomsoeyemasters@outlook.com",
+    subject: "New Message title",
+    text: "Plaintext version of the message",
+    html: template(data)
+  };
+
+  transport.sendMail(mailOptions, (err, info) => {
+    if (err) return console.log(err);
+    return res.send(info);
+  });
 });
 
 // Require routes
@@ -257,8 +298,8 @@ require("./routes/user.route.js")(app);
 require("./routes/job.route.js")(app);
 require("./routes/client.route.js")(app);
 require("./routes/branch.route.js")(app);
-require('./routes/email.route.js')(app);
-require('./routes/role.route.js')(app);
+require("./routes/email.route.js")(app);
+require("./routes/role.route.js")(app);
 // require('./routes/service.route.js')(app);
 // require('./routes/role.route.js')(app);
 

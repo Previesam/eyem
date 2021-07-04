@@ -1,368 +1,381 @@
 <template>
-  <v-card
-    width="100%"
-    :min-height="$vuetify.breakpoint.mobile ? '86vh' : '84.6vh'"
-    class="rounded mt-1 mx-auto"
-    :loading="loading"
-  >
+  <div>
     <v-card
-      max-height="100%"
-      style="overflow-hidden"
-      id="email-editor-container"
-      v-if="editedItem.editing"
-    >
-      <v-form v-model="valid" ref="templateForm">
-        <v-card-title>
-          <h1 class="text-h6">{{ formTitle }}</h1>
-          <v-spacer></v-spacer>
-          <v-btn
-            small
-            class="rounded text-capitalize body-2"
-            outlined
-            color="primary"
-            tile
-            @click="save()"
-            :disabled="!valid"
-            :loading="loading"
-            ><v-icon small :left="$vuetify.breakpoint.width >= 600"
-              >mdi-content-save</v-icon
-            ><span v-show="$vuetify.breakpoint.width >= 600">Save</span>
-          </v-btn>
-          <v-btn
-            small
-            class="rounded ml-3 text-capitalize body-2"
-            outlined
-            color="accent"
-            tile
-            :disabled="!valid"
-            ><v-icon small :left="$vuetify.breakpoint.width >= 600"
-              >mdi-email</v-icon
-            ><span v-show="$vuetify.breakpoint.width >= 600">Test</span>
-          </v-btn>
-          <v-btn icon @click="close()"><v-icon>mdi-close</v-icon></v-btn>
-        </v-card-title>
-        <v-card-text class="py-0 px-3 ma-0"
-          ><v-text-field
-            v-model="editedItem.title"
-            label="Title"
-            dense
-            outlined
-            :rules="rules"
-          ></v-text-field
-        ></v-card-text>
-        <v-card-text class="py-0 px-3 ma-0"
-          ><v-textarea
-            rows="2"
-            v-model="editedItem.description"
-            label="Description"
-            dense
-            :rules="rules"
-            outlined
-          ></v-textarea
-        ></v-card-text>
-      </v-form>
-      <v-card-text class="px-3 ma-0 py-0" id="email-editor"
-        ><froala
-          :tag="'textarea'"
-          :config="config"
-          v-model="editedItem.html"
-        ></froala
-      ></v-card-text>
-    </v-card>
-    <v-data-iterator
-      v-else
-      :items="emailTemplates"
-      :items-per-page.sync="itemsPerPage"
-      :page.sync="page"
-      :search="search"
-      no-data-text="No templates defined yet"
-      :class="emailTemplates.length < 1 ? 'text-center' : ''"
+      width="100%"
+      :min-height="$vuetify.breakpoint.mobile ? '86vh' : '84.6vh'"
+      class="rounded mt-1 mx-auto"
       :loading="loading"
-      :sort-by="sortBy.toLowerCase()"
-      :sort-desc="sortDesc"
-      hide-default-footer
     >
-      <template v-slot:header>
-        <v-card-title height="50px" class="mb-1">
-          <v-text-field
-            dense
-            v-model="search"
-            clearable
-            :style="$vuetify.breakpoint.width < 422 ? 'width: 220px' : ''"
-            flat
-            solo-inverted
-            hide-details
-            prepend-inner-icon="mdi-magnify"
-            label="Search"
-          ></v-text-field>
-          <template v-if="$vuetify.breakpoint.mdAndUp">
+      <v-card
+        max-height="100%"
+        style="overflow-hidden"
+        id="email-editor-container"
+        v-if="editedItem.editing"
+      >
+        <v-form v-model="valid" ref="templateForm">
+          <v-card-title>
+            <h1 class="text-h6">{{ formTitle }}</h1>
             <v-spacer></v-spacer>
-            <v-select
+            <v-btn
+              small
+              class="rounded text-capitalize body-2"
+              outlined
+              color="primary"
+              tile
+              @click="save()"
+              :disabled="!valid"
+              :loading="loading"
+              ><v-icon small :left="$vuetify.breakpoint.width >= 600"
+                >mdi-content-save</v-icon
+              ><span v-show="$vuetify.breakpoint.width >= 600">Save</span>
+            </v-btn>
+            <v-btn
+              small
+              class="rounded ml-3 text-capitalize body-2"
+              outlined
+              color="accent"
+              tile
+              :disabled="!valid"
+              ><v-icon small :left="$vuetify.breakpoint.width >= 600"
+                >mdi-email</v-icon
+              ><span v-show="$vuetify.breakpoint.width >= 600">Test</span>
+            </v-btn>
+            <v-btn icon @click="close()"><v-icon>mdi-close</v-icon></v-btn>
+          </v-card-title>
+          <v-card-text class="py-0 px-3 ma-0"
+            ><v-text-field
+              v-model="editedItem.title"
+              label="Title"
               dense
-              v-model="sortBy"
+              outlined
+              :rules="rules"
+            ></v-text-field
+          ></v-card-text>
+          <v-card-text class="py-0 px-3 ma-0"
+            ><v-textarea
+              rows="2"
+              v-model="editedItem.description"
+              label="Description"
+              dense
+              :rules="rules"
+              outlined
+            ></v-textarea
+          ></v-card-text>
+        </v-form>
+        <v-card-text class="px-3 ma-0 py-0" id="email-editor"
+          ><froala
+            :tag="'textarea'"
+            :config="config"
+            v-model="editedItem.html"
+          ></froala
+        ></v-card-text>
+      </v-card>
+      <v-data-iterator
+        v-else
+        :items="emailTemplates"
+        :items-per-page.sync="itemsPerPage"
+        :page.sync="page"
+        :search="search"
+        no-data-text="No templates defined yet"
+        :class="emailTemplates.length < 1 ? 'text-center' : ''"
+        :loading="loading"
+        :sort-by="sortBy.toLowerCase()"
+        :sort-desc="sortDesc"
+        hide-default-footer
+      >
+        <template v-slot:header>
+          <v-card-title height="50px" class="mb-1">
+            <v-text-field
+              dense
+              v-model="search"
+              clearable
+              :style="$vuetify.breakpoint.width < 422 ? 'width: 220px' : ''"
               flat
               solo-inverted
               hide-details
-              :items="keys"
               prepend-inner-icon="mdi-magnify"
-              label="Sort by"
-            ></v-select>
-            <v-spacer></v-spacer>
-            <v-btn-toggle tile rounded v-model="sortDesc" mandatory>
-              <v-btn x-small icon large depressed color="blue" :value="false">
-                <v-icon small>mdi-arrow-up</v-icon>
-              </v-btn>
-              <v-btn x-small icon large depressed color="blue" :value="true">
-                <v-icon small>mdi-arrow-down</v-icon>
-              </v-btn>
-            </v-btn-toggle>
-          </template>
+              label="Search"
+            ></v-text-field>
+            <template v-if="$vuetify.breakpoint.mdAndUp">
+              <v-spacer></v-spacer>
+              <v-select
+                dense
+                v-model="sortBy"
+                flat
+                solo-inverted
+                hide-details
+                :items="keys"
+                prepend-inner-icon="mdi-magnify"
+                label="Sort by"
+              ></v-select>
+              <v-spacer></v-spacer>
+              <v-btn-toggle tile rounded v-model="sortDesc" mandatory>
+                <v-btn x-small icon large depressed color="blue" :value="false">
+                  <v-icon small>mdi-arrow-up</v-icon>
+                </v-btn>
+                <v-btn x-small icon large depressed color="blue" :value="true">
+                  <v-icon small>mdi-arrow-down</v-icon>
+                </v-btn>
+              </v-btn-toggle>
+            </template>
 
-          <v-spacer v-show="userPermissions[$route.path].create"></v-spacer>
-          <v-btn
-            color="primary"
-            outlined
-            class="text-capitalize"
-            @click="newItem()"
-            v-show="userPermissions[$route.path].create"
-            ><v-icon :left="$vuetify.breakpoint.smAndDown ? false : true" small
-              >mdi-plus</v-icon
-            >
-            <span :hidden="$vuetify.breakpoint.smAndDown">New Template</span>
-          </v-btn>
-
-          <!-- Begin Delete Dialog -->
-
-          <v-dialog
-            v-model="dialogDelete"
-            max-width="500px"
-            overlay-color="red"
-            class="rounded"
-          >
-            <v-card
-              class="py-auto px-auto rounded"
-              max-width="100%"
-              min-height="300px"
-            >
-              <v-card-title
-                ><v-icon class="mt-10 mb-1 mx-auto" x-large color="red"
-                  >mdi-delete</v-icon
-                ></v-card-title
+            <v-spacer v-show="userPermissions[$route.path].create"></v-spacer>
+            <v-btn
+              color="primary"
+              outlined
+              class="text-capitalize"
+              @click="newItem()"
+              v-show="userPermissions[$route.path].create"
+              ><v-icon
+                :left="$vuetify.breakpoint.smAndDown ? false : true"
+                small
+                >mdi-plus</v-icon
               >
-              <v-card-title class="my-3 subheading text-center"
-                >Are you sure you want to delete
-                {{ itemToDelete.title }}
-                ?</v-card-title
-              >
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="closeDelete"
-                  >No</v-btn
-                >
-                <v-btn
-                  elevation="2"
-                  color="red darken-1"
-                  text
-                  @click="deleteItemConfirm"
-                  >Yes</v-btn
-                >
-                <v-spacer></v-spacer>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+              <span :hidden="$vuetify.breakpoint.smAndDown">New Template</span>
+            </v-btn>
 
-          <!-- End Delete Dialog -->
+            <!-- Begin Delete Dialog -->
 
-          <!-- Begin preview dialog -->
-
-          <v-dialog
-            v-model="dialogViewTemplate"
-            persistent
-            scrollable
-            :fullscreen="$vuetify.breakpoint.width <= 600 ? true : false"
-            overlay-color="blue"
-            max-width="800px"
-          >
-            <v-card>
-              <v-container fluid>
-                <div class="mb-2 subtitle-1 d-flex">
-                  <div>
-                    <div class="caption">
-                      Created:
-                      {{
-                        formatDate(
-                          templateToView.createdAt ||
-                            new Date().toISOString().substr(0, 10)
-                        )
-                      }}
-                    </div>
-                    <div class="subtitle-2 font-weight-bold">
-                      Template #{{ templateToView.id }}
-                    </div>
-                  </div>
-                  <div class="ml-auto my-auto">
-                    <v-icon
-                      @click.stop="dialogViewTemplate = !dialogViewTemplate"
-                      >mdi-close</v-icon
-                    >
-                  </div>
-                </div>
-                <v-divider></v-divider>
-              </v-container>
-              <v-card-text>
-                <v-card-text>{{ templateToView.description }}</v-card-text>
-                <v-container fluid>
-                  <v-card
-                    v-html="
-                      formatTemplateToView(
-                        templateToView.html,
-                        $vuetify.theme.dark
-                      )
-                    "
-                    class="pa-3 fr-view"
-                  ></v-card>
-                </v-container>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  color="accent"
-                  class="text-capitalize"
-                  small
-                  outlined
-                  @click="editItem(templateToView, $event)"
-                  v-show="userPermissions[$route.path].edit"
-                  >Edit</v-btn
-                >
-                <v-btn
-                  color="red darken-2"
-                  outlined
-                  class="ml-2 text-capitalize"
-                  small
-                  @click="deleteItem(templateToView, $event)"
-                  v-show="userPermissions[$route.path].delete"
-                  >Delete</v-btn
-                >
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-
-          <!-- End Preview Dialog -->
-        </v-card-title>
-      </template>
-      <template v-slot:default="props">
-        <v-row class="px-1" dense>
-          <v-col cols="12">
-            <v-card
-              @click.stop="
-                userPermissions[$route.path].view ? view(item, $event) : false
-              "
-              v-for="item in props.items"
-              :key="item.id"
-              class="mb-2"
+            <v-dialog
+              v-model="dialogDelete"
+              max-width="500px"
+              overlay-color="red"
+              class="rounded"
             >
-              <div
-                class="emailTemplates d-flex flex-no-wrap justify-space-between"
+              <v-card
+                class="py-auto px-auto rounded"
+                max-width="100%"
+                min-height="300px"
               >
-                <div>
-                  <v-card-title class="text-body-1" style="font-weight: bold">
-                    {{ item.title }}
-                  </v-card-title>
-                  <v-card-subtitle>
-                    {{ item.description }}
-                  </v-card-subtitle>
-                </div>
+                <v-card-title
+                  ><v-icon class="mt-10 mb-1 mx-auto" x-large color="red"
+                    >mdi-delete</v-icon
+                  ></v-card-title
+                >
+                <v-card-title class="my-3 subheading text-center"
+                  >Are you sure you want to delete
+                  {{ itemToDelete.title }}
+                  ?</v-card-title
+                >
                 <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="closeDelete"
+                    >No</v-btn
+                  >
+                  <v-btn
+                    elevation="2"
+                    color="red darken-1"
+                    text
+                    @click="deleteItemConfirm"
+                    >Yes</v-btn
+                  >
+                  <v-spacer></v-spacer>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+
+            <!-- End Delete Dialog -->
+
+            <!-- Begin preview dialog -->
+
+            <v-dialog
+              v-model="dialogViewTemplate"
+              persistent
+              scrollable
+              :fullscreen="$vuetify.breakpoint.width <= 600 ? true : false"
+              overlay-color="blue"
+              max-width="800px"
+            >
+              <v-card>
+                <v-container fluid>
+                  <div class="mb-2 subtitle-1 d-flex">
+                    <div>
+                      <div class="caption">
+                        Created:
+                        {{
+                          formatDate(
+                            templateToView.createdAt ||
+                              new Date().toISOString().substr(0, 10)
+                          )
+                        }}
+                      </div>
+                      <div class="subtitle-2 font-weight-bold">
+                        Template #{{ templateToView.id }}
+                      </div>
+                    </div>
+                    <div class="ml-auto my-auto">
+                      <v-icon
+                        @click.stop="dialogViewTemplate = !dialogViewTemplate"
+                        >mdi-close</v-icon
+                      >
+                    </div>
+                  </div>
+                  <v-divider></v-divider>
+                </v-container>
+                <v-card-text>
+                  <v-card-text>{{ templateToView.description }}</v-card-text>
+                  <v-container fluid>
+                    <v-card
+                      v-html="
+                        formatTemplateToView(
+                          templateToView.html,
+                          $vuetify.theme.dark
+                        )
+                      "
+                      class="pa-3 fr-view"
+                    ></v-card>
+                  </v-container>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
                   <v-btn
                     color="accent"
-                    ref="editBtn"
-                    text
                     class="text-capitalize"
                     small
-                    @click="editItem(item, $event)"
+                    outlined
+                    @click="editItem(templateToView, $event)"
                     v-show="userPermissions[$route.path].edit"
                     >Edit</v-btn
                   >
                   <v-btn
                     color="red darken-2"
-                    ref="deleteBtn"
-                    text
+                    outlined
                     class="ml-2 text-capitalize"
                     small
-                    @click="deleteItem(item, $event)"
+                    @click="deleteItem(templateToView, $event)"
                     v-show="userPermissions[$route.path].delete"
                     >Delete</v-btn
                   >
                 </v-card-actions>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
-      </template>
-      <template v-slot:footer>
-        <v-row class="my-2 px-5" align="center" justify="center">
-          <span class="grey--text">Items per page</span>
-          <v-menu offset-y>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                dark
-                text
-                color="primary"
-                class="ml-2"
-                v-bind="attrs"
-                v-on="on"
-              >
-                {{ itemsPerPage }}
-                <v-icon>mdi-chevron-down</v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item
-                v-for="(number, index) in itemsPerPageArray"
-                :key="index"
-                @click="updateItemsPerPage(number)"
-              >
-                <v-list-item-title>{{ number }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+              </v-card>
+            </v-dialog>
 
-          <v-spacer></v-spacer>
+            <!-- End Preview Dialog -->
+          </v-card-title>
+        </template>
+        <template v-slot:default="props">
+          <v-row class="px-1" dense>
+            <v-col cols="12">
+              <v-card
+                @click.stop="
+                  userPermissions[$route.path].view ? view(item, $event) : false
+                "
+                v-for="item in props.items"
+                :key="item.id"
+                class="mb-2"
+              >
+                <div
+                  class="emailTemplates d-flex flex-no-wrap justify-space-between"
+                >
+                  <div>
+                    <v-card-title class="text-body-1" style="font-weight: bold">
+                      {{ item.title }}
+                    </v-card-title>
+                    <v-card-subtitle>
+                      {{ item.description }}
+                    </v-card-subtitle>
+                  </div>
+                  <v-card-actions>
+                    <v-btn
+                      color="accent"
+                      ref="editBtn"
+                      text
+                      class="text-capitalize"
+                      small
+                      @click="editItem(item, $event)"
+                      v-show="userPermissions[$route.path].edit"
+                      >Edit</v-btn
+                    >
+                    <v-btn
+                      color="red darken-2"
+                      ref="deleteBtn"
+                      text
+                      class="ml-2 text-capitalize"
+                      small
+                      @click="deleteItem(item, $event)"
+                      v-show="userPermissions[$route.path].delete"
+                      >Delete</v-btn
+                    >
+                  </v-card-actions>
+                </div>
+              </v-card>
+            </v-col>
+          </v-row>
+        </template>
+        <template v-slot:footer>
+          <v-row class="my-2 px-5" align="center" justify="center">
+            <span class="grey--text">Items per page</span>
+            <v-menu offset-y>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  dark
+                  text
+                  color="primary"
+                  class="ml-2"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  {{ itemsPerPage }}
+                  <v-icon>mdi-chevron-down</v-icon>
+                </v-btn>
+              </template>
+              <v-list>
+                <v-list-item
+                  v-for="(number, index) in itemsPerPageArray"
+                  :key="index"
+                  @click="updateItemsPerPage(number)"
+                >
+                  <v-list-item-title>{{ number }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
 
-          <span
-            class="mr-4
+            <v-spacer></v-spacer>
+
+            <span
+              class="mr-4
             grey--text"
-          >
-            Page {{ page }} of {{ numberOfPages }}
-          </span>
-          <v-btn
-            icon
-            dark
-            color="blue darken-3"
-            class="mr-1"
-            x-small
-            @click="formerPage"
-          >
-            <v-icon>mdi-chevron-left</v-icon>
-          </v-btn>
-          <v-btn
-            icon
-            x-small
-            dark
-            color="blue darken-3"
-            class="ml-1"
-            @click="nextPage"
-          >
-            <v-icon>mdi-chevron-right</v-icon>
-          </v-btn>
-        </v-row>
-      </template>
-    </v-data-iterator>
-  </v-card>
+            >
+              Page {{ page }} of {{ numberOfPages }}
+            </span>
+            <v-btn
+              icon
+              dark
+              color="blue darken-3"
+              class="mr-1"
+              x-small
+              @click="formerPage"
+            >
+              <v-icon>mdi-chevron-left</v-icon>
+            </v-btn>
+            <v-btn
+              icon
+              x-small
+              dark
+              color="blue darken-3"
+              class="ml-1"
+              @click="nextPage"
+            >
+              <v-icon>mdi-chevron-right</v-icon>
+            </v-btn>
+          </v-row>
+        </template>
+      </v-data-iterator>
+      <index-block>
+        <span>Component</span>
+        <v-spacer></v-spacer>
+        <span>Settings</span>
+        <v-spacer></v-spacer>
+        <span>Base</span>
+      </index-block>
+    </v-card>
+  </div>
 </template>
 
 <script>
+import IndexBlock from "../../components/editor/ui/Block/IndexBlock.vue";
 export default {
+  components: { IndexBlock },
   name: "EmailTemplates",
   data: function(vm) {
     return {
@@ -379,7 +392,11 @@ export default {
         },
         inlineClasses: {
           "fr-class-footer": "Footer"
-        }
+        },
+        htmlRemoveTags: ["script"],
+        htmlUntouched: true,
+        multiLine: true,
+        useClasses: false
       },
       page: 1,
       valid: false,
@@ -405,13 +422,55 @@ export default {
       editedIndex: -1,
       editedItem: {
         editing: false,
-        html: "",
+        html: `<html><head><style>
+        .fr-class-footer { 
+          display: block;
+          padding: 10px;
+          background-color: rgb(0, 0, 255);
+          color: rgb(255, 255, 255);
+          max-width: 100%;
+        }
+        .fr-class-button {
+          display: block;
+          margin: 0 auto;
+          width: 100px;
+          border-radius: 0.5rem;
+          background-color: rgb(0, 0, 255);
+          color: rgb(255, 255, 255);
+          padding: 5px;
+          text-transform: capitalize;
+          line-height: 1.5;
+          text-align: center;
+          text-decoration: none;
+          text-transform: capitalize;
+}</style></head><body>Edit Your Content Here!</body></html>`,
         title: "",
         description: ""
       },
       defaultItem: {
         editing: false,
-        html: "Edit Your Content Here!",
+        html: `<html><head><style>
+        .fr-class-footer { 
+          display: block;
+          padding: 10px;
+          background-color: rgb(0, 0, 255);
+          color: rgb(255, 255, 255);
+          max-width: 100%;
+        }
+        .fr-class-button {
+          display: block;
+          margin: 0 auto;
+          width: 100px;
+          border-radius: 0.5rem;
+          background-color: rgb(0, 0, 255);
+          color: rgb(255, 255, 255);
+          padding: 5px;
+          text-transform: capitalize;
+          line-height: 1.5;
+          text-align: center;
+          text-decoration: none;
+          text-transform: capitalize;
+}</style></head><body>Edit Your Content Here!</body></html>`,
         title: "",
         description: ""
       },
