@@ -2,6 +2,7 @@
 
 const User = require("../models/user.model.js");
 const Roles = require("../models/role.model.js");
+const axios = require("axios");
 
 const populateQuery = [
   { path: "role", select: ["name", "permissions"] },
@@ -22,6 +23,87 @@ const randtoken = require("rand-token");
 const { secret } = require("../config/settings.config.js");
 const SALT_WORK_FACTOR = 10;
 
+// Route to request account creation
+
+exports.preCreate = async (req, res) => {
+  let errors = [];
+
+  if (req.body.firstname.length < 3) {
+    errors.push({
+      message: "First name must have at least 3 characters"
+    });
+  }
+
+  if (req.body.lastname.length < 3) {
+    errors.push({
+      message: "Last name must have at least 3 characters"
+    });
+  }
+
+  if (!req.body.email) {
+    errors.push({
+      message: "Email cannot be empty"
+    });
+  }
+
+  if (errors.length > 0) return res.status(400).send({ errors });
+
+  // Check if email exist
+
+  await User.findOne({ email: req.body.email })
+    .then(data => {
+      // Send error if it does
+      if (data) {
+        error.push({
+          message:
+            "The email address has be registered in our database, Please contact the admin"
+        });
+        return res.status(400).send(errors);
+      }
+
+      // Create user object if not
+
+      const user = new User({
+        firstname: req.body.firstname,
+        lastname: req.body.lastname,
+        email: req.body.email
+      });
+
+      // Save the new user object
+
+      user
+        .save()
+        .then(data => {
+          if (!data) {
+            errors.push({
+              message: "Unknown error occurred while saving user account"
+            });
+            return res.status(500).send(errors);
+          }
+          // Send success message
+          return res.status(201).send({
+            message:
+              "Account creation request sent successfully, you will receive and email to activate you account if approved"
+          });
+        })
+        .catch(err => {
+          errors.push({
+            message:
+              err.message || "Unknown error occurred while saving user account"
+          });
+          // Send error message
+          return res.status(500).send(errors);
+        });
+    })
+    .catch(err => {
+      errors.push({
+        message: err.message || "Unknown error occurred while checking email"
+      });
+      // Send error message
+      res.status(500).send(errors);
+    });
+};
+
 // Method for creating new user
 
 exports.create = async (req, res) => {
@@ -29,9 +111,9 @@ exports.create = async (req, res) => {
 
   // Validating entered data
 
-  if (!req.body.fullname) {
+  if (!req.body.firstname || !req.body.lastname) {
     error.push({
-      message: "Full name cannot be empty"
+      message: "First name or Last name cannot be empty"
     });
   }
 
@@ -69,100 +151,174 @@ exports.create = async (req, res) => {
 
   // Check if user already exist
 
-  await User.find({ email: req.body.email })
+  await User.findOne({ email: req.body.email })
     .then(async data => {
-      if (data.length > 0) {
-        errors.push({
+      // Send error if so
+
+      if (data)
+        return res.status(400).send({
           message: "User with email " + req.body.email + " already exist"
         });
-        return res.status(400).json(errors);
-      } else {
-        // Create new user object
 
-        const user = new User(req.body);
+      // Create new user object
 
-        user.regInfo.code = randtoken.uid(16);
+      const user = new User(req.body);
 
-        user.regInfo.expiresIn = moment.now();
+      user.activationCode = randtoken.uid(16);
 
-        // Password Encryption
+      user.activationExpiresIn = moment.utc().add(30, "minutes");
 
-        // user.hash = bcrypt.hashSync(req.body.password, 10);
+      // Save the new user
 
-        // Save the new user
-
-        user
-          .save()
-          .then(data => {
-            let [regInfo, ...rest] = data.toObject();
-            return res.status(201).send(regInfo);
-          })
-          .catch(err => {
-            errors.push({
-              message:
-                err.message ||
-                "An unknown error occurred while creating user account."
-            });
-            return res.status(500).send({ errors });
+      user
+        .save()
+        .then(async data => {
+          // Send success message
+          await data
+            .execPopulate(populateQuery)
+            .then(async data => {
+              try {
+                let response = await axios(
+                  "http://localhost:3000/api/email/send",
+                  {
+                    method: "POST",
+                    headers: { Authorization: "Bearer " + req.token },
+                    data: {
+                      templateId: "60e4e8947760e310a69c8068",
+                      data: {
+                        user_name: data.firstname,
+                        activation_link: `http://localhost:3000/users/activate?code=${data.activationCode}`,
+                        link_expiry: data.activationExpiresIn
+                      },
+                      recipients: [data.email]
+                    }
+                  }
+                );
+                return res
+                  .status(201)
+                  .send({ message: "User created successfully", user: data });
+              } catch (err) {
+                res.status(500).send({
+                  message:
+                    err.message ||
+                    "Could not send activation email after account was created"
+                });
+              }
+            })
+            .catch(err =>
+              res
+                .status(500)
+                .send({ message: err.message || "Population error" })
+            );
+        })
+        .catch(err => {
+          // Send error message
+          return res.status(500).send({
+            message:
+              err.message || "Unknown error occurred while saving user account"
           });
-      }
+        });
     })
     .catch(err => {
-      errors.push({
-        message:
-          err.message ||
-          "An unknown error occurred while trying to check if user exist"
+      // Send error message
+      res.status(500).send({
+        message: err.message || "Unknown error occurred while checking email"
       });
-      return res.status(500).send({ errors });
     });
 };
 
 // Method for finalizing signup
 
-exports.finalize = async (req, res) => {
-  await User.findById(req.params.id)
+exports.activate = async (req, res) => {
+  await User.findOne({ activationCode: req.params.code })
     .then(data => {
-      let expiresIn = data.regInfo.expiresIn;
-      let code = data.regInfo.code;
-      if (moment.now(expiresIn) >= moment.now() && code === req.body.code) {
-        res.send({ message: "success" });
-      } else {
-        res.status(400).send({ message: "Invalid code or user" });
-      }
+      if (!data)
+        return res.status(400).send({
+          message:
+            "You have provided an invalid activation code, Please contact admin"
+        });
+      if (data.activationExpiresIn < moment.utc())
+        return res.status(400).send({
+          message:
+            "Your activation code has expired, contact the admin to get new activation code"
+        });
+      return res.send({
+        message: "Your account has be activated successfully!!"
+      });
     })
     .catch(err => {
-      if (err.kind === "ObjectId") {
-        res.status(400).send({ message: "No user found with the provided id" });
-      }
-      res
-        .status(500)
-        .send({ message: "Unknown error occurred, please try again" });
+      // Send error message
+      res.status(500).send({
+        message:
+          err.message ||
+          "Unknown error occurred while validating activation code"
+      });
     });
 };
 
 // Method for setting user password
 
-exports.setPassword = (req, res) => {
-  if (req.body.password === !req.body.confirmPassword)
-    res
+exports.setPassword = async (req, res) => {
+  // Check password and confirm password equality
+  if (req.body.password !== req.body.confirmPassword)
+    return res
       .status(400)
       .send({ message: "Password and confirm password must match" });
-  if (req.body.oldPassword) {
-    if (bcrypt.compareSync(req.body.password, secret)) {
-    }
+
+  // Get the user
+  const user = await User.findOne({ activationCode: req.params.code });
+
+  // Check if there is no user
+  if (!user) {
+    return res
+      .status(404)
+      .send({ message: "What have you done? we cannot find you details" });
   }
+
+  // Check if activation code is expired
+
+  if (user.activationExpiresIn < moment.utc())
+    return res.status(400).send({
+      message:
+        "Your activation code has expired, contact the admin to get new activation code"
+    });
+
+  // Copy information and set password
+
+  Object.assign(user, {
+    hash: bcrypt.hashSync(req.body.password, SALT_WORK_FACTOR)
+  });
+
+  user.approved = true;
+
+  delete user.activationCode;
+  delete user.activationExpiresIn;
+
+  // Find user with the provided id and update the password hashed
+
+  user
+    .save()
+    .then(data => {
+      // Send success message
+      res.send({ message: "Your password has been updated successfully" });
+    })
+    .catch(err => {
+      // Send error messages
+      return res.status(500).send({
+        message:
+          err.message ||
+          "Unknown error occurred while trying to verify your identity"
+      });
+    });
 };
 
 // Method for finding all users
 
 exports.findAll = async (req, res) => {
-  // fullname = "Samuel Adeyanju";
-  // console.log(welcomeEmail.replace("[fullname]", fullname));
   await User.find({}, { hash: 0 })
     .populate(populateQuery)
     .exec()
     .then(async data => {
-      console.log(data)
       return res.send(data);
     })
     .catch(err => {
@@ -351,66 +507,188 @@ exports.refresh = async (req, res) => {
   }
 };
 
+// Method for changing password
+
+exports.updatePassword = async (req, res) => {
+  // Check password and confirm password equality
+  if (req.body.password !== req.body.confirmPassword)
+    return res
+      .status(400)
+      .send({ message: "Password and confirm password must match" });
+
+  // Check if it is the user's old password is correct
+
+  // Get the user
+  const user = await User.findOne({
+    hash: bcrypt.hashSync(req.body.oldPassword, SALT_WORK_FACTOR)
+  });
+
+  // Check if there is no user
+  if (!user) {
+    return res.status(404).send({
+      message: "What have you done? seems you have provided wrong old password"
+    });
+  }
+
+  // Copy information and set password
+
+  Object.assign(user, {
+    hash: bcrypt.hashSync(req.body.password, SALT_WORK_FACTOR)
+  });
+
+  // Find user with the provided id and update the password hashed
+
+  user
+    .save()
+    .then(data => {
+      // Send success message
+      res.send({ message: "Your password has been updated successfully" });
+    })
+    .catch(err => {
+      // Send error messages
+      return res.status(500).send({
+        message:
+          err.message ||
+          "Unknown error occurred while trying to verify your identity"
+      });
+    });
+};
+
 // Method for updating user
 
 exports.update = async (req, res) => {
   // Validate Request
-  if (!req.body.email) {
-    return res.status(400).send({
-      message: "User email cannot be empty"
+  const errors = [];
+
+  // Validating entered data
+
+  if (!req.body.firstname || !req.body.lastname) {
+    error.push({
+      message: "First name or Last name cannot be empty"
     });
   }
+
+  if (req.body.firstname.length < 3) {
+    errors.push({
+      message: "First name must have at least 3 characters"
+    });
+  }
+
+  if (req.body.lastname.length < 3) {
+    errors.push({
+      message: "Last name must have at least 3 characters"
+    });
+  }
+
+  if (!req.body.email) {
+    errors.push({
+      message: "Email cannot be empty"
+    });
+  }
+
+  if (!req.body.role) {
+    errors.push({
+      message: "Role cannot be empty"
+    });
+  }
+
+  if (req.body.email.length < 3) {
+    errors.push({
+      message: "Email must have at least 3 characters"
+    });
+  }
+
+  if (errors.length > 0) return res.status(400).send({ errors });
 
   //get user
   const user = await User.findById(req.params.id);
 
   // validate
   if (!user) {
-    return res.status(404).send({ message: "User not found" });
-  }
-
-  if (user.email !== req.body.email) {
-    return res.status(400).send({
-      message:
-        'Email "' + req.body.email + '" does not match email in database!'
-    });
+    return res
+      .status(404)
+      .send({ message: "What have you done? we cannot find you details" });
   }
 
   // copy userinfo properties to user
   Object.assign(user, req.body);
 
-  user
-    .save()
-    .then(data => {
-      if (!data) {
-        return res
-          .status(404)
-          .send({ message: "User not found with id " + req.params.id });
-      }
-      data.execPopulate(populateQuery, (err, data) => {
-        res.send(data);
+  if (!user.approved) {
+    user.activationCode = randtoken.uid(16);
+    user.activationExpiresIn = moment.utc().add(30, "minutes");
+    try {
+      let response = await axios("http://localhost:3000/api/email/send", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${req.token}`
+        },
+        data: {
+          templateId: "60e4e8947760e310a69c8068",
+          data: {
+            user_name: user.firstname,
+            activation_link: `http://localhost:3000/users/activate?code=${user.activationCode}`,
+            link_expiry: user.activationExpiresIn
+          },
+          recipients: [user.email]
+        }
       });
-    })
-    .catch(err => {
-      if (err.kind === "ObjectId") {
-        return res
-          .status(404)
-          .send({ message: "User not found with id " + req.params.id });
-      }
-      return res.status(500).send({
-        message: err.message || "Error updating User with id " + req.params.id
+      user
+        .save()
+        .then(async data => {
+          let { hash, ...userinfo } = await data
+            .execPopulate(populateQuery)
+            .then(data => data.toObject());
+          return res.send({
+            message:
+              "User info was saved and account activation maill was sent successfully",
+            userinfo
+          });
+        })
+        .catch(err => {
+          return res.status(500).send({
+            message:
+              err.message ||
+              "Unknown error occurred while saving user information"
+          });
+        });
+    } catch (err) {
+      return res.status(400).send({
+        message: err + "Unknown error occurred while trying to send email"
       });
-    });
+    }
+  } else {
+    user
+      .save()
+      .then(async data => {
+        let { hash, ...userinfo } = await data
+          .execPopulate(populateQuery)
+          .then(data => data.toObject());
+        return res.send({
+          message: "Profile was updated successfully",
+          userinfo
+        });
+      })
+      .catch(err => {
+        if (err.kind === "ObjectId") {
+          return res
+            .status(404)
+            .send({ message: "User not found with id " + req.params.id });
+        }
+        return res.status(500).send({
+          message: err.message || "Error updating User with id " + req.params.id
+        });
+      });
+  }
 };
 
 // Method for deleting user
 
 exports.delete = (req, res) => {
-  User.findByIdAndDelete(req.params.Id)
+  User.findByIdAndDelete(req.params.id)
     .then(data => {
       if (!data) {
         return res.status(404).send({
-          message: "Cannot find user with Id " + req.params.Id
+          message: "Cannot find user with Id " + req.params.id
         });
       }
       return res.send({
@@ -420,7 +698,7 @@ exports.delete = (req, res) => {
     .catch(err => {
       if (err.kind === "ObjectId") {
         return res.status(404).send({
-          message: "Cannot find user with Id " + req.params.Id
+          message: "Cannot find user with Id " + req.params.id
         });
       }
       return res.status(500).send({

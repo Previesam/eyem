@@ -265,7 +265,12 @@
                 class="mb-2"
               >
                 <div
-                  class="emailTemplates d-flex flex-no-wrap justify-space-between"
+                  class="
+                    emailTemplates
+                    d-flex
+                    flex-no-wrap
+                    justify-space-between
+                  "
                 >
                   <div>
                     <v-card-title class="text-body-1" style="font-weight: bold">
@@ -332,10 +337,7 @@
 
             <v-spacer></v-spacer>
 
-            <span
-              class="mr-4
-            grey--text"
-            >
+            <span class="mr-4 grey--text">
               Page {{ page }} of {{ numberOfPages }}
             </span>
             <v-btn
@@ -361,7 +363,7 @@
           </v-row>
         </template>
       </v-data-iterator>
-      <index-block>
+      <index-block v-show="!editedItem.editing">
         <span>Component</span>
         <v-spacer></v-spacer>
         <span>Settings</span>
@@ -377,34 +379,35 @@ import IndexBlock from "../../components/editor/ui/Block/IndexBlock.vue";
 export default {
   components: { IndexBlock },
   name: "EmailTemplates",
-  data: function(vm) {
+  data: function (vm) {
     return {
       valid: false,
       rules: [
-        value => !!value || "Required.",
-        value => (value && value.length >= 3) || "Min 3 characters"
+        (value) => !!value || "Required.",
+        (value) => (value && value.length >= 3) || "Min 3 characters",
       ],
       config: {
         events: {
-          "froalaEditor.initialized": function() {
+          "froalaEditor.initialized": function () {
             console.log("initialized");
-          }
+          },
         },
         inlineClasses: {
-          "fr-class-footer": "Footer"
+          "fr-class-footer": "Footer",
         },
-        htmlRemoveTags: ["script"],
         htmlUntouched: true,
+        fullPage: true,
         multiLine: true,
-        useClasses: false
+        useClasses: false,
+        heightMax: 200,
       },
       page: 1,
       valid: false,
       allowSelect: false,
       loading: false,
       rules: [
-        value => !!value || "Required.",
-        value => (value && value.length >= 3) || "Min 3 characters"
+        (value) => !!value || "Required.",
+        (value) => (value && value.length >= 3) || "Min 3 characters",
       ],
       search: "",
       menu2: false,
@@ -415,7 +418,7 @@ export default {
         id: "",
         html: "",
         title: "",
-        description: ""
+        description: "",
       },
       dialogDelete: false,
       emailTemplates: [],
@@ -445,7 +448,7 @@ export default {
           text-transform: capitalize;
 }</style></head><body>Edit Your Content Here!</body></html>`,
         title: "",
-        description: ""
+        description: "",
       },
       defaultItem: {
         editing: false,
@@ -472,7 +475,7 @@ export default {
           text-transform: capitalize;
 }</style></head><body>Edit Your Content Here!</body></html>`,
         title: "",
-        description: ""
+        description: "",
       },
       itemToDelete: {},
       keys: ["Title", "Description"],
@@ -480,7 +483,7 @@ export default {
       sortDesc: false,
       filter: {},
       itemsPerPage: 2,
-      sortBy: "title"
+      sortBy: "title",
     };
   },
 
@@ -489,7 +492,7 @@ export default {
       return Math.ceil(this.emailTemplates.length / this.itemsPerPage);
     },
     filteredKeys() {
-      return this.keys.filter(key => key !== "Name");
+      return this.keys.filter((key) => key !== "Name");
     },
     deleteItemClientName() {
       return this.itemToDelete?.client?.Name;
@@ -511,7 +514,7 @@ export default {
     },
     userPermissions() {
       return this.$auth.user.role.permissions;
-    }
+    },
   },
 
   watch: {
@@ -535,7 +538,7 @@ export default {
     },
     description() {
       this.saveToLocalStorage();
-    }
+    },
   },
 
   async mounted() {
@@ -543,7 +546,7 @@ export default {
     await this.initialize();
     if (this.$route.query.id) {
       let template = this.emailTemplates.filter(
-        item => item.id === this.$route.query.id
+        (item) => item.id === this.$route.query.id
       );
       if (template.length > 0) {
         this.view(template[0]);
@@ -552,7 +555,7 @@ export default {
         this.$store.dispatch("toast/snackbar", {
           type: "error",
           message: `Invalid URL parameter`,
-          timeout: 3000
+          timeout: 3000,
         });
       }
     }
@@ -614,7 +617,7 @@ export default {
       this.loading = true;
       try {
         let response = await this.$axios("/email/templates", {
-          method: "GET"
+          method: "GET",
         });
         if (response) {
           this.emailTemplates = response.data;
@@ -655,18 +658,18 @@ export default {
 
     async deleteItemConfirm() {
       await this.$axios(`/email/template/delete/${this.itemToDelete.id}`, {
-        method: "DELETE"
+        method: "DELETE",
       })
-        .then(res => {
+        .then((res) => {
           this.emailTemplates.splice(this.editedIndex, 1);
           this.$store.dispatch("toast/callAddSnackbar", {
             color: "success",
             message: `${this.itemToDelete.title} was deleted successfully`,
-            timeout: 2000
+            timeout: 2000,
           });
           this.closeDelete();
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err.response);
         });
     },
@@ -698,8 +701,8 @@ export default {
           rest.lastModifiedBy = this.$auth.user._id;
           await this.$axios(`/email/template/update/${id}`, {
             method: "PUT",
-            data: rest
-          }).then(async res => {
+            data: rest,
+          }).then(async (res) => {
             await Object.assign(
               this.emailTemplates[this.editedIndex],
               res.data
@@ -709,7 +712,7 @@ export default {
             this.$store.dispatch("toast/callAddSnackbar", {
               color: "success",
               message: `${res.data.title} template was updated successfully`,
-              timeout: 3000
+              timeout: 3000,
             });
           });
         } catch (err) {
@@ -718,7 +721,7 @@ export default {
           this.$store.dispatch("toast/callAddSnackbar", {
             color: "error",
             message: err.response.data.message,
-            timeout: 3000
+            timeout: 3000,
           });
         }
       } else {
@@ -727,15 +730,15 @@ export default {
         try {
           await this.$axios("/email/template/create", {
             method: "POST",
-            data: editedItem
-          }).then(res => {
+            data: editedItem,
+          }).then((res) => {
             this.emailTemplates.push(res.data);
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/callAddSnackbar", {
               color: "success",
               message: `${res.data.title} template was saved successfully`,
-              timeout: 3000
+              timeout: 3000,
             });
           });
         } catch (err) {
@@ -744,7 +747,7 @@ export default {
           this.$store.dispatch("toast/callAddSnackbar", {
             color: "error",
             message: err.response.data.message,
-            timeout: 3000
+            timeout: 3000,
           });
         }
       }
@@ -753,8 +756,8 @@ export default {
     clear() {
       this.$refs.templateForm.reset();
       localStorage.setItem("editedTemplate", JSON.stringify(this.defaultItem));
-    }
-  }
+    },
+  },
 };
 </script>
 

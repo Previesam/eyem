@@ -7,15 +7,43 @@ const populateQuery = [
   { path: "createdBy", select: ["fullname", "phone", "email"] },
   { path: "lastModifiedBy", select: ["fullname", "phone", "email"] }
 ];
+const nodemailer = require("nodemailer");
+const handlebars = require("handlebars");
+var transport = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS
+  }
+});
 
 // Handler for sending new email
 
 exports.send = async (req, res) => {
-  // await window.unlayer.init({
-  //   id: "editor-container"
-  // });
 
-  // console.log(dom);
+  try {
+    let emailTemplate = await EmailTemplate.findById(req.body.templateId)
+    let source = emailTemplate.html.toString()
+    let data = req.body.data
+    let recipients = req.body.recipients
+    let compiledTemplate = handlebars.compile(source)
+
+    let mailOptions = {
+      from: "info@eyemastersng.com",
+      to: recipients,
+      cc: "info@eyemastersng.com",
+      subject: emailTemplate.title,
+      html: compiledTemplate(data)
+    }
+
+    transport.sendMail(mailOptions, (err, info) => {
+      if (err) return console.log(err);
+      return res.status(200).send({ message: "Email was sent successfully" });
+    });
+
+  } catch (err) {
+    res.send({ message: err.message || "Unknown error occurred" })
+  }
 
   let recipients = req.body.recipients;
   let fullname = req.body.fullname;

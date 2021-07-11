@@ -45,9 +45,7 @@
                 ></v-text-field>
               </v-col>
               <nuxt-link to="account/recovery"
-                ><v-card-text>
-                  Forgot Password
-                </v-card-text></nuxt-link
+                ><v-card-text> Forgot Password </v-card-text></nuxt-link
               >
               <v-col cols="12">
                 <v-card-actions>
@@ -63,9 +61,7 @@
                   >
                   <v-spacer></v-spacer>
                   <nuxt-link to="register"
-                    ><v-card-text>
-                      Sign Up
-                    </v-card-text></nuxt-link
+                    ><v-card-text> Sign Up </v-card-text></nuxt-link
                   >
                 </v-card-actions>
               </v-col>
@@ -85,26 +81,26 @@ export default {
     return {
       rules: {
         password: [
-          value => !!value || "Password is required.",
-          value => (value && value.length >= 6) || "Min 6 characters",
-          value =>
+          (value) => !!value || "Password is required.",
+          (value) => (value && value.length >= 6) || "Min 6 characters",
+          (value) =>
             /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/.test(
               value
             ) ||
-            "Password must container one letter, one number, one special character and aleast 6 digits long"
+            "Password must container one letter, one number, one special character and aleast 6 digits long",
         ],
         email: [
-          value => !!value || "Email is required",
-          value =>
+          (value) => !!value || "Email is required",
+          (value) =>
             /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
               value
-            ) || "E-mail must be valid"
-        ]
+            ) || "E-mail must be valid",
+        ],
       },
       valid: false,
       email: "samsmart.ass59@gmail.com",
       password: "Sam@@2015!",
-      loading: false
+      loading: false,
     };
   },
   methods: {
@@ -112,50 +108,48 @@ export default {
       if (event.key !== "Enter" || !this.valid) return;
       this.userLogin();
     },
-    sendToast() {
+    sendToast(color, message, timeout) {
       this.$store.dispatch("toast/callAddSnackbar", {
-        color: "success",
-        message: `Login successful! Welcome back ${this.$auth.user.fullname}`
+        color,
+        message,
+        timeout,
       });
     },
     async userLogin() {
       this.loading = true;
       try {
         let response = await this.$auth.loginWith("local", {
-          data: { email: this.email, password: this.password }
+          data: { email: this.email, password: this.password },
         });
         // this.$router.push('/');
-        setTimeout(this.sendToast(), 6000 * 5);
+        setTimeout(
+          this.sendToast("success", `Login Successful!!`, 3000),
+          6000 * 5
+        );
         this.loading = false;
       } catch (err) {
         if (err.response) {
           let error = err.response.data;
-          this.$store.dispatch("toast/callAddSnackbar", {
-            color: "error",
-            message: error.message,
-            timeout: 3000
-          });
+          this.sendToast("error", error.message, 3000);
           this.loading = false;
         } else if (err.request) {
-          this.$store.dispatch("toast/callAddSnackbar", {
-            color: "error",
-            message:
-              "An error occurred while logging your in, please try again",
-            timeout: 3000
-          });
+          this.sendToast(
+            "error",
+            "An error occurred while logging your in, please try again",
+            3000
+          );
           this.loading = false;
         } else {
-          this.$store.dispatch("toast/callAddSnackbar", {
-            color: "error",
-            message:
-              "Unknown error occurred while login to your account, please try again",
-            timeout: 3000
-          });
+          this.sendToast(
+            "error",
+            "Unknown error occurred while login to your account, please try again",
+            3000
+          );
           this.loading = false;
         }
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

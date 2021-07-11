@@ -5,7 +5,7 @@ module.exports = app => {
 
   // Route to send new email
 
-  app.post("/email/send", email.send);
+  app.post("/email/send", verifyToken, email.send);
 
   // Route to get all emails
 

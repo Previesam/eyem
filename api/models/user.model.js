@@ -20,7 +20,7 @@ const UserSchema = mongoose.Schema(
     phone: { type: String },
     dateOfBirth: { type: Date },
     designation: { type: String },
-    role: { type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true },
+    role: { type: mongoose.Schema.Types.ObjectId, ref: "Role" },
     passport: { type: String },
     accountDetails: {
       name: String,
@@ -29,27 +29,23 @@ const UserSchema = mongoose.Schema(
     },
     defaultBranch: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Branch",
-      required: true
+      ref: "Branch"
     },
     branches: [
-      { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Branch" }
+      { type: mongoose.Schema.Types.ObjectId, ref: "Branch" }
     ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
       ref: "User"
     },
     lastModifiedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
       ref: "User"
     },
-    inactive: { type: Boolean, default: true, required: true },
-    activationInfo: {
-      code: { type: String, require: true, unique: true },
-      expiresIn: { type: Date, required: true }
-    }
+    inactive: { type: Boolean, default: true },
+    approved: { type: Boolean, default: false },
+    activationCode: { type: String, unique: true },
+    activationExpiresIn: { type: Date, }
   },
   { timestamps: true }
 );

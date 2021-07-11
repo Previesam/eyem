@@ -56,11 +56,11 @@
           <v-divider></v-divider>
 
           <v-list dense>
-            <v-list-item link>
+            <v-list-item to="/user-profile" link>
               <v-list-item-icon
                 ><v-icon medium>mdi-account</v-icon></v-list-item-icon
               >
-              <v-list-item-title>User Profile</v-list-item-title>
+              <v-list-item-title> User Profile </v-list-item-title>
             </v-list-item>
             <v-list-item link @click="toggleSettingsDrawer()">
               <v-list-item-icon
@@ -85,18 +85,18 @@
 export default {
   props: {
     callToggleUserMenu: Boolean,
-    user: Object
+    user: Object,
   },
   data() {
     return {
       userMenu: false,
-    }
+    };
   },
 
   watch: {
-    callToggleUserMenu: function(newVal, oldVal) {
+    callToggleUserMenu: function (newVal, oldVal) {
       this.toggleDrawer();
-    }
+    },
   },
 
   methods: {
@@ -108,16 +108,16 @@ export default {
     sendToast() {
       this.$store.dispatch("toast/callAddSnackbar", {
         ccolor: "success",
-        message: "You have logged out successfully"
+        message: "You have logged out successfully",
       });
     },
     toggleSettingsDrawer() {
       this.$emit("toggleSettingsDrawer");
     },
     toggleMenu() {
-      this.userMenu = !this.userMenu
-    }
-  }
+      this.userMenu = !this.userMenu;
+    },
+  },
 };
 </script>
 

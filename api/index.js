@@ -78,7 +78,7 @@ var updateBranches = async () => {
   await axios("https://manager.eyemastersng.com/api/index.json", {
     method: "GET",
     headers: {
-      Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE="
+      Authorization: process.env.MANAGER_TOKEN
     }
   })
     .then(async res => {
@@ -120,7 +120,7 @@ var updateClients = async () => {
   await axios("https://manager.eyemastersng.com/api/index.json", {
     method: "GET",
     headers: {
-      Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE="
+      Authorization: process.env.MANAGER_TOKEN
     }
   })
     .then(async res => {
@@ -144,7 +144,7 @@ var updateClients = async () => {
           {
             method: "GET",
             headers: {
-              Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE="
+              Authorization: process.env.MANAGER_TOKEN
             }
           }
         )
@@ -171,7 +171,7 @@ var updateClients = async () => {
                     {
                       method: "GET",
                       headers: {
-                        Authorization: "Basic cHJldmllc2FtOlNhbUBAMjAxNSE="
+                        Authorization: process.env.MANAGER_TOKEN
                       }
                     }
                   )
@@ -193,7 +193,7 @@ var updateClients = async () => {
                             method: "GET",
                             headers: {
                               Authorization:
-                                "Basic cHJldmllc2FtOlNhbUBAMjAxNSE="
+                                process.env.MANAGER_TOKEN
                             }
                           }
                         )
@@ -270,13 +270,6 @@ app.get("/test-email", async (req, res) => {
     client_name: "Samuel Adeyanju",
     job_status: "Ready"
   };
-
-  let styleStart = source.indexOf("<style>");
-  let styleEnd = source.indexOf("</style>") + 8;
-
-  let style = source.slice(styleStart, styleEnd);
-
-  console.log(style);
 
   let template = handlebars.compile(source);
 

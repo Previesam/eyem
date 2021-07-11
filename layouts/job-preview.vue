@@ -1,6 +1,19 @@
 <template>
   <!-- Begin Application default view -->
   <v-app :style="{ background: $vuetify.theme.themes[theme].background }">
+    <v-snackbars
+      outlined
+      top
+      right
+      :objects.sync="$store.state.toast.snackbars"
+      timeout="10000"
+    >
+      <template v-slot:action="{ index }">
+        <v-btn small icon text @click="closeSnackbar(index)">
+          <v-icon small>mdi-close</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbars>
     <v-main>
       <v-app-bar flat tile dense fixed app
         ><v-app-bar-title
@@ -29,7 +42,7 @@
           ><v-icon size="19" color="green">mdi-whatsapp</v-icon></a
         >
       </v-app-bar>
-      <v-container style="height:100%; width:100%" fluid>
+      <v-container style="height: 100%; width: 100%" fluid>
         <nuxt />
       </v-container>
     </v-main>
@@ -39,14 +52,22 @@
 </template>
 
 <script>
+import VSnackbars from "v-snackbars";
+
 export default {
+  components: {
+    "v-snackbars": VSnackbars,
+  },
   computed: {
     theme() {
       return this.$vuetify.theme.dark ? "dark" : "light";
-    }
+    },
   },
 
   methods: {
+    closeSnackbar(index) {
+      this.$store.dispatch("toast/callCloseSnackbar", index);
+    },
     // Implementing Dark Mode and Auto Light or Dark Mode
 
     initDarkMode() {
@@ -54,7 +75,7 @@ export default {
 
       console.log(darkMediaQuery);
 
-      darkMediaQuery.addEventListener("change", e => {
+      darkMediaQuery.addEventListener("change", (e) => {
         this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
       });
 
@@ -63,11 +84,11 @@ export default {
         // need to set 0 sec timeout to set the dark more after mounted event, due to some bug in the framework
         setTimeout(() => (this.$vuetify.theme.dark = true), 0);
       }
-    }
+    },
   },
   async mounted() {
     await this.initDarkMode();
-  }
+  },
 };
 </script>
 

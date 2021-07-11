@@ -20,7 +20,12 @@
       </template>
     </v-snackbar>
     <v-container fluid class="container">
-      <div class="left-side">
+      <div
+        class="left-side"
+        :style="
+          $vuetify.breakpoint.width > 653 ? 'border-right: 1px solid grey' : ''
+        "
+      >
         <div>
           <v-img
             :class="$vuetify.breakpoint.width > 653 ? '' : 'mx-auto'"
@@ -31,7 +36,8 @@
             class="text-caption mr-4"
             :class="$vuetify.breakpoint.width > 653 ? '' : 'text-center'"
           >
-            Welcome
+            Welcome to account request portal, simply submit your information
+            you will be contact if you are recognized employee.
           </p>
         </div>
       </div>
@@ -45,34 +51,40 @@
             <v-row>
               <v-col cols="12"
                 ><v-text-field
-                  prepend-icon="mdi-account"
-                  label="Name"
-                  v-model="name"
+                  outlined
+                  prepend-inner-icon="mdi-account"
+                  label="First Name"
+                  v-model="firstname"
                   :rules="rules.name"
                   @keydown.stop="handleEvent($event)"
                   required
+                  dense
                 ></v-text-field
               ></v-col>
               <v-col cols="12"
                 ><v-text-field
-                  prepend-icon="mdi-email"
+                  prepend-inner-icon="mdi-account"
+                  label="Last Name"
+                  v-model="lastname"
+                  :rules="rules.name"
+                  @keydown.stop="handleEvent($event)"
+                  required
+                  dense
+                  outlined
+                ></v-text-field
+              ></v-col>
+              <v-col cols="12"
+                ><v-text-field
+                  outlined
+                  prepend-inner-icon="mdi-email"
                   label="Email"
                   v-model="email"
                   :rules="rules.email"
                   @keydown.stop="handleEvent($event)"
                   required
+                  dense
                 ></v-text-field
               ></v-col>
-              <v-col cols="12">
-                <v-text-field
-                  prepend-icon="mdi-key"
-                  label="Password"
-                  v-model="password"
-                  :rules="rules.password"
-                  @keydown.stop="handleEvent($event)"
-                  required
-                ></v-text-field>
-              </v-col>
               <v-col cols="12">
                 <v-card-actions>
                   <v-btn
@@ -82,11 +94,15 @@
                     outlined
                     :disabled="!valid"
                     @click="userRegister()"
+                    :loading="loading"
                     >Register</v-btn
                   >
                   <v-spacer></v-spacer>
+                  <span>Have an account?</span>
                   <nuxt-link to="login"
-                    ><v-card-text> Login </v-card-text></nuxt-link
+                    ><v-btn outlined text class="ml-1 text-capitalize">
+                      Login
+                    </v-btn></nuxt-link
                   >
                 </v-card-actions>
               </v-col>
@@ -106,106 +122,92 @@ export default {
     return {
       rules: {
         name: [
-          value => !!value || "Name is required.",
-          value => (value && value.length >= 3) || "Min 3 characters"
+          (value) => !!value || "Name is required.",
+          (value) => (value && value.length >= 3) || "Min 3 characters",
         ],
-        password: [
-          value => !!value || "Password is required.",
-          value => (value && value.length >= 6) || "Min 6 characters",
-          value =>
-            /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/.test(
-              value
-            ) ||
-            "Password must container one letter, one number, one special character and aleast 6 digits long"
-        ],
+        // password: [
+        //   (value) => !!value || "Password is required.",
+        //   (value) => (value && value.length >= 6) || "Min 6 characters",
+        //   (value) =>
+        //     /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{6,}$/.test(
+        //       value
+        //     ) ||
+        //     "Password must container one letter, one number, one special character and aleast 6 digits long",
+        // ],
         email: [
-          value => !!value || "Email is required",
-          value =>
+          (value) => !!value || "Email is required",
+          (value) =>
             /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
               value
-            ) || "E-mail must be valid"
-        ]
+            ) || "E-mail must be valid",
+        ],
       },
       valid: false,
-      name: "",
+      firstname: "",
+      lastname: "",
       email: "",
-      password: ""
+      snackbar: false,
+      loading: false,
+      timeout: 3000,
+      type: "",
+      toastMessage: "",
     };
-  },
-
-  computed: {
-    timeout() {
-      return this.$store.state.toast.timeout;
-    },
-    snackbar: {
-      get() {
-        return this.$store.state.toast.snackbar;
-      },
-      set() {
-        this.$store.commit("toast/closeSnackbar");
-      }
-    },
-    type() {
-      return this.$store.state.toast.type;
-    },
-    toastMessage() {
-      return this.$store.state.toast.message;
-    }
   },
 
   methods: {
     handleEvent(event) {
       if (event.key !== "Enter" || !this.valid) return;
-      this.userLogin();
+      this.userRegister();
     },
-    sendToast() {
-      this.$store.dispatch("toast/snackbar", {
-        type: "success",
-        message: `Login successful! Welcome back ${this.$auth.user.fullname}`
-      });
+    sendToast(type, message, timeout) {
+      this.type = type;
+      this.toastMessage = message;
+      this.timeout = timeout;
+      this.snackbar = true;
     },
     async userRegister() {
+      this.loading = true;
       try {
-        let response = await this.$axios("/user/signup", {
+        let response = await this.$axios("/user/pre-signup", {
           method: "POST",
           data: {
-            fullname: this.name,
+            firstname: this.firstname,
+            lastname: this.lastname,
             email: this.email,
-            password: this.password
-          }
+          },
         });
-        await this.$auth.loginWith("local", {
-          data: { email: this.email, password: this.password }
-        });
-        sendToast();
+        if (response.data) {
+          this.loading = false;
+          return this.sendToast("success", response.data.message, 3000);
+        }
+        this.loading = false;
+        this.sendToast("error", "Unknown error occurred", 3000);
       } catch (err) {
         if (err.response) {
           let errors = err.response.data;
-          errors.forEach(error => {
-            this.$store.dispatch("toast/snackbar", {
-              type: "error",
-              message: error.message,
-              timeout: 3000
-            });
+          this.loading = false;
+          errors.forEach((error) => {
+            this.sendToast("error", error.message, 3000);
           });
         } else if (err.request) {
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
-            message:
-              "Unknown error occurred while creating your account, please try again",
-            timeout: 3000
-          });
+          this.loading = false;
+          this.sendToast(
+            "error",
+            err.request.data ||
+              "You seem to be having a network issue, please check your internet connection",
+            3000
+          );
         } else {
-          this.$store.dispatch("toast/snackbar", {
-            type: "error",
-            message:
-              "Unknown error occurred while creating your account, please try again",
-            timeout: 3000
-          });
+          this.loading = false;
+          this.sendToast(
+            "error",
+            "Unknown error occurred while creating your account, please try again",
+            3000
+          );
         }
       }
-    }
-  }
+    },
+  },
 };
 </script>
 

@@ -284,8 +284,8 @@
               >
               <v-card-title class="my-3 subheading text-center"
                 >Are you sure you want to delete
-                {{ `${deleteItemClientName}'s` }}
-                Job?</v-card-title
+                {{ `${deleteItemName}'s` }}
+                Account?</v-card-title
               >
               <v-card-actions>
                 <v-spacer></v-spacer>
@@ -337,8 +337,14 @@
                   <v-card-title class="text-body-1" style="font-weight: bold">
                     {{ item.firstname + " " + item.lastname }}
                   </v-card-title>
-                  <v-card-subtitle class="pb-0">
+                  <v-card-subtitle
+                    v-if="item.role && item.designation"
+                    class="pb-0"
+                  >
                     {{ item.role.name }} > {{ item.designation }}
+                  </v-card-subtitle>
+                  <v-card-subtitle v-else class="pb-0">
+                    Account Request Pending Approval
                   </v-card-subtitle>
                   <v-card-actions>
                     <v-btn
@@ -511,8 +517,8 @@ export default {
     filteredKeys() {
       return this.keys.filter((key) => key !== "Name");
     },
-    deleteItemClientName() {
-      return this.itemToDelete?.client?.Name;
+    deleteItemName() {
+      return this.itemToDelete?.firstname + " " + this.itemToDelete?.lastname;
     },
     formTitle() {
       return this.editedIndex === -1 ? "New User" : "Edit User";
@@ -657,6 +663,7 @@ export default {
     updateStorage(showDialog) {
       let editedItem = JSON.parse(localStorage.getItem("editedUser"));
       this.editedItem = editedItem;
+      this.editedIndex = parseInt(localStorage.getItem("editedIndex")) || -1;
       if (
         showDialog &&
         (editedItem.id ||
@@ -707,6 +714,7 @@ export default {
 
     editItem(item, e) {
       this.editedIndex = this.users.indexOf(item);
+      localStorage.setItem("editedIndex", this.editedIndex);
       this.editedItem = item;
       this.dialog = true;
       e.stopPropagation();
@@ -727,7 +735,7 @@ export default {
           this.users.splice(this.editedIndex, 1);
           this.$store.dispatch("toast/callAddSnackbar", {
             color: "success",
-            message: `${this.itemToDelete.fullname} was deleted successfully`,
+            message: `${this.itemToDelete.firstname}'s account was deleted successfully`,
             timeout: 3000,
           });
           this.closeDelete();
@@ -740,6 +748,7 @@ export default {
     close() {
       this.dialog = false;
       localStorage.removeItem("editedUser");
+      localStorage.removeItem("editedIndex");
       this.clear();
       this.$nextTick(() => {
         this.editedItem = this.defaultItem;
@@ -763,20 +772,20 @@ export default {
         try {
           let { id, ...rest } = editedItem;
           rest.lastModifiedBy = this.$auth.user._id;
-          await this.$axios(`/user/update/${editedItem.id}`, {
+          await this.$axios(`/user/update-profile/${editedItem.id}`, {
             method: "PUT",
             data: rest,
           }).then(async (res) => {
-            await Object.assign(this.users[this.editedIndex], res.data);
-            if (this.$auth.user._id === res.data._id) {
-              this.$auth.user = res.data;
-              console.log("done");
-            }
+            console.log(res.data);
+            await Object.assign(
+              this.users[this.editedIndex],
+              res.data.userinfo
+            );
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/callAddSnackbar", {
               color: "success",
-              message: `${res.data.firstname} was updated successfully`,
+              message: `${res.data.userinfo.firstname}'s info was updated successfully`,
               timeout: 3000,
             });
           });
@@ -797,12 +806,12 @@ export default {
             method: "POST",
             data: editedItem,
           }).then((res) => {
-            this.users.push(res.data);
+            this.users.push(res.data.user);
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/callAddSnackbar", {
               color: "success",
-              message: `${res.data.fullname} was saved successfully`,
+              message: `${res.data.user.firstname}'s info was saved successfully`,
               timeout: 3000,
             });
           });

@@ -6,7 +6,6 @@ exports.verifyToken = (req, res, next) => {
 
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  console.log(token);
 
   // Handling Error when token is not provided
 
@@ -16,7 +15,6 @@ exports.verifyToken = (req, res, next) => {
 
   // Verifying token provided
 
-
   jwt.verify(token, secret, function(err, decoded) {
     // Handling Verification Error
     if (err) {
@@ -25,7 +23,7 @@ exports.verifyToken = (req, res, next) => {
     }
     // If All is Well Attaching User Infor to request
     req.userId = decoded.sub;
-    console.log(req.userId);
+    req.token = token;
     next();
   });
 };

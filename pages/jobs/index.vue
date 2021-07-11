@@ -1,6 +1,10 @@
 <template>
   <div>
-    <v-card :min-height="$vuetify.breakpoint.mobile ? '86vh' : '84.6vh'" width="100%" class="rounded mt-1">
+    <v-card
+      :min-height="$vuetify.breakpoint.mobile ? '86vh' : '84.6vh'"
+      width="100%"
+      class="rounded mt-1"
+    >
       <v-card-title>
         <!-- <span class="mr-5 subheading primary--text">Appointments</span> -->
 
@@ -242,14 +246,12 @@
             </v-card-text>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn color="red darken-1" text @click="clear()">
-                Clear
-              </v-btn>
+              <v-btn color="red darken-1" text @click="clear()"> Clear </v-btn>
               <v-btn
                 :loading="loading"
                 elevation="2"
                 color="blue darken-1"
-                :disabled="!valid"
+                :disabled="!valid || !userPermissions[$route.path].create"
                 text
                 @click.stop="save()"
               >
@@ -292,6 +294,7 @@
                 color="red darken-1"
                 text
                 @click="deleteItemConfirm"
+                :disabled="!userPermissions[$route.path].delete"
                 >Yes</v-btn
               >
               <v-spacer></v-spacer>
@@ -354,7 +357,7 @@
                           > </v-avatar
                         ><span>{{
                           defaultStatuses.filter(
-                            m => m.value === jobToView.status
+                            (m) => m.value === jobToView.status
                           )[0].title
                         }}</span>
                       </v-chip>
@@ -468,7 +471,7 @@
         :items-per-page="8"
         :show-select="allowSelect"
         :footer-props="{
-          'items-per-page-options': [8, 10, 15, 20, -1]
+          'items-per-page-options': [8, 10, 15, 20, -1],
         }"
       >
         <template v-slot:[`item.client`]="{ item }">
@@ -503,7 +506,8 @@
                 <v-avatar left>
                   <v-icon small>mdi-checkbox-marked-circle</v-icon> </v-avatar
                 ><span>{{
-                  defaultStatuses.filter(m => m.value === item.status)[0].title
+                  defaultStatuses.filter((m) => m.value === item.status)[0]
+                    .title
                 }}</span>
               </v-chip>
             </template>
@@ -526,18 +530,24 @@
             text
             class="rounded text-capitalize body-2 mr-2"
             @click="view(item)"
+            v-show="userPermissions[$route.path].view"
             >View</v-btn
           >
           <v-icon
-            v-show="true"
             color="primary"
             small
             class="mr-2"
             @click="editItem(item)"
+            v-show="userPermissions[$route.path].edit"
           >
             mdi-pencil
           </v-icon>
-          <v-icon color="red" small @click="deleteItem(item)">
+          <v-icon
+            v-show="userPermissions[$route.path].delete"
+            color="red"
+            small
+            @click="deleteItem(item)"
+          >
             mdi-delete
           </v-icon>
         </template>
@@ -565,21 +575,21 @@ export default {
   components: {
     // JobPreview
   },
-  data: vm => {
+  data: (vm) => {
     return {
       valid: false,
       allowSelect: false,
       loading: false,
       rules: [
-        value => !!value || "Required.",
-        value => (value && value.length >= 3) || "Min 3 characters"
+        (value) => !!value || "Required.",
+        (value) => (value && value.length >= 3) || "Min 3 characters",
       ],
       defaultStatuses: [
         { title: "Open", value: "open" },
         { title: "In-Progess", value: "in-progress" },
         { title: "Delayed", value: "delayed" },
         { title: "Quality Check", value: "quality-check" },
-        { title: "Completed", value: "completed" }
+        { title: "Completed", value: "completed" },
       ],
       search: "",
       menu2: false,
@@ -591,14 +601,14 @@ export default {
         client: {
           id: "",
           Code: "",
-          Name: ""
+          Name: "",
         },
         dateIn: new Date().toISOString().substr(0, 10),
         dateOut: new Date().toISOString().substr(0, 10),
         prescription: {
           re: "",
           le: "",
-          add: ""
+          add: "",
         },
         status: "open",
         frame: "",
@@ -609,37 +619,37 @@ export default {
         optician: "",
         doctor: "",
         branch: "",
-        history: []
+        history: [],
       },
       dialogDelete: false,
       headers: [
         {
           text: "Patient Name",
-          value: "client"
+          value: "client",
         },
         {
           text: "Date In",
-          value: "dateIn"
+          value: "dateIn",
         },
         {
           text: "Date Out",
-          value: "dateOut"
+          value: "dateOut",
         },
         {
           text: "Prescription",
-          value: "prescription"
+          value: "prescription",
         },
         {
           text: "Status",
-          value: "status"
+          value: "status",
         },
         {
           text: "Actions",
           value: "actions",
           align: "center",
           sortable: false,
-          width: "15%"
-        }
+          width: "15%",
+        },
       ],
       jobs: [],
       editedIndex: -1,
@@ -647,14 +657,14 @@ export default {
         client: {
           id: "",
           Code: "",
-          Name: ""
+          Name: "",
         },
         dateIn: new Date().toISOString().substr(0, 10),
         dateOut: new Date().toISOString().substr(0, 10),
         prescription: {
           re: "",
           le: "",
-          add: ""
+          add: "",
         },
         status: "open",
         frame: "",
@@ -665,7 +675,7 @@ export default {
         optician: "",
         doctor: "",
         branch: "",
-        history: []
+        history: [],
       },
       dateInFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
       dateOutFormatted: vm.formatDate(new Date().toISOString().substr(0, 10)),
@@ -673,14 +683,14 @@ export default {
         client: {
           id: "",
           Code: "",
-          Name: ""
+          Name: "",
         },
         dateIn: new Date().toISOString().substr(0, 10),
         dateOut: new Date().toISOString().substr(0, 10),
         prescription: {
           re: "",
           le: "",
-          add: ""
+          add: "",
         },
         status: "open",
         frame: "",
@@ -691,12 +701,12 @@ export default {
         optician: "",
         doctor: "",
         branch: "",
-        history: []
+        history: [],
       },
       itemToDelete: {},
       clientIsLoading: false,
       clientSearch: "",
-      clients: []
+      clients: [],
     };
   },
 
@@ -751,7 +761,7 @@ export default {
     },
     userPermissions() {
       return this.$auth.user.role.permissions;
-    }
+    },
   },
 
   watch: {
@@ -810,14 +820,14 @@ export default {
     },
     client() {
       this.saveToLocalStorage();
-    }
+    },
   },
 
   async mounted() {
     this.loading = true;
     await this.initialize();
     if (this.$route.query.id) {
-      let job = this.jobs.filter(item => item.id === this.$route.query.id);
+      let job = this.jobs.filter((item) => item.id === this.$route.query.id);
       if (job.length > 0) {
         this.view(job[0]);
       } else {
@@ -825,13 +835,13 @@ export default {
         this.$store.dispatch("toast/snackbar", {
           type: "error",
           message: `Invalid URL parameter`,
-          timeout: 3000
+          timeout: 3000,
         });
       }
     }
     this.clients = this.$store.state.clients
-      .filter(item => item.Name)
-      .map(m => m);
+      .filter((item) => item.Name)
+      .map((m) => m);
     this.loading = false;
     if (!localStorage.getItem("editedJob")) {
       localStorage.setItem("editedJob", JSON.stringify(this.defaultItem));
@@ -860,10 +870,10 @@ export default {
 
       this._timerId = setTimeout(() => {
         let clients = this.$store.state.clients
-          .filter(item => item.Name)
-          .map(m => m);
+          .filter((item) => item.Name)
+          .map((m) => m);
 
-        this.clients = clients.filter(c => {
+        this.clients = clients.filter((c) => {
           let objString = `${c.Code} - ${c.Name}`;
           return encodeURIComponent(objString.toLowerCase()).includes(
             encodeURIComponent(query.toLowerCase())
@@ -921,21 +931,21 @@ export default {
       item.history.push({
         status: newValue,
         name: this.$auth.user.fullname,
-        date: new Date().toISOString().substr(0, 10)
+        date: new Date().toISOString().substr(0, 10),
       });
       try {
         let { id, ...rest } = item;
         rest.lastModifiedBy = this.$auth.user._id;
         await this.$axios(`/job/update/${item.id}`, {
           method: "PUT",
-          data: rest
-        }).then(async res => {
+          data: rest,
+        }).then(async (res) => {
           await Object.assign(this.jobs[index], res.data);
           this.loading = false;
           this.$store.dispatch("toast/callAddSnackbar", {
             color: "success",
             message: `${res.data.client.Name}'s job was updated successfully`,
-            timeout: 3000
+            timeout: 3000,
           });
           localStorage.removeItem("editedJob");
         });
@@ -945,7 +955,7 @@ export default {
         this.$store.dispatch("toast/callAddSnackbar", {
           color: "error",
           message: err.response.data.message,
-          timeout: 3000
+          timeout: 3000,
         });
       }
     },
@@ -958,6 +968,7 @@ export default {
     updateStorage(showDialog) {
       let editedItem = JSON.parse(localStorage.getItem("editedJob"));
       this.editedItem = editedItem;
+      this.editedIndex = parseInt(localStorage.getItem("editedIndex")) || -1;
       if (
         showDialog &&
         (editedItem?.id ||
@@ -982,7 +993,7 @@ export default {
     async initialize() {
       try {
         let response = await this.$axios("/jobs", {
-          method: "GET"
+          method: "GET",
         });
         if (response) {
           this.jobs = response.data;
@@ -994,6 +1005,7 @@ export default {
 
     editItem(item) {
       this.editedIndex = this.jobs.indexOf(item);
+      localStorage.setItem("editedIndex", this.editedIndex);
       this.editedItem = item;
       this.dialog = true;
     },
@@ -1006,18 +1018,18 @@ export default {
 
     async deleteItemConfirm() {
       await this.$axios(`/job/delete/${this.itemToDelete.id}`, {
-        method: "DELETE"
+        method: "DELETE",
       })
-        .then(res => {
+        .then((res) => {
           this.jobs.splice(this.editedIndex, 1);
           this.$store.dispatch("toast/callAddSnackbar", {
             color: "success",
             message: `${this.itemToDelete.client.Name}'s job was deleted successfully`,
-            timeout: 2000
+            timeout: 2000,
           });
           this.closeDelete();
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err.response);
         });
     },
@@ -1026,6 +1038,7 @@ export default {
       this.dialog = false;
       this.$refs.jobForm.reset();
       localStorage.removeItem("editedJob");
+      localStorage.removeItem("editedIndex");
       this.clientSearch = null;
       this.$nextTick(() => {
         this.editedItem = this.defaultItem;
@@ -1050,7 +1063,7 @@ export default {
       editedItem.history.push({
         status: editedItem.status,
         name: this.$auth.user.fullname,
-        date: new Date().toISOString().substr(0, 10)
+        date: new Date().toISOString().substr(0, 10),
       });
       if (this.editedIndex > -1) {
         try {
@@ -1058,15 +1071,15 @@ export default {
           rest.lastModifiedBy = this.$auth.user._id;
           await this.$axios(`/job/update/${editedItem.id}`, {
             method: "PUT",
-            data: rest
-          }).then(async res => {
+            data: rest,
+          }).then(async (res) => {
             await Object.assign(this.jobs[this.editedIndex], res.data);
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/callAddSnackbar", {
               color: "success",
               message: `${res.data.client.Name}'s job was updated successfully`,
-              timeout: 3000
+              timeout: 3000,
             });
           });
         } catch (err) {
@@ -1075,7 +1088,7 @@ export default {
           this.$store.dispatch("toast/callAddSnackbar", {
             color: "error",
             message: err.response.data.message,
-            timeout: 3000
+            timeout: 3000,
           });
         }
       } else {
@@ -1086,15 +1099,15 @@ export default {
         try {
           await this.$axios("/job/create", {
             method: "POST",
-            data: editedItem
-          }).then(res => {
+            data: editedItem,
+          }).then((res) => {
             this.jobs.push(res.data);
             this.loading = false;
             this.close();
             this.$store.dispatch("toast/callAddSnackbar", {
               color: "success",
               message: `${res.data.client.Name}'s job was saved successfully`,
-              timeout: 3000
+              timeout: 3000,
             });
           });
         } catch (err) {
@@ -1103,7 +1116,7 @@ export default {
           this.$store.dispatch("toast/callAddSnackbar", {
             color: "error",
             message: err.response.data.message,
-            timeout: 3000
+            timeout: 3000,
           });
         }
       }
@@ -1112,8 +1125,8 @@ export default {
     clear() {
       this.$refs.jobForm.reset();
       localStorage.setItem("editedJob", JSON.stringify(this.defaultItem));
-    }
-  }
+    },
+  },
 };
 </script>
 
